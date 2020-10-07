@@ -70,10 +70,8 @@ paramsJercog = {
 
 }
 
-paramsJercog['nInh'] = int(paramsJercog['propInh'] * paramsJercog['nUnits'])
-paramsJercog['nExc'] = paramsJercog['nUnits'] - paramsJercog['nInh']
-paramsJercog['nExcSpikemon'] = int(paramsJercog['nExc'] * paramsJercog['propSpikemon'])
-paramsJercog['nInhSpikemon'] = int(paramsJercog['nInh'] * paramsJercog['propSpikemon'])
+paramsJercog['nIncInh'] = int(paramsJercog['propInh'] * paramsJercog['nUnits'])
+paramsJercog['nIncExc'] = paramsJercog['nUnits'] - paramsJercog['nIncInh']
 
 paramsDestexhe = {
     # save / figs?

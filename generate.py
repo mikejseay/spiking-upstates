@@ -35,6 +35,13 @@ def convert_kicks_to_current_series(kickDur, kickTau, kickTimes, kickSizes, dura
     return iKickRecorded
 
 
+def fixed_current_series(amplitude, duration, dt):
+    tRecorded = arange(int(duration / dt)) * dt
+    iKickNumpy = amplitude * ones_like(tRecorded)
+    iKickRecorded = TimedArray(iKickNumpy, dt=dt)
+    return iKickRecorded
+
+
 def set_spikes_from_time_varying_rate(time_array, rate_array, nPoissonInputUnits):
     """
     This function was inherited from some Destexhe code because I was trying to replicate their results.

@@ -19,8 +19,12 @@ iKickRecorded = convert_kicks_to_current_series(p['kickDur'], p['kickTau'],
 
 p['iKickRecorded'] = iKickRecorded
 
-N = JercogNetwork(p)
-N.build()
-N.run()
-N.save_results()
-N.save_params()
+JN = JercogNetwork(p)
+JN.initialize_network()
+JN.initialize_units()
+JN.set_kicked_units()
+JN.initialize_recurrent_synapses()
+JN.create_monitors()
+JN.run()
+JN.save_results()
+JN.save_params()

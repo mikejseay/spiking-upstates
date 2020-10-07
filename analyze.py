@@ -2,7 +2,7 @@ from results import Results
 import matplotlib.pyplot as plt
 
 loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/'
-targetSim = 'classicDestexhe_2020-10-07-15-10'
+targetSim = 'classicJercogUpCrit_2020-10-07-16-50'
 
 R = Results(targetSim, loadFolder)
 

@@ -53,8 +53,8 @@ defaultclock.dt = p['dt']
 
 # must pass in what's needed here...
 
-N = DestexheNetwork(p)
-N.build()
-N.run()
-N.save_results()
-N.save_params()
+DN = DestexheNetwork(p)
+DN.build()
+DN.run()
+DN.save_results()
+DN.save_params()
