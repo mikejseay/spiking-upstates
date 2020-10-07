@@ -2,9 +2,10 @@ from brian2 import *
 import dill
 from datetime import datetime
 import os
+from generate import set_spikes_from_time_varying_rate
 
 
-class JercogNetwork(object):
+class BaseNetwork(object):
     """ represents descriptive information needed to create network in Brian.
         creates the NeuronGroup, sets variable/randomized self.p of units,
         creates the Synapses, connects them, sets any variable/randomized params of synapses,
@@ -15,7 +16,114 @@ class JercogNetwork(object):
 
     def __init__(self, params):
         self.p = params
-        self.initTime = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        self.p['initTime'] = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        saveName = self.p['simName']
+        if self.p['saveWithDate']:
+            saveName += '_' + self.p['initTime']
+        self.saveName = saveName
+
+    def build(self):
+        # Because each network will do this differently, this will serve as a template and alwyas be overloaded.
+
+        start_scope()
+
+        unitModel = '''
+        '''
+
+        resetCode = '''
+        '''
+
+        threshCode = ''
+
+        units = NeuronGroup(
+            N=self.p['nUnits'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriod'],
+            dt=self.p['dt']
+        )
+
+        unitsExc = units[:self.p['nExc']]
+        unitsInh = units[self.p['nExc']:]
+
+        # set Exc/Inh parameters
+
+        # create synapses
+
+        synapsesExc = Synapses(
+            source=unitsExc,
+            target=units,
+            on_pre='',
+        )
+        synapsesInh = Synapses(
+            source=unitsInh,
+            target=units,
+            on_pre='',
+        )
+        synapsesExc.connect(p=self.p['propConnect'])
+        synapsesInh.connect(p=self.p['propConnect'])
+
+        spikeMonExc = SpikeMonitor(unitsExc[:self.p['nExcSpikemon']])
+        spikeMonInh = SpikeMonitor(unitsInh[:self.p['nInhSpikemon']])
+
+        stateMonExc = StateMonitor(unitsExc, self.p['recordStateVariables'], record=list(range(self.p['nRecordStateExc'])))
+        stateMonInh = StateMonitor(unitsInh, self.p['recordStateVariables'], record=list(range(self.p['nRecordStateInh'])))
+
+        N = Network(units, synapsesExc, synapsesInh, spikeMonExc, spikeMonInh, stateMonExc, stateMonInh)
+
+        self.N = N
+        self.spikeMonExc = spikeMonExc
+        self.spikeMonInh = spikeMonInh
+        self.stateMonExc = stateMonExc
+        self.stateMonInh = stateMonInh
+
+    def run(self):
+        # Because each network will do this differently, this will serve as a template and alwyas be overloaded.
+
+        # instantiate variable names needed for the unitModel (i.e. those not hardcoded or parameterized for all units)
+
+        self.N.run(self.p['duration'],
+                   report=self.p['reportType'],
+                   report_period=self.p['reportPeriod'],
+                   profile=self.p['doProfile']
+                   )
+
+    def save_results(self):
+
+        useDType = np.single
+
+        spikeMonExcT = np.array(self.spikeMonExc.t, dtype=useDType)
+        spikeMonExcI = np.array(self.spikeMonExc.i, dtype=useDType)
+        spikeMonInhT = np.array(self.spikeMonInh.t, dtype=useDType)
+        spikeMonInhI = np.array(self.spikeMonInh.i, dtype=useDType)
+        stateMonExcV = np.array(self.stateMonExc.v / mV, dtype=useDType)
+        stateMonInhV = np.array(self.stateMonInh.v / mV, dtype=useDType)
+
+        savePath = os.path.join(self.p['saveFolder'],
+                                self.saveName + '_results.npz')
+
+        np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
+                 spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV)
+
+    def save_params(self):
+
+        savePath = os.path.join(self.p['saveFolder'],
+                                self.saveName + '_params.pkl')
+        with open(savePath, 'wb') as f:
+            dill.dump(self.p, f)
+
+
+class JercogNetwork(object):
+
+    def __init__(self, params):
+        self.p = params
+        self.p['initTime'] = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        saveName = self.p['simName']
+        if self.p['saveWithDate']:
+            saveName += '_' + self.p['initTime']
+        self.saveName = saveName
 
     def build(self):
         start_scope()
@@ -140,11 +248,6 @@ class JercogNetwork(object):
                    )
 
     def save_results(self):
-        # all results are numpy arrays (ideally)
-        # spikeMonExc.t and spikeMonInh.t
-        # stateMonExc.v and stateMonInh.v
-        # should be saved with numpy savez
-
         useDType = np.single
 
         spikeMonExcT = np.array(self.spikeMonExc.t, dtype=useDType)
@@ -155,15 +258,199 @@ class JercogNetwork(object):
         stateMonInhV = np.array(self.stateMonInh.v / mV, dtype=useDType)
 
         savePath = os.path.join(self.p['saveFolder'],
-                                self.p['simName'] + '_' + self.initTime + '_results.npz')
+                                self.saveName + '_results.npz')
 
         np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
                  spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV)
 
     def save_params(self):
-        # save the params dictionary to a file with pickle
-
         savePath = os.path.join(self.p['saveFolder'],
-                                self.p['simName'] + '_' + self.initTime + '_params.pkl')
+                                self.saveName + '_params.pkl')
         with open(savePath, 'wb') as f:
             dill.dump(self.p, f)
+
+
+class DestexheNetwork(object):
+
+    def __init__(self, params):
+        self.p = params
+        self.p['initTime'] = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        saveName = self.p['simName']
+        if self.p['saveWithDate']:
+            saveName += '_' + self.p['initTime']
+        self.saveName = saveName
+
+    def build(self):
+        start_scope()
+
+        unitModel = '''
+        dv/dt = (gl * (El - v) + gl * delta * exp((v - vThresh) / delta) - w +
+                 ge * (Ee - v) + gi * (Ei - v)) / Cm: volt (unless refractory)
+        dw/dt = (a * (v - El) - w) / tau_w : amp
+        dge/dt = -ge / tau_e : siemens
+        dgi/dt = -gi / tau_i : siemens
+        El : volt
+        delta: volt
+        a : siemens
+        b : amp
+        '''
+
+        resetCode = '''
+        v = El
+        w += b
+        '''
+
+        threshCode = 'v > vThresh + 5 * delta'
+        self.p['vThreshExc'] = self.p['vThresh'] + 5 * self.p['deltaVExc']
+        self.p['vThreshInh'] = self.p['vThresh'] + 5 * self.p['deltaVInh']
+
+        units = NeuronGroup(
+            N=self.p['nUnits'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriod'],
+            dt=self.p['dt']
+        )
+
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = int(self.p['nUnits'] - self.p['nInh'])
+        self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
+        self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
+
+        unitsExc = units[:self.p['nExc']]
+        unitsInh = units[self.p['nExc']:]
+
+        unitsExc.v = self.p['eLeakExc']
+        unitsExc.El = self.p['eLeakExc']
+        unitsExc.delta = self.p['deltaVExc']
+        unitsExc.a = self.p['aExc']
+        unitsExc.b = self.p['bExc']
+
+        unitsInh.v = self.p['eLeakInh']
+        unitsInh.El = self.p['eLeakInh']
+        unitsInh.delta = self.p['deltaVInh']
+        unitsInh.a = self.p['aInh']
+        unitsInh.b = self.p['bInh']
+
+        nRecurrentExcitatorySynapsesPerUnit = int(self.p['nExc'] * self.p['propConnect'])
+        nRecurrentInhibitorySynapsesPerUnit = int(self.p['nInh'] * self.p['propConnect'])
+        nFeedforwardSynapsesPerUnit = int(self.p['propConnectFeedforwardProjection'] * self.p['nPoissonInputUnits'] *
+                                          (1 - self.p['propInh']))
+
+        useQExc = self.p['qExc'] / nRecurrentExcitatorySynapsesPerUnit
+        useQInh = self.p['qInh'] / nRecurrentInhibitorySynapsesPerUnit
+        useQExcFeedforward = self.p['qExcFeedforward'] / nFeedforwardSynapsesPerUnit
+
+        # set up the external input
+        tNumpy = arange(int(self.p['duration'] / defaultclock.dt)) * float(defaultclock.dt)
+        tRecorded = tNumpy * second
+        vExtNumpy = zeros(tRecorded.shape)
+        useExternalRate = float(self.p['poissonInputRate'])
+
+        if self.p['poissonDriveType'] is 'ramp':
+            vExtNumpy[:int(100 * ms / defaultclock.dt)] = linspace(0, useExternalRate, int(100 * ms / defaultclock.dt))
+            vExtNumpy[int(100 * ms / defaultclock.dt):] = useExternalRate
+        elif self.p['poissonDriveType'] is 'constant':
+            vExtNumpy[:] = useExternalRate
+        elif self.p['poissonDriveType'] is 'fullRamp':
+            vExtNumpy = linspace(0, useExternalRate, tNumpy.size)
+
+        vExtRecorded = TimedArray(vExtNumpy * Hz, dt=defaultclock.dt)
+
+        if self.p['poissonInputsCorrelated']:
+            useRateArray = vExtNumpy
+        else:
+            useRateArray = vExtNumpy * nFeedforwardSynapsesPerUnit
+        # useRateArrayCorr = zeros(tRecorded.shape)
+        # useRateArrayCorr[:] = float(correlatedInputRate)
+
+        # TAKES A LONG TIME TO RUN BECAUSE IT GENERATES ALL THE POISSON DISTRIBUTED SPIKES FOR INPUT UNITS
+        indices, times = set_spikes_from_time_varying_rate(time_array=tNumpy * 1e3,
+                                                           rate_array=useRateArray,
+                                                           nPoissonInputUnits=int(self.p['nPoissonInputUnits']))
+
+        # weak possibly correlated input
+        inputGroupWeak = SpikeGeneratorGroup(int(self.p['nPoissonInputUnits']), indices, times)
+        feedforwardSynapsesWeak = Synapses(inputGroupWeak, units,
+                                           on_pre='ge_post += ' + str(useQExcFeedforward / nS) + ' * nS')
+        if self.p['poissonInputsCorrelated']:
+            feedforwardSynapsesWeak.connect(p=self.p['propConnectFeedforwardProjection'])
+        else:
+            feedforwardSynapsesWeak.connect('i==j')
+
+        synapsesExc = Synapses(
+            source=unitsExc,
+            target=units,
+            on_pre='ge_post += ' + str(useQExc / nS) + ' * nS',
+        )
+        synapsesExc.connect('i!=j', p=self.p['propConnect'])
+
+        synapsesInh = Synapses(
+            source=unitsInh,
+            target=units,
+            on_pre='gi_post += ' + str(useQInh / nS) + ' * nS',
+        )
+        synapsesInh.connect('i!=j', p=self.p['propConnect'])
+
+        spikeMonExc = SpikeMonitor(unitsExc[:self.p['nExcSpikemon']])
+        spikeMonInh = SpikeMonitor(unitsInh[:self.p['nInhSpikemon']])
+
+        stateMonExc = StateMonitor(unitsExc, self.p['recordStateVariables'],
+                                   record=list(range(self.p['nRecordStateExc'])))
+        stateMonInh = StateMonitor(unitsInh, self.p['recordStateVariables'],
+                                   record=list(range(self.p['nRecordStateInh'])))
+
+        # ALL units, spike generators, synapses, and monitors MUST BE INCLUDED HERE
+        N = Network(units, synapsesExc, synapsesInh, spikeMonExc, spikeMonInh, stateMonExc, stateMonInh,
+                    inputGroupWeak, feedforwardSynapsesWeak)
+
+        self.N = N
+        self.spikeMonExc = spikeMonExc
+        self.spikeMonInh = spikeMonInh
+        self.stateMonExc = stateMonExc
+        self.stateMonInh = stateMonInh
+
+    def run(self):
+
+        vThresh = self.p['vThresh']
+        Cm = self.p['membraneCapacitance']
+        gl = self.p['gLeak']
+        tau_w = self.p['adaptTau']
+        Ee = self.p['eExcSyn']
+        Ei = self.p['eInhSyn']
+        tau_e = self.p['tauSynExc']
+        tau_i = self.p['tauSynInh']
+        Qe = self.p['qExc']
+        Qi = self.p['qInh']
+
+        self.N.run(self.p['duration'],
+                   report=self.p['reportType'],
+                   report_period=self.p['reportPeriod'],
+                   profile=self.p['doProfile']
+                   )
+
+    def save_results(self):
+        useDType = np.single
+
+        spikeMonExcT = np.array(self.spikeMonExc.t, dtype=useDType)
+        spikeMonExcI = np.array(self.spikeMonExc.i, dtype=useDType)
+        spikeMonInhT = np.array(self.spikeMonInh.t, dtype=useDType)
+        spikeMonInhI = np.array(self.spikeMonInh.i, dtype=useDType)
+        stateMonExcV = np.array(self.stateMonExc.v / mV, dtype=useDType)
+        stateMonInhV = np.array(self.stateMonInh.v / mV, dtype=useDType)
+
+        savePath = os.path.join(self.p['saveFolder'],
+                                self.saveName + '_results.npz')
+
+        np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
+                 spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV)
+
+    def save_params(self):
+        savePath = os.path.join(self.p['saveFolder'],
+                                self.saveName + '_params.pkl')
+        with open(savePath, 'wb') as f:
+            dill.dump(self.p, f)
+
+

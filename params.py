@@ -3,6 +3,8 @@ from brian2 import *
 paramsJercog = {
     # save / figs
     'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
+    'simName': 'classicJercog',
+    'saveWithDate': True,
     'saveFigs': True,
     'saveType': '.png',
 
@@ -72,3 +74,70 @@ paramsJercog['nInh'] = int(paramsJercog['propInh'] * paramsJercog['nUnits'])
 paramsJercog['nExc'] = paramsJercog['nUnits'] - paramsJercog['nInh']
 paramsJercog['nExcSpikemon'] = int(paramsJercog['nExc'] * paramsJercog['propSpikemon'])
 paramsJercog['nInhSpikemon'] = int(paramsJercog['nInh'] * paramsJercog['propSpikemon'])
+
+paramsDestexhe = {
+    # save / figs?
+    'saveFolder': 'C:/Users/mikejseay/Dropbox/UCLA/courses/covid-era-modeling/figs/',
+    'simName': 'classicJercog',
+    'saveWithDate': True,
+    'saveFigs': True,
+    'saveType': '.png',
+
+    # global sim params
+    'dt': 0.05 * ms,
+    'duration': 10 * second,
+    'updateMethod': 'euler',
+    'reportType': 'stdout',
+    'reportPeriod': 1 * second,
+    'doProfile': True,
+
+    # recording parameters
+    'propSpikemon': 1,
+    'recordStateVariables': ['v', 'w', 'ge', 'gi'],
+    'nRecordStateExc': 1,
+    'nRecordStateInh': 1,
+
+    # network params
+    'nUnits': 1e4,  # ***
+    'propInh': 0.2,
+    'propConnect': 0.05,  # ***
+    #     'propKicked': 0.1,
+    #     'propPoissonInputs': 0.05,
+    'poissonInputRate': 0.315 * Hz,  # ***
+    'poissonInputWeightMultiplier': 2,  # ***
+
+    # external inputs
+    'kickMode': 'fixed',  # fixed or Poisson
+    'kickTau': 0.5 * ms,
+    'kickDur': 2 * ms,
+    'kickLambda': 0.4 * second,
+    'kickTimes': [0.1, 0.8] * second,
+    'kickSizes': [1, 1],
+    'kickAmplitudeExc': 1.5 * nA,
+    'kickAmplitudeInh': 1.5 * nA,
+
+    # unit params
+    'membraneCapacitance': 200 * pF,  # 150 or 200
+    'gLeak': 10 * nS,
+    'eLeakExc': -63 * mV,  # -65 or -63
+    'eLeakInh': -65 * mV,
+    'vThresh': -50 * mV,
+    'deltaVExc': 2 * mV,
+    'deltaVInh': 0.5 * mV,
+    'aExc': 0 * nS,  # 0 or 4 * ns
+    'aInh': 0 * nS,
+    'bExc': 40 * pA,  # 20-60 pA
+    'bInh': 0 * pA,
+    'adaptTau': 500 * ms,
+    'refractoryPeriod': 5 * ms,
+
+    # synaptic params
+    'qExtExc': 0.6 * uS,
+    'qExc': 0.6 * uS,  # *** # 1.5 * nS * 1e4 * (1 - .2) * 0.05,
+    'qInh': 0.5 * uS,  # *** # 5 * nS * 1e4 * .2 * 0.05,
+    'tauSynExc': 5 * ms,
+    'tauSynInh': 5 * ms,
+    'eExcSyn': 0 * mV,
+    'eInhSyn': -80 * mV,
+
+}

@@ -106,8 +106,9 @@ class Results(object):
             print('you messed up')
             return
 
-        ax.axhline(self.p['vThresh' + unitType] / mV, color=useColor, linestyle=':')  # Threshold
+        useThresh = self.p['vThresh' + unitType] / mV
+        ax.axhline(useThresh, color=useColor, linestyle=':')  # Threshold
         ax.axhline(self.p['eLeak' + unitType] / mV, color=useColor, linestyle='--')  # Resting
         ax.plot(stateMonT, voltageSeries, color=useColor, lw=.3)
-        ax.vlines(spikeMonT[spikeMonI == useStateInd], 20, 60, color=useColor, lw=.3)
+        ax.vlines(spikeMonT[spikeMonI == useStateInd], useThresh, useThresh + 40, color=useColor, lw=.3)
         ax.set(xlim=(0., self.p['duration'] / second), ylim=yLims, ylabel='mV')

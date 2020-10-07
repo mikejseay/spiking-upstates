@@ -5,6 +5,7 @@ from network import JercogNetwork
 
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['simName'] = 'classicJercog'
+p['saveWithDate'] = True
 
 defaultclock.dt = p['dt']
 
