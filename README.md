@@ -19,5 +19,5 @@
 - Set the load folder to the same folder as the save folder above.
 - Set the targetSim to analyze by copying the prefix before '_params" and '_results'.
 - Run analyze.py.
-- Go to "Run --> Edit Configurations" and for analyze.py, check "Run with Python console." (Only needs to be one once.)
+- Go to "Run --> Edit Configurations" and for analyze.py, check "Run with Python console." (Only needs to be done once.)
 - Run analyze.py again.

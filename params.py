@@ -91,7 +91,7 @@ paramsDestexhe = {
 
     # recording parameters
     'propSpikemon': 1,
-    'recordStateVariables': ['v', 'w', 'ge', 'gi'],
+    'recordStateVariables': ['v', ],  # ['v', 'w', 'ge', 'gi'],
     'nRecordStateExc': 1,
     'nRecordStateInh': 1,
 
@@ -99,7 +99,7 @@ paramsDestexhe = {
     'nUnits': 1e4,  # ***
     'propInh': 0.2,
     'propConnect': 0.05,  # ***
-    #     'propKicked': 0.1,
+    'propKicked': 0.1,
     #     'propPoissonInputs': 0.05,
     'poissonInputRate': 0.315 * Hz,  # ***
     'poissonInputWeightMultiplier': 2,  # ***
@@ -109,6 +109,8 @@ paramsDestexhe = {
     'kickTau': 0.5 * ms,
     'kickDur': 2 * ms,
     'kickLambda': 0.4 * second,
+    'kickMinimumISI': 1 * second,
+    'kickMaximumISI': 10 * second,
     'kickTimes': [0.1, 0.8] * second,
     'kickSizes': [1, 1],
     'kickAmplitudeExc': 1.5 * nA,
@@ -119,7 +121,7 @@ paramsDestexhe = {
     'gLeak': 10 * nS,
     'eLeakExc': -63 * mV,  # -65 or -63
     'eLeakInh': -65 * mV,
-    'vThresh': -50 * mV,
+    'vThresh': -50 * mV,  # default is 50!!
     'deltaVExc': 2 * mV,
     'deltaVInh': 0.5 * mV,
     'aExc': 0 * nS,  # 0 or 4 * ns
@@ -135,6 +137,10 @@ paramsDestexhe = {
     'qInh': 0.5 * uS,  # *** # 5 * nS * 1e4 * .2 * 0.05,
     'tauSynExc': 5 * ms,
     'tauSynInh': 5 * ms,
+    # make NMDA channels!
+    # a gated conductance
+    # time constant is much higher (e.g. 50 ms)
+    # 50% mark of sigmoid is maybe 50 mV
     'eExcSyn': 0 * mV,
     'eInhSyn': -80 * mV,
 

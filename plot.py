@@ -5,8 +5,10 @@ def spike_raster(params, spikeMonExcT, spikeMonInhT, spikeMonExcI, spikeMonInhI)
     fig1 = figure(num=1, figsize=(18, 10))
     clf()
     fig1, ax = plt.subplots(num=1)
-    ax.scatter(spikeMonExcT / ms, spikeMonExcI, c='g', s=1)
-    ax.scatter(spikeMonInhT / ms, params['nExcSpikemon'] + spikeMonInhI, c='r', s=1)
+    ax.scatter(spikeMonExcT / ms, spikeMonExcI, c='g', s=1,
+               marker='.', linewidths=0)
+    ax.scatter(spikeMonInhT / ms, params['nExcSpikemon'] + spikeMonInhI, c='r', s=1,
+               marker='.', linewidths=0)
     ax.set(xlim=(0., params['duration'] / ms), ylim=(0, params['nUnits']), ylabel='neuron index')
     return fig1
 

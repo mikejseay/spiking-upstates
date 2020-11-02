@@ -9,25 +9,34 @@ defaultclock.dt = p['dt']
 
 # determine 'fan in' empirically
 
-p['simName'] = 'classicJercogFanIn'
+# p['simName'] = 'jercogFan'
 
-JN = JercogNetwork(p)
+# p['propConnect'] = 0.05
+# p['simName'] = 'jercogFan0p05Conn'
+
+p['propConnect'] = 1
+p['simName'] = 'jercogFanFullConn250Units'
+p['nUnits'] = 250
 
 # here we override the # of "incoming" exc/inh synapses per unit...
 # because the initialize_units defaultly sets the weights based on this number
 # but we want to initialize only 2 units (to test)
-JN.p['nIncInh'] = int(JN.p['propInh'] * JN.p['nUnits'])
-JN.p['nIncExc'] = JN.p['nUnits'] - JN.p['nIncInh']
+# these represent the number of incoming excitatory / inhibtory synapses per unit
+p['nIncInh'] = int(p['propConnect'] * p['propInh'] * p['nUnits'])
+p['nIncExc'] = int(p['propConnect'] * (1 - p['propInh']) * p['nUnits'])
 
 # we make one Exc/Inh unit each and make them not adapt
-JN.p['nUnits'] = 2
-JN.p['propInh'] = 0.5
-JN.p['adaptStrengthExc'] = 0 * JN.p['adaptStrengthExc']
-JN.p['adaptStrengthInh'] = 0 * JN.p['adaptStrengthInh']
+# note i do this after the above to not mess it up
+p['nUnits'] = 2
+p['propInh'] = 0.5
+p['adaptStrengthExc'] = 0 * p['adaptStrengthExc']
+p['adaptStrengthInh'] = 0 * p['adaptStrengthInh']
 
+JN = JercogNetwork(p)
 JN.initialize_network()
 JN.initialize_units()
 
-JN.determine_fan_in(minUnits=540, maxUnits=561, unitSpacing=1, timeSpacing=250 * ms)
+# JN.determine_fan_in(minUnits=540, maxUnits=560, unitSpacing=1, timeSpacing=250 * ms)  # *** perfect
+JN.determine_fan_in(minUnits=20, maxUnits=30, unitSpacing=1, timeSpacing=250 * ms)  # *** perfect
 JN.save_results()
 JN.save_params()
