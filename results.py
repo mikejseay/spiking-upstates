@@ -391,3 +391,78 @@ class Results(object):
         ax.legend()
         ax.set(xlabel='Time (s)', ylabel='Firing Rate (Hz)')
 
+
+class ResultsEphys(object):
+
+    # inputs should be able to be gained only from params and results objects (arrays)
+
+    def __init__(self, resultsIdentifier, loadFolder):
+        self.rID = resultsIdentifier
+        self.loadFolder = loadFolder
+        self.load_params()
+        self.load_results()
+
+    def load_params(self):
+        loadPath = os.path.join(self.loadFolder, self.rID + '_params.pkl')
+        with open(loadPath, 'rb') as f:
+            params = dill.load(f)
+        self.p = params
+
+    def load_results(self):
+        loadPath = os.path.join(self.loadFolder, self.rID + '_results.npz')
+        npzObject = np.load(loadPath, allow_pickle=True)
+        self.npzObject = npzObject
+
+        self.spikeMonExcT = npzObject['spikeMonExcT']
+        self.spikeMonExcI = npzObject['spikeMonExcI']
+        self.spikeMonExcC = npzObject['spikeMonExcC']
+        self.spikeMonInhT = npzObject['spikeMonInhT']
+        self.spikeMonInhI = npzObject['spikeMonInhI']
+        self.spikeMonInhC = npzObject['spikeMonInhC']
+        self.stateMonExcV = npzObject['stateMonExcV']
+        self.stateMonInhV = npzObject['stateMonInhV']
+        self.spikeTrainsExc = npzObject['spikeTrainsExc'][()]
+        self.spikeTrainsInh = npzObject['spikeTrainsInh'][()]
+
+    def calculate_and_plot(self, f, ax):
+        I_ext_range = self.p['iExtRange']
+        ExcData = self.spikeMonExcC / self.p['duration']
+        InhData = self.spikeMonInhC / self.p['duration']
+
+        I_index_for_ISI = int(len(I_ext_range) * .9) - 1
+
+        # reconstruct time
+        stateMonT = np.arange(0, float(self.p['duration']), float(self.p['dt']))
+
+        # might be useful...
+        # ax.axhline(useThresh, color=useColor, linestyle=':')  # Threshold
+        # ax.axhline(self.p['eLeak' + unitType] / mV, color=useColor, linestyle='--')  # Resting
+
+        useThresh = self.p['vThreshExc'] / mV
+        ax[0, 0].plot(stateMonT, self.stateMonExcV[I_index_for_ISI, :], color='g')
+        ax[0, 0].vlines(self.spikeTrainsExc[I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
+        ax[0, 0].set(xlim=(0., self.p['duration'] / second), ylabel='mV', xlabel='Time (s)')
+
+        useThresh = self.p['vThreshInh'] / mV
+        ax[0, 1].plot(stateMonT, self.stateMonInhV[I_index_for_ISI, :], color='g')
+        ax[0, 1].vlines(self.spikeTrainsInh[I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
+        ax[0, 1].set(xlim=(0., self.p['duration'] / second), ylabel='mV', xlabel='Time (s)')
+
+        ax[1, 0].plot(I_ext_range * 1e9, ExcData, label='Exc')
+        ax[1, 0].plot(I_ext_range * 1e9, InhData, label='Inh')
+        ax[1, 0].axvline(float(I_ext_range[I_index_for_ISI]) * 1e9,
+                         label='displayed value', color='grey', ls='--')
+        ax[1, 0].set_xlabel('Current (nA)')
+        ax[1, 0].set_ylabel('Firing Rate (Hz)')
+        ax[1, 0].legend()
+
+        ISIExc = diff(self.spikeTrainsExc[I_index_for_ISI])
+        ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
+        ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc')
+        ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh')
+        ax[1, 1].set_xlabel('ISI number')
+        ax[1, 1].set_ylabel('ISI (ms)')
+        ax[1, 1].legend()
+
+        f.tight_layout()
+        f.subplots_adjust(top=.9)

@@ -12,7 +12,7 @@ loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/'
 
 # targetSim = 'jercog0p05Conn_2020-10-27-15-24'
 # targetSim = 'destexheUpCrit0p05Conn5e4units_2020-11-01-23-17'
-targetSim = 'destexhe0p05Conn5e4units_2020-11-02-11-06'
+targetSim = 'destexhe0p05Conn5e4units_2020-11-03-09-35'
 
 R = Results(targetSim, loadFolder)
 R.calculate_spike_rate()

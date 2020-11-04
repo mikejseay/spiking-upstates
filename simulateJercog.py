@@ -10,16 +10,16 @@ p['duration'] = 10 * second
 p['refractoryPeriod'] = 0 * ms  # 0 by default, 1 works, 2 causes explosion
 # on pConn = 0.05, 3 also works but no higher
 
-# p['propConnect'] = 1
-# p['simName'] = 'jercogFullConn'
+p['propConnect'] = 1
+p['simName'] = 'jercogFullConn'
 
-p['propConnect'] = 0.05
-p['simName'] = 'jercog0p05Conn'
-p['propKicked'] = 0.1
-p['onlyKickExc'] = False
-p['adaptStrengthExc'] = 15 * mV
-p['jEE'] = p['jEE'] * 0.75
-p['jIE'] = p['jIE'] * 0.75
+# p['propConnect'] = 0.05
+# p['simName'] = 'jercog0p05Conn'
+# p['propKicked'] = 0.1
+# p['onlyKickExc'] = False
+# p['adaptStrengthExc'] = 15 * mV
+# p['jEE'] = p['jEE'] * 0.75
+# p['jIE'] = p['jIE'] * 0.75
 KICK_TYPE = 'kick'  # kick or spike
 
 # THESE SETTINGS WORK FOR PCONN = 0.05 WITH REASONABLE FIRING RATE!!!

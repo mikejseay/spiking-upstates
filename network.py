@@ -185,17 +185,6 @@ class JercogNetwork(object):
         unitsInh.jE = self.p['vTauInh'] * self.p['jIE'] / self.p['nIncExc'] / ms
         unitsInh.jI = self.p['vTauInh'] * self.p['jII'] / self.p['nIncInh'] / ms
 
-        # do more carefully
-        # scale by number of incoming connections?
-        # in firing rate model wEE = # of incoming synapses * weight
-        # if self.p['scaleWeightsByPConn']:
-        #     unitsExc.jE /= self.p['propConnect']
-        #     unitsExc.jI /= self.p['propConnect']
-        #     unitsInh.jE /= self.p['propConnect']
-        #     unitsInh.jI /= self.p['propConnect']
-
-        # unitsExc.v = (self.p['vResetExc'] +
-        #               (self.p['vThreshExc'] - self.p['vResetExc']) * rand(self.p['nExc']))
         unitsExc.v = self.p['eLeakExc']
         unitsExc.tau = self.p['vTauExc']
         unitsExc.vReset = self.p['vResetExc']
@@ -203,9 +192,6 @@ class JercogNetwork(object):
         unitsExc.betaAdapt = self.p['adaptStrengthExc'] * self.p['vTauExc']
         unitsExc.eLeak = self.p['eLeakExc']
 
-        # unitsInh.v = (self.p['vResetInh'] +
-        #               (self.p['vThreshInh'] - self.p['vResetInh']) *
-        #               rand(self.p['nInh']))
         unitsExc.v = self.p['eLeakInh']
         unitsInh.tau = self.p['vTauInh']
         unitsInh.vReset = self.p['vResetInh']
@@ -483,7 +469,6 @@ class JercogNetwork(object):
         winsound.Beep(freq, duration)
 
         # win32api.MessageBox(0, 'hello', 'title')
-
 
     def determine_fan_in(self, minUnits=21, maxUnits=40, unitSpacing=1, timeSpacing=250 * ms):
 
@@ -1162,3 +1147,307 @@ class DestexheNetwork(object):
         self.N.add(Uppers, feedforwardUpExc)
 
         self.p['duration'] = (array(times).max() * second + timeSpacing)
+
+
+class JercogEphysNetwork(object):
+
+    def __init__(self, params):
+        self.p = params
+        self.p['initTime'] = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        saveName = self.p['simName']
+        if self.p['saveWithDate']:
+            saveName += '_' + self.p['initTime']
+        self.saveName = saveName
+
+    def initialize_network(self):
+        start_scope()
+        self.N = Network()
+
+    def initialize_units(self):
+        unitModel = '''
+        dv/dt = (gl * (eLeak - v) - iAdapt + iExt) / Cm: volt
+        diAdapt/dt = -iAdapt / tauAdapt : amp
+        
+        eLeak : volt
+        vReset : volt
+        vThresh : volt
+        betaAdapt : amp * second
+        iExt : amp
+        gl : siemens
+        Cm : farad
+        '''
+
+        resetCode = '''
+        v = vReset
+        iAdapt += betaAdapt / tauAdapt 
+        '''
+
+        threshCode = 'v >= vThresh'
+
+        numIValues = len(self.p['iExtRange'])
+
+        units = NeuronGroup(
+            N=numIValues * 2,
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            # refractory=self.p['refractoryPeriod'],
+            dt=self.p['dt']
+        )
+
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = self.p['nUnits'] - self.p['nInh']
+        self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
+        self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
+
+        unitsExc = units[:numIValues]
+        unitsInh = units[numIValues:]
+
+        # just gonna comment this because it doesn't get used here but will be useful
+
+        # vTauExc = self.p['membraneCapacitanceExc'] / self.p['gLeakExc']
+        # vTauInh = self.p['membraneCapacitanceInh'] / self.p['gLeakInh']
+
+        # unitsExc.jE = vTauExc * self.p['jEE'] / self.p['nIncExc'] / ms
+        # unitsExc.jI = vTauExc * self.p['jEI'] / self.p['nIncInh'] / ms
+        # unitsInh.jE = vTauInh * self.p['jIE'] / self.p['nIncExc'] / ms
+        # unitsInh.jI = vTauInh * self.p['jII'] / self.p['nIncInh'] / ms
+
+        unitsExc.v = self.p['eLeakExc']
+        unitsExc.vReset = self.p['vResetExc']
+        unitsExc.vThresh = self.p['vThreshExc']
+        unitsExc.betaAdapt = self.p['betaAdaptExc']
+        unitsExc.eLeak = self.p['eLeakExc']
+        unitsExc.Cm = self.p['membraneCapacitanceExc']
+        unitsExc.gl = self.p['gLeakExc']
+        unitsExc.iExt = self.p['iExtRange']
+
+        unitsInh.v = self.p['eLeakInh']
+        unitsInh.vReset = self.p['vResetInh']
+        unitsInh.vThresh = self.p['vThreshInh']
+        unitsInh.betaAdapt = self.p['betaAdaptInh']
+        unitsInh.eLeak = self.p['eLeakInh']
+        unitsInh.Cm = self.p['membraneCapacitanceInh']
+        unitsInh.gl = self.p['gLeakInh']
+        unitsInh.iExt = self.p['iExtRange']
+
+        self.units = units
+        self.unitsExc = unitsExc
+        self.unitsInh = unitsInh
+        self.N.add(units)
+
+    def create_monitors(self):
+        spikeMonExc = SpikeMonitor(self.unitsExc)
+        spikeMonInh = SpikeMonitor(self.unitsInh)
+
+        # record voltage for all units
+        stateMonExc = StateMonitor(self.unitsExc, self.p['recordStateVariables'], record=True)
+        stateMonInh = StateMonitor(self.unitsInh, self.p['recordStateVariables'], record=True)
+
+        self.spikeMonExc = spikeMonExc
+        self.spikeMonInh = spikeMonInh
+        self.stateMonExc = stateMonExc
+        self.stateMonInh = stateMonInh
+        self.N.add(spikeMonExc, spikeMonInh, stateMonExc, stateMonInh)
+
+    def build_classic(self):
+
+        self.initialize_network()
+        self.initialize_units()
+        self.create_monitors()
+
+    def run(self):
+
+        tauAdapt = self.p['adaptTau']
+
+        self.N.run(self.p['duration'],
+                   report=self.p['reportType'],
+                   report_period=self.p['reportPeriod'],
+                   profile=self.p['doProfile']
+                   )
+
+    def save_results(self):
+        useDType = np.single
+
+        spikeMonExcT = np.array(self.spikeMonExc.t, dtype=useDType)
+        spikeMonExcI = np.array(self.spikeMonExc.i, dtype=useDType)
+        spikeMonExcC = np.array(self.spikeMonExc.count, dtype=useDType)
+        spikeMonInhT = np.array(self.spikeMonInh.t, dtype=useDType)
+        spikeMonInhI = np.array(self.spikeMonInh.i, dtype=useDType)
+        spikeMonInhC = np.array(self.spikeMonInh.count, dtype=useDType)
+        stateMonExcV = np.array(self.stateMonExc.v / mV, dtype=useDType)
+        stateMonInhV = np.array(self.stateMonInh.v / mV, dtype=useDType)
+        spikeTrainsExc = np.array(self.spikeMonExc.spike_trains(), dtype=object)
+        spikeTrainsInh = np.array(self.spikeMonInh.spike_trains(), dtype=object)
+
+        savePath = os.path.join(self.p['saveFolder'],
+                                self.saveName + '_results.npz')
+
+        np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
+                 spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV,
+                 spikeMonExcC=spikeMonExcC, spikeMonInhC=spikeMonInhC,
+                 spikeTrainsExc=spikeTrainsExc, spikeTrainsInh=spikeTrainsInh)
+
+    def save_params(self):
+        savePath = os.path.join(self.p['saveFolder'],
+                                self.saveName + '_params.pkl')
+        with open(savePath, 'wb') as f:
+            dill.dump(self.p, f)
+
+
+class DestexheEphysNetwork(object):
+
+    def __init__(self, params):
+        self.p = params
+        self.p['initTime'] = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        saveName = self.p['simName']
+        if self.p['saveWithDate']:
+            saveName += '_' + self.p['initTime']
+        self.saveName = saveName
+
+    def initialize_network(self):
+        start_scope()
+        self.N = Network()
+
+    def initialize_units(self):
+        unitModel = '''
+        dv/dt = (gl * (El - v) + gl * delta * exp((v - vThresh) / delta) - w + iExt +
+                 ge * (Ee - v) + gi * (Ei - v)) / Cm: volt (unless refractory)
+        dw/dt = (a * (v - El) - w) / tau_w : amp
+        dge/dt = -ge / tau_e : siemens
+        dgi/dt = -gi / tau_i : siemens
+        El : volt
+        delta: volt
+        a : siemens
+        b : amp
+        vThresh : volt
+        Cm : farad
+        gl : siemens
+        vReset : volt
+        refractoryPeriod : second
+        iExt : amp
+        '''
+
+        resetCode = '''
+        v = vReset
+        w += b
+        '''
+
+        threshCode = 'v > vThresh + 5 * delta'
+        self.p['vTrueThreshExc'] = self.p['vThreshExc'] + 5 * self.p['deltaVExc']
+        self.p['vTrueThreshInh'] = self.p['vThreshInh'] + 5 * self.p['deltaVInh']
+
+        numIValues = len(self.p['iExtRange'])
+
+        units = NeuronGroup(
+            N=numIValues * 2,
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory='refractoryPeriod',
+            dt=self.p['dt']
+        )
+
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = int(self.p['nUnits'] - self.p['nInh'])
+        self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
+        self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
+
+        unitsExc = units[:numIValues]
+        unitsInh = units[numIValues:]
+
+        unitsExc.v = self.p['eLeakExc']
+        unitsExc.El = self.p['eLeakExc']
+        unitsExc.delta = self.p['deltaVExc']
+        unitsExc.a = self.p['aExc']
+        unitsExc.b = self.p['bExc']
+        unitsExc.vThresh = self.p['vThreshExc']
+        unitsExc.Cm = self.p['membraneCapacitanceExc']
+        unitsExc.gl = self.p['gLeakExc']
+        unitsExc.vReset = self.p['vResetExc']
+        unitsExc.refractoryPeriod = self.p['refractoryPeriodExc']
+        unitsExc.iExt = self.p['iExtRange']
+
+        unitsInh.v = self.p['eLeakInh']
+        unitsInh.El = self.p['eLeakInh']
+        unitsInh.delta = self.p['deltaVInh']
+        unitsInh.a = self.p['aInh']
+        unitsInh.b = self.p['bInh']
+        unitsInh.vThresh = self.p['vThreshInh']
+        unitsInh.Cm = self.p['membraneCapacitanceInh']
+        unitsInh.gl = self.p['gLeakInh']
+        unitsInh.vReset = self.p['vResetInh']
+        unitsInh.refractoryPeriod = self.p['refractoryPeriodInh']
+        unitsInh.iExt = self.p['iExtRange']
+
+        self.units = units
+        self.unitsExc = unitsExc
+        self.unitsInh = unitsInh
+        self.N.add(units)
+
+    def create_monitors(self):
+
+        spikeMonExc = SpikeMonitor(self.unitsExc)
+        spikeMonInh = SpikeMonitor(self.unitsInh)
+
+        # record voltage for all units
+        stateMonExc = StateMonitor(self.unitsExc, self.p['recordStateVariables'], record=True)
+        stateMonInh = StateMonitor(self.unitsInh, self.p['recordStateVariables'], record=True)
+
+        self.spikeMonExc = spikeMonExc
+        self.spikeMonInh = spikeMonInh
+        self.stateMonExc = stateMonExc
+        self.stateMonInh = stateMonInh
+        self.N.add(spikeMonExc, spikeMonInh, stateMonExc, stateMonInh)
+
+    def build_classic(self):
+
+        self.initialize_network()
+        self.initialize_units()
+        self.create_monitors()
+
+    def run(self):
+
+        tau_w = self.p['adaptTau']
+        Ee = self.p['eExcSyn']
+        Ei = self.p['eInhSyn']
+        tau_e = self.p['tauSynExc']
+        tau_i = self.p['tauSynInh']
+        Qe = self.p['qExc']
+        Qi = self.p['qInh']
+
+        self.N.run(self.p['duration'],
+                   report=self.p['reportType'],
+                   report_period=self.p['reportPeriod'],
+                   profile=self.p['doProfile']
+                   )
+
+    def save_results(self):
+        useDType = np.single
+
+        spikeMonExcT = np.array(self.spikeMonExc.t, dtype=useDType)
+        spikeMonExcI = np.array(self.spikeMonExc.i, dtype=useDType)
+        spikeMonExcC = np.array(self.spikeMonExc.count, dtype=useDType)
+        spikeMonInhT = np.array(self.spikeMonInh.t, dtype=useDType)
+        spikeMonInhI = np.array(self.spikeMonInh.i, dtype=useDType)
+        spikeMonInhC = np.array(self.spikeMonInh.count, dtype=useDType)
+        stateMonExcV = np.array(self.stateMonExc.v / mV, dtype=useDType)
+        stateMonInhV = np.array(self.stateMonInh.v / mV, dtype=useDType)
+        spikeTrainsExc = np.array(self.spikeMonExc.spike_trains(), dtype=object)
+        spikeTrainsInh = np.array(self.spikeMonInh.spike_trains(), dtype=object)
+
+        savePath = os.path.join(self.p['saveFolder'],
+                                self.saveName + '_results.npz')
+
+        np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
+                 spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV,
+                 spikeMonExcC=spikeMonExcC, spikeMonInhC=spikeMonInhC,
+                 spikeTrainsExc=spikeTrainsExc, spikeTrainsInh=spikeTrainsInh)
+
+    def save_params(self):
+        savePath = os.path.join(self.p['saveFolder'],
+                                self.saveName + '_params.pkl')
+        with open(savePath, 'wb') as f:
+            dill.dump(self.p, f)

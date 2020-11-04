@@ -6,7 +6,7 @@ from generate import generate_poisson_kicks_jercog
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
 
-p['duration'] = 10 * second
+p['duration'] = 100 * second
 p['dt'] = 0.1 * ms
 
 # p['propConnect'] = 0.05  # recurrent connection probability
@@ -38,7 +38,7 @@ p['dt'] = 0.1 * ms
 p['nUnits'] = 5e4
 p['simName'] = 'destexhe0p05Conn5e4units'
 
-p['bExc'] = 20 * pA  # adaptation param, decrease to get longer Up states 20-40ish
+p['bExc'] = 40 * pA  # adaptation param, decrease to get longer Up states 20-40ish
 p['deltaVExc'] = 2 * mV   # 3
 p['deltaVInh'] = 0.5 * mV
 # p['vThresh'] = -45 * mV  # default is 50!!
@@ -46,7 +46,7 @@ p['deltaVInh'] = 0.5 * mV
 p['qExc'] = 0.6 * uS  # will be divided by total # exc units and proportion of recurrent connectivity
 p['qInh'] = 0.5 * uS  # will be divided by total # inh units and proportion of recurrent connectivity
 
-APPLY_UNCORRELATED_INPUTS = False
+APPLY_UNCORRELATED_INPUTS = True
 APPLY_CORRELATED_INPUTS = False
 CORRELATED_INPUTS_TARGET_EXC = True
 APPLY_KICKS = True
@@ -61,8 +61,14 @@ p['nPoissonUncorrInputUnits'] = p['nUnits']
 
 p['nUncorrFeedforwardSynapsesPerUnit'] = int(p['propConnectFeedforwardProjectionUncorr'] *
                                         1e4 * (1 - p['propInh']))
-p['poissonUncorrInputRate'] = 0.315 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
-p['qExcFeedforwardUncorr'] = 0.6 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
+# p['poissonUncorrInputRate'] = 0.315 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
+# p['qExcFeedforwardUncorr'] = 0.6 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
+
+p['poissonUncorrInputRate'] = 0.16 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
+p['qExcFeedforwardUncorr'] = 0.3 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
+
+
+# try halving the rate and amplitude of uncorrelated, while halving the amplitude of the correlated
 
 # p['qExcFeedforwardUncorr'] = 0.6 * uS / 1e4
 
@@ -70,20 +76,22 @@ p['qExcFeedforwardUncorr'] = 0.6 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
 p['propConnectFeedforwardProjectionCorr'] = 0.05  # proportion of feedforward projections that are connected
 p['poissonCorrInputRate'] = 0.15 * Hz
 p['nPoissonCorrInputUnits'] = 40
-p['qExcFeedforwardCorr'] = 15 * nS
+# p['qExcFeedforwardCorr'] = 15 * nS
+p['qExcFeedforwardCorr'] = 12 * nS
 
 p['poissonDriveType'] = 'constant'  # ramp, constant, fullRamp
 p['poissonInputRateDivider'] = 1  # the factor by which to divide the rate
 p['poissonInputWeightMultiplier'] = 1  # the factor by which to multiply the feedforward weight
 
 # kicks
-p['propKicked'] = 0.02
-p['onlyKickExc'] = True
-kickTimes, kickSizes = generate_poisson_kicks_jercog(p['kickLambda'], p['duration'],
-                                                     p['kickMinimumISI'], p['kickMaximumISI'])
-print(kickTimes)
-p['kickTimes'] = kickTimes
-p['kickSizes'] = kickSizes
+if APPLY_KICKS:
+    p['propKicked'] = 0.02
+    p['onlyKickExc'] = True
+    kickTimes, kickSizes = generate_poisson_kicks_jercog(p['kickLambda'], p['duration'],
+                                                         p['kickMinimumISI'], p['kickMaximumISI'])
+    print(kickTimes)
+    p['kickTimes'] = kickTimes
+    p['kickSizes'] = kickSizes
 
 # synaptic weights
 # will be divided by total # input units & proportion of feedfoward projection,
