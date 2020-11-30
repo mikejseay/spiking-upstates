@@ -5,10 +5,43 @@ import os
 from functions import find_upstates
 from stats import regress_linear
 from scipy.stats import mode
+from generate import convert_indices_times_to_dict
 
 
 def bins_to_centers(bins):
     return (bins[:-1] + bins[1:]) / 2
+
+
+def convert_sNMDA_to_current_exc_Jercog(JN, ind):
+    v = JN.stateMonExc.v[ind, :]
+    s_NMDA_tot = JN.stateMonExc.s_NMDA_tot[ind, :]
+    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
+    NMDACurrent = JN.unitsExc.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
+    return hardGatePart * NMDACurrent
+
+
+def convert_sNMDA_to_current_inh_Jercog(JN, ind):
+    v = JN.stateMonInh.v[ind, :]
+    s_NMDA_tot = JN.stateMonInh.s_NMDA_tot[ind, :]
+    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
+    NMDACurrent = JN.unitsInh.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
+    return hardGatePart * NMDACurrent
+
+
+def convert_sNMDA_to_current_exc_Destexhe(DN, ind):
+    v = DN.stateMonExc.v[ind, :]
+    s_NMDA_tot = DN.stateMonExc.s_NMDA_tot[ind, :]
+    hardGatePart = np.round(v > DN.p['vStepSigmoid'])
+    NMDACurrent = DN.unitsExc.ge_NMDA[0] / (1 + exp(-DN.p['kSigmoid'] * (v - DN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
+    return hardGatePart * NMDACurrent
+
+
+def convert_sNMDA_to_current_inh_Destexhe(DN, ind):
+    v = DN.stateMonInh.v[ind, :]
+    s_NMDA_tot = DN.stateMonInh.s_NMDA_tot[ind, :]
+    hardGatePart = np.round(v > DN.p['vStepSigmoid'])
+    NMDACurrent = DN.unitsInh.ge_NMDA[0] / (1 + exp(-DN.p['kSigmoid'] * (v - DN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
+    return hardGatePart * NMDACurrent
 
 
 class Results(object):
@@ -20,6 +53,7 @@ class Results(object):
         self.loadFolder = loadFolder
         self.load_params()
         self.load_results()
+        self.timeArray = np.arange(0, float(self.p['duration']), float(self.p['dt']))
 
     def load_params(self):
         loadPath = os.path.join(self.loadFolder, self.rID + '_params.pkl')
@@ -38,6 +72,10 @@ class Results(object):
         self.spikeMonInhI = npzObject['spikeMonInhI']
         self.stateMonExcV = npzObject['stateMonExcV']
         self.stateMonInhV = npzObject['stateMonInhV']
+
+        if 'poissonCorrInputIndices' in npzObject:
+            self.poissonCorrInputIndices = npzObject['poissonCorrInputIndices']
+            self.poissonCorrInputTimes = npzObject['poissonCorrInputTimes']
 
     def calculate_spike_rate(self):
         dtHist = float(5 * ms)
@@ -309,7 +347,7 @@ class Results(object):
         if yScaleLog:
             plt.yscale('log')
 
-    def plot_voltage_detail(self, ax, unitType='Exc', useStateInd=0):
+    def plot_voltage_detail(self, ax, unitType='Exc', useStateInd=0, plotKicks=False, **kwargs):
         # reconstruct the time vector
         stateMonT = np.arange(0, float(self.p['duration']), float(self.p['dt']))
         yLims = (self.p['eLeakExc'] / mV - 15, self.p['eLeakExc'] / mV + 70)
@@ -331,8 +369,32 @@ class Results(object):
         useThresh = self.p['vThresh' + unitType] / mV
         # ax.axhline(useThresh, color=useColor, linestyle=':')  # Threshold
         # ax.axhline(self.p['eLeak' + unitType] / mV, color=useColor, linestyle='--')  # Resting
-        ax.plot(stateMonT, voltageSeries, color=useColor, lw=.3)
-        ax.vlines(spikeMonT[spikeMonI == useStateInd], useThresh, useThresh + 40, color=useColor, lw=.3)
+        ax.plot(stateMonT, voltageSeries, color=useColor, lw=.3, **kwargs)
+
+        if plotKicks and 'kickTimes' in self.p:
+            kickTimes = array(self.p['kickTimes'])
+            ax.scatter(kickTimes, np.ones_like(kickTimes) * self.p['eLeakExc'] / mV - 10)
+
+        if hasattr(self, 'poissonCorrInputIndices'):
+            # spikeDict = convert_indices_times_to_dict(self.poissonCorrInputIndices, self.poissonCorrInputTimes)
+            yOffset = self.p['eLeakExc'] / mV - 10
+            yDist = -20
+            maxInd = self.poissonCorrInputIndices.max()
+            # for unitInd, spikeTimeArray in spikeDict.items():
+            ax.scatter(x=self.poissonCorrInputTimes,
+                       y=yOffset + yDist * self.poissonCorrInputIndices / maxInd,
+                       c=self.poissonCorrInputIndices,
+                       cmap='viridis',
+                       s=10, marker='.',  # this makes them quite small!
+                       )
+            yLims = (self.p['eLeakExc'] / mV - 15 + yDist, self.p['eLeakExc'] / mV + 70)
+
+        if 'indsRecordStateExc' in self.p:
+            translatedStateInd = self.p['indsRecordStateExc'][useStateInd]
+        else:
+            translatedStateInd = useStateInd
+        ax.vlines(spikeMonT[spikeMonI == translatedStateInd], useThresh, useThresh + 40, color=useColor, lw=.3,
+                  **kwargs)
         ax.set(xlim=(0., self.p['duration'] / second), ylim=yLims, ylabel='mV')
 
     def plot_updur_lines(self, ax):

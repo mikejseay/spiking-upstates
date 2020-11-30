@@ -1,9 +1,18 @@
-from params import paramsJercogEphysOrig, paramsJercogEphysBuono
+from params import paramsJercog, paramsJercogEphysOrig, paramsJercogEphysBuono
 from network import JercogEphysNetwork
 from results import ResultsEphys
 import matplotlib.pyplot as plt
+import numpy as np
+from brian2 import nA, ms
 
-DEN = JercogEphysNetwork(paramsJercogEphysBuono)
+useParams = paramsJercog.copy()
+
+if 'iExtRange' not in useParams:
+    useParams['propInh'] = 0.5
+    useParams['duration'] = 250 * ms
+    useParams['iExtRange'] = np.linspace(0, .3, 31) * nA
+
+DEN = JercogEphysNetwork(useParams)
 DEN.build_classic()
 DEN.run()
 DEN.save_results()

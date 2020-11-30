@@ -1,7 +1,23 @@
 from brian2 import *
 from params import paramsJercog as p
+from params import paramsJercogEphysBuono
 from generate import generate_poisson_kicks_jercog, convert_kicks_to_current_series
 from network import JercogNetwork
+
+USE_NEW_EPHYS_PARAMS = True
+KICKS_POISSON = False
+
+# remove protected keys from the dict whose params are being imported
+ephysParams = paramsJercogEphysBuono.copy()
+protectedKeys = ('nUnits', 'propInh', 'duration')
+for pK in protectedKeys:
+    del ephysParams[pK]
+
+if USE_NEW_EPHYS_PARAMS:
+    p.update(ephysParams)
+
+p['jEE'] = p['jEE'] * 0.6
+p['jIE'] = p['jIE'] * 0.6
 
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 
@@ -13,6 +29,7 @@ p['refractoryPeriod'] = 0 * ms  # 0 by default, 1 works, 2 causes explosion
 p['propConnect'] = 1
 p['simName'] = 'jercogFullConn'
 
+
 # p['propConnect'] = 0.05
 # p['simName'] = 'jercog0p05Conn'
 # p['propKicked'] = 0.1
@@ -20,6 +37,7 @@ p['simName'] = 'jercogFullConn'
 # p['adaptStrengthExc'] = 15 * mV
 # p['jEE'] = p['jEE'] * 0.75
 # p['jIE'] = p['jIE'] * 0.75
+p['onlyKickExc'] = False
 KICK_TYPE = 'kick'  # kick or spike
 
 # THESE SETTINGS WORK FOR PCONN = 0.05 WITH REASONABLE FIRING RATE!!!
@@ -58,9 +76,14 @@ p['nIncExc'] = int(p['propConnect'] * (1 - p['propInh']) * p['nUnits'])
 p['nIncInh'] = int(p['propConnect'] * p['propInh'] * p['nUnits'])
 
 defaultclock.dt = p['dt']
-
-kickTimes, kickSizes = generate_poisson_kicks_jercog(p['kickLambda'], p['duration'],
+if KICKS_POISSON:
+    kickTimes, kickSizes = generate_poisson_kicks_jercog(p['kickLambda'], p['duration'],
                                                      p['kickMinimumISI'], p['kickMaximumISI'])
+else:
+    kickTimes = [100 * ms, 1100 * ms]
+    kickSizes = [1, 0.5]
+    p['duration'] = 1200 * ms
+
 print(kickTimes)
 p['kickTimes'] = kickTimes
 p['kickSizes'] = kickSizes

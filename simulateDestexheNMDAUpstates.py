@@ -1,6 +1,19 @@
 from brian2 import *
 from params import paramsDestexhe as p
+from params import paramsDestexheEphysBuono
 from network import DestexheNetwork
+
+USE_NEW_EPHYS_PARAMS = True
+KICKS_POISSON = False
+
+# remove protected keys from the dict whose params are being imported
+ephysParams = paramsDestexheEphysBuono.copy()
+protectedKeys = ('nUnits', 'propInh', 'duration')
+for pK in protectedKeys:
+    del ephysParams[pK]
+
+if USE_NEW_EPHYS_PARAMS:
+    p.update(ephysParams)
 
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
@@ -9,14 +22,9 @@ p['duration'] = 5 * second
 p['dt'] = 0.1 * ms
 
 p['propConnect'] = 0.05  # recurrent connection probability
-p['simName'] = 'classicDestexheNMDA0p05Conn'
+p['simName'] = 'destexheNMDA'
 
-p['bExc'] = 40 * pA  # adaptation param, decrease to get longer Up states 20-40ish
-p['deltaVExc'] = 2 * mV   # 3
-p['deltaVInh'] = 0.5 * mV
-# p['vThresh'] = -45 * mV  # default is 50!!
-
-APPLY_UNCORRELATED_INPUTS = False
+APPLY_UNCORRELATED_INPUTS = True
 APPLY_CORRELATED_INPUTS = True
 CORRELATED_INPUTS_TARGET_EXC = True
 

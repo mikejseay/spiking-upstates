@@ -1,6 +1,8 @@
 from brian2 import *
 from params import paramsDestexhe as p
 from network import DestexheNetwork
+from results import Results
+import matplotlib.pyplot as plt
 
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
@@ -29,6 +31,12 @@ DN = DestexheNetwork(p)
 DN.initialize_network()
 DN.initialize_units()
 
-DN.determine_fan_in(minUnits=234, maxUnits=244, unitSpacing=1, timeSpacing=250 * ms)
+DN.determine_fan_in(minUnits=11, maxUnits=15, unitSpacing=1, timeSpacing=250 * ms)
 DN.save_results()
 DN.save_params()
+
+R = Results(DN.saveName, DN.p['saveFolder'])
+
+fig2, ax2 = plt.subplots(2, 1, num=2, figsize=(10, 6))
+R.plot_voltage_detail(ax2[0], unitType='Exc', useStateInd=0)
+R.plot_voltage_detail(ax2[1], unitType='Inh', useStateInd=0)

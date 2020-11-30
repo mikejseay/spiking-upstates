@@ -9,11 +9,6 @@ defaultclock.dt = p['dt']
 
 # determine 'up crit' empirically
 
-# p['simName'] = 'classicDestexheUpCrit'
-
-# p['propConnect'] = 0.2  # recurrent connection probability
-# p['simName'] = 'classicDestexheUpCrit0p2'
-
 p['simName'] = 'destexheUpCrit0p05Conn5e4units'
 p['nUnits'] = 5e4
 

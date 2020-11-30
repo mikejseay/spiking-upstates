@@ -1,9 +1,12 @@
 from brian2 import second, ms, mV, pA, uS, Hz, nS, defaultclock
 from params import paramsDestexhe as p
-from params import paramsDestexheEphysBuono
+from params import paramsDestexheEphysBuono, paramsDestexheEphysOrig
 from network import DestexheNetwork
 from generate import generate_poisson_kicks_jercog
+from results import Results
+import matplotlib.pyplot as plt
 
+MAKE_UP_PLOTS = False
 USE_NEW_EPHYS_PARAMS = True
 KICKS_POISSON = True
 
@@ -19,81 +22,48 @@ if USE_NEW_EPHYS_PARAMS:
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
 
-p['duration'] = 5 * second
-p['dt'] = 0.1 * ms
-
-# p['propConnect'] = 0.05  # recurrent connection probability
-# p['simName'] = 'classicDestexhe0p05Conn'
-
-# p['propConnect'] = 0.05  # recurrent connection probability
-# p['simName'] = 'classicDestexhe0p05ConnSparseCorr'
-
-# p['propConnect'] = 1  # recurrent connection probability
-# p['simName'] = 'classicDestexheFullConn'
-
-# p['propConnect'] = 0.1  # recurrent connection probability
-# p['simName'] = 'classicDestexhe0p10ConnSparseCorr'
-
-# p['propConnect'] = 0.2  # recurrent connection probability
-# p['simName'] = 'classicDestexhe0p20ConnSparseCorr'
-
-# p['propConnect'] = 0.5  # recurrent connection probability
-# p['simName'] = 'classicDestexhe0p5ConnSparseCorr'
-
-# p['nUnits'] = 20e4
-# p['propConnect'] = 0.05  # recurrent connection probability
-# p['simName'] = 'classicDestexheFullConn200kUnits'
-
-# p['nUnits'] = 1e3
-# p['propConnect'] = 0.05  # recurrent connection probability
-# p['simName'] = 'classicDestexhe0p05Conn1kUnits'
-
 p['nUnits'] = 5e4
-p['simName'] = 'destexhe0p05Conn5e4units'
-
-# p['nUnits'] = 1e4
-# p['simName'] = 'destexhe0p05Conn1e4units'
-
-p['bExc'] = 40 * pA  # adaptation param, decrease to get longer Up states 20-40ish
-p['deltaVExc'] = 2 * mV   # 3
-p['deltaVInh'] = 0.5 * mV
-# p['vThresh'] = -45 * mV  # default is 50!!
+p['duration'] = 20 * second
+p['dt'] = 0.1 * ms
 
 p['qExc'] = 0.6 * uS  # will be divided by total # exc units and proportion of recurrent connectivity
 p['qInh'] = 0.5 * uS  # will be divided by total # inh units and proportion of recurrent connectivity
 
 APPLY_UNCORRELATED_INPUTS = True
-APPLY_CORRELATED_INPUTS = False
+APPLY_CORRELATED_INPUTS = True
+MONITOR_CORRELATED_INPUTS = True
 CORRELATED_INPUTS_TARGET_EXC = True
 APPLY_KICKS = False
 
 # uncorrelated Poisson inputs (one-to-one, rate is usually multiplied by # of feedforward synapses per unit)
 p['propConnectFeedforwardProjectionUncorr'] = 0.05  # proportion of feedforward projections that are connected
 p['nPoissonUncorrInputUnits'] = p['nUnits']
+
 # p['nUncorrFeedforwardSynapsesPerUnit'] = int(p['propConnectFeedforwardProjectionUncorr'] *
 #                                         p['nPoissonUncorrInputUnits'] * (1 - p['propInh']))
 # p['poissonUncorrInputRate'] = 0.315 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
 # p['qExcFeedforwardUncorr'] = 0.6 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
 
+# to make 5e4 work...
+# p['qExcFeedforwardUncorr'] = p['qExcFeedforwardUncorr'] * 1.5
+
+# for the corr + uncorr inputs scenario...
+
 p['nUncorrFeedforwardSynapsesPerUnit'] = int(p['propConnectFeedforwardProjectionUncorr'] *
                                         1e4 * (1 - p['propInh']))
-p['poissonUncorrInputRate'] = 0.315 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
-p['qExcFeedforwardUncorr'] = 0.6 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
+p['poissonUncorrInputRate'] = 0.16 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
+p['qExcFeedforwardUncorr'] = 0.3 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
 
-# p['poissonUncorrInputRate'] = 0.16 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
-# p['qExcFeedforwardUncorr'] = 0.3 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
-
-
-# try halving the rate and amplitude of uncorrelated, while halving the amplitude of the correlated
-
-# p['qExcFeedforwardUncorr'] = 0.6 * uS / 1e4
+# to try to make the 5e4 work with only uncorr inputs...
+# p['poissonUncorrInputRate'] = 0.3168 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
+# p['qExcFeedforwardUncorr'] = 0.6138 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
 
 # correlated Poisson inputs (feedforward projection with shared targets)
 p['propConnectFeedforwardProjectionCorr'] = 0.05  # proportion of feedforward projections that are connected
-p['poissonCorrInputRate'] = 0.15 * Hz
+p['poissonCorrInputRate'] = 0.2 * Hz
 p['nPoissonCorrInputUnits'] = 40
 # p['qExcFeedforwardCorr'] = 15 * nS
-p['qExcFeedforwardCorr'] = 12 * nS
+p['qExcFeedforwardCorr'] = 13 * nS
 
 p['poissonDriveType'] = 'constant'  # ramp, constant, fullRamp
 p['poissonInputRateDivider'] = 1  # the factor by which to divide the rate
@@ -123,6 +93,9 @@ if p['poissonInputWeightMultiplier'] is not 1:
     p['poissonInputRate'] /= (p['poissonInputWeightMultiplier'] ** 2)
     p['qExcFeedforward'] *= p['poissonInputWeightMultiplier']
 
+indUnkickedExc = int(p['nUnits'] - (p['propInh'] * p['nUnits']) - 1)
+p['indsRecordStateExc'].append(indUnkickedExc)
+
 # start-ish
 defaultclock.dt = p['dt']
 
@@ -137,7 +110,8 @@ DN.initialize_units()
 if APPLY_UNCORRELATED_INPUTS:
     DN.initialize_external_input_uncorrelated()
 if APPLY_CORRELATED_INPUTS:
-    DN.initialize_external_input_correlated(targetExc=CORRELATED_INPUTS_TARGET_EXC)
+    DN.initialize_external_input_correlated(targetExc=CORRELATED_INPUTS_TARGET_EXC,
+                                            monitorProcesses=MONITOR_CORRELATED_INPUTS)
 if APPLY_KICKS:
     DN.set_spiked_units(onlySpikeExc=p['onlyKickExc'])
 
@@ -147,14 +121,46 @@ DN.run()
 DN.save_results()
 DN.save_params()
 
-# EXPERIMENTAL PARAMS (INTEGRATE LATER)
-# APPLY_WEAK_INPUTS = False
-# APPLY_STRONG_INPUTS = True
-# nCorrelatedInputUnits = 40
-# correlatedInputConnectionType = 'projection'  # projection or one-to-one
-# propConnectCorrelatedInput = 0.05
-# correlatedInputRate = 0.15 * Hz
-# nStrongStimEvents = 2
-# spacing = 10 * second
-# useQExcFeedforwardStrongExc = 15 * nS  # 18
-# useQExcFeedforwardStrongInh = 15 * nS  # 18.5
+R = Results(DN.saveName, DN.p['saveFolder'])
+R.calculate_spike_rate()
+R.calculate_voltage_histogram(removeMode=True)
+R.calculate_upstates()
+if len(R.ups) > 0:
+    R.reshape_upstates()
+    R.calculate_FR_in_upstates()
+    print('average FR in upstate for Exc: {:.2f}, Inh: {:.2f} '.format(R.upstateFRExc.mean(), R.upstateFRInh.mean()))
+
+# quit()
+
+fig1, ax1 = plt.subplots(2, 1, num=1, figsize=(10, 9), gridspec_kw={'height_ratios': [3, 1]},
+                         sharex=True)
+R.plot_spike_raster(ax1[0])
+R.plot_firing_rate(ax1[1])
+
+fig2, ax2 = plt.subplots(3, 1, num=2, figsize=(10, 9), sharex=True)
+R.plot_voltage_detail(ax2[0], unitType='Exc', useStateInd=0)
+R.plot_updur_lines(ax2[0])
+R.plot_voltage_detail(ax2[1], unitType='Exc', useStateInd=1)
+R.plot_updur_lines(ax2[1])
+R.plot_voltage_detail(ax2[2], unitType='Inh', useStateInd=0)
+
+fig2b, ax2b = plt.subplots(1, 1, num=21)
+R.plot_updur_lines(ax2b)
+R.plot_voltage_histogram(ax2b, yScaleLog=True)
+
+if MAKE_UP_PLOTS:
+    fig3, ax3 = plt.subplots(num=3, figsize=(10, 9))
+    R.plot_state_duration_histogram(ax3)
+
+    fig4, ax4 = plt.subplots(1, 2, num=4, figsize=(10, 9))
+    R.plot_consecutive_state_correlation(ax4)
+
+    fig5, ax5 = plt.subplots(2, 1, num=5, figsize=(10, 9), gridspec_kw={'height_ratios': [3, 1]},
+                             sharex=True)
+    R.plot_upstate_voltage_image(ax5[0])
+    R.plot_upstate_voltages(ax5[1])
+
+    fig6, ax6 = plt.subplots(2, 1, num=6, figsize=(10, 9), gridspec_kw={'height_ratios': [3, 1]},
+                             sharex=True)
+    R.plot_upstate_raster(ax6[0])
+    R.plot_upstate_FR(ax6[1])

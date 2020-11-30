@@ -2,7 +2,7 @@ from results import Results
 import matplotlib.pyplot as plt
 
 loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/'
-targetSim = 'classicDestexheNMDATest_2020-10-23-23-14'
+targetSim = 'classicDestexheNMDATest_2020-11-11-13-48'
 
 R = Results(targetSim, loadFolder)
 R.calculate_spike_rate()

@@ -5,8 +5,6 @@ paramsJercog = {
     'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
     'simName': 'classicJercog',
     'saveWithDate': True,
-    'saveFigs': True,
-    'saveType': '.png',
 
     # global sim params
     'dt': 0.05 * ms,
@@ -19,8 +17,8 @@ paramsJercog = {
     # recording parameters
     'propSpikemon': 1,
     'recordStateVariables': ['v', ],  # ['v', 'sE', 'sI', 'uE', 'uI'],
-    'nRecordStateExc': 1,
-    'nRecordStateInh': 1,
+    'indsRecordStateExc': [0, ],
+    'indsRecordStateInh': [0, ],
 
     # network params
     'nUnits': 5000,
@@ -37,13 +35,13 @@ paramsJercog = {
     'kickMaximumISI': 10 * second,
     'kickTimes': [0.1, 0.8] * second,
     'kickSizes': [1, 1],
-    'kickAmplitudeExc': 220 * mV,
-    'kickAmplitudeInh': 0.4 * 220 * mV,
+    # 'kickAmplitudeExc': 220 * mV,
+    # 'kickAmplitudeInh': 0.4 * 220 * mV,
+    'kickAmplitudeExc': 2.2 * nA,
+    'kickAmplitudeInh': 0.4 * 2.2 * nA,
 
     # unit params
     'noiseSigma': 2.5 * mV,
-    'vTauExc': 20 * ms,
-    'vTauInh': 10 * ms,
     'eLeakExc': 7.6 * mV,
     'eLeakInh': 6.5 * mV,
     'vResetExc': 14 * mV,
@@ -54,12 +52,23 @@ paramsJercog = {
     'adaptStrengthExc': 15 * mV,
     'adaptStrengthInh': 0 * mV,
     'refractoryPeriod': 0 * ms,
+    'membraneCapacitanceExc': 200 * pF,
+    'membraneCapacitanceInh': 100 * pF,
+    'gLeakExc': 10 * nS,
+    'gLeakInh': 10 * nS,
+    # 'betaAdaptExc': 3 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea!
+    'betaAdaptExc': 4 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea!
+    'betaAdaptInh': 0 * nA * ms,  # 'adaptStrengthInh': 0 * mV,
 
     # synaptic params
-    'jEE': 280 * mV,
-    'jEI': 70 * mV,
-    'jIE': 500 * mV,
-    'jII': 100 * mV,
+    # 'jEE': 280 * mV,
+    # 'jEI': 70 * mV,
+    # 'jIE': 500 * mV,
+    # 'jII': 100 * mV,
+    'jEE': 2.8 * nA,
+    'jEI': 0.7 * nA,
+    'jIE': 5 * nA,
+    'jII': 1 * nA,
     'tauRiseExc': 8 * ms,
     'tauFallExc': 23 * ms,
     'tauRiseInh': 1 * ms,
@@ -67,6 +76,8 @@ paramsJercog = {
     'delayExc': 1 * ms,
     'delayInh': 0.5 * ms,
     'scaleWeightsByPConn': True,
+    'critExc': 0.784 * volt,
+    'critInh': 0.67625 * volt,
 
 }
 
@@ -82,7 +93,7 @@ paramsJercogEphysOrig = {
     # global sim params
     'dt': 0.05 * ms,
     'duration': 250 * ms,
-    'updateMethod': 'exact',
+    # 'updateMethod': 'exact',
     'reportType': 'stdout',
     'reportPeriod': 1 * second,
     'doProfile': True,
@@ -90,8 +101,8 @@ paramsJercogEphysOrig = {
     # recording parameters
     'propSpikemon': 1,
     'recordStateVariables': ['v', ],  # ['v', 'w', 'ge', 'gi'],
-    'nRecordStateExc': 1,
-    'nRecordStateInh': 1,
+    'indsRecordStateExc': [0, ],
+    'indsRecordStateInh': [0, ],
 
     # network params
     'nUnits': 2,  # ***
@@ -105,7 +116,7 @@ paramsJercogEphysOrig = {
     'vThreshExc': -46.5 * mV,  # 'vThreshExc': 20 * mV,
     'vThreshInh': -46.5 * mV,  # 'vThreshInh': 20 * mV,
     'adaptTau': 500 * ms,  # 'adaptTau': 500 * ms,
-    'betaAdaptExc': 3 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea!
+    'betaAdaptExc': 4 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea! 3 or 4?
     'betaAdaptInh': 0 * nA * ms,  # 'adaptStrengthInh': 0 * mV,
     'refractoryPeriod': 0 * ms,  # 'refractoryPeriod': 0 * ms,
     'membraneCapacitanceExc': 200 * pF,
@@ -118,10 +129,10 @@ paramsJercogEphysOrig = {
     'iDur': 250 * ms,
 
     # synaptic params
-    'jEE': 280 * mV,
-    'jEI': 70 * mV,
-    'jIE': 500 * mV,
-    'jII': 100 * mV,
+    # 'jEE': 280 * mV,
+    # 'jEI': 70 * mV,
+    # 'jIE': 500 * mV,
+    # 'jII': 100 * mV,
     'tauRiseExc': 8 * ms,
     'tauFallExc': 23 * ms,
     'tauRiseInh': 1 * ms,
@@ -141,7 +152,7 @@ paramsJercogEphysBuono = {
     # global sim params
     'dt': 0.05 * ms,
     'duration': 250 * ms,
-    'updateMethod': 'exact',
+    # 'updateMethod': 'exact',
     'reportType': 'stdout',
     'reportPeriod': 1 * second,
     'doProfile': True,
@@ -149,8 +160,8 @@ paramsJercogEphysBuono = {
     # recording parameters
     'propSpikemon': 1,
     'recordStateVariables': ['v', ],  # ['v', 'w', 'ge', 'gi'],
-    'nRecordStateExc': 1,
-    'nRecordStateInh': 1,
+    'indsRecordStateExc': [0, ],
+    'indsRecordStateInh': [0, ],
 
     # network params
     'nUnits': 2,  # ***
@@ -177,10 +188,14 @@ paramsJercogEphysBuono = {
     'iDur': 250 * ms,
 
     # synaptic params
-    'jEE': 280 * mV,
-    'jEI': 70 * mV,
-    'jIE': 500 * mV,
-    'jII': 100 * mV,
+    # 'jEE': 280 * mV,
+    # 'jEI': 70 * mV,
+    # 'jIE': 500 * mV,
+    # 'jII': 100 * mV,
+    'jEE': 2.8 * nA,
+    'jEI': 0.7 * nA,
+    'jIE': 5 * nA,
+    'jII': 1 * nA,
     'tauRiseExc': 8 * ms,
     'tauFallExc': 23 * ms,
     'tauRiseInh': 1 * ms,
@@ -194,10 +209,8 @@ paramsJercogEphysBuono = {
 paramsDestexhe = {
     # save / figs?
     'saveFolder': 'C:/Users/mikejseay/Dropbox/UCLA/courses/covid-era-modeling/figs/',
-    'simName': 'classicJercog',
+    'simName': 'destexhe',
     'saveWithDate': True,
-    'saveFigs': True,
-    'saveType': '.png',
 
     # global sim params
     'dt': 0.05 * ms,
@@ -210,8 +223,8 @@ paramsDestexhe = {
     # recording parameters
     'propSpikemon': 1,
     'recordStateVariables': ['v', ],  # ['v', 'w', 'ge', 'gi'],
-    'nRecordStateExc': 1,
-    'nRecordStateInh': 1,
+    'indsRecordStateExc': [0, ],
+    'indsRecordStateInh': [0, ],
 
     # network params
     'nUnits': 1e4,  # ***
@@ -265,7 +278,7 @@ paramsDestexhe = {
 }
 
 paramsDestexheEphysOrig = {
-    'simName': 'classicDestexheEphysOrig',
+    'simName': 'destexheEphysOrig',
     'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
     'saveWithDate': True,
 
@@ -280,8 +293,8 @@ paramsDestexheEphysOrig = {
     # recording parameters
     'propSpikemon': 1,
     'recordStateVariables': ['v', ],  # ['v', 'w', 'ge', 'gi'],
-    'nRecordStateExc': 1,
-    'nRecordStateInh': 1,
+    'indsRecordStateExc': [0, ],
+    'indsRecordStateInh': [0, ],
 
     # network params
     'nUnits': 2,  # ***
@@ -324,7 +337,7 @@ paramsDestexheEphysOrig = {
 }
 
 paramsDestexheEphysBuono = {
-    'simName': 'classicDestexheEphysBuono',
+    'simName': 'destexheEphysBuono',
     'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
     'saveWithDate': True,
 
@@ -339,8 +352,8 @@ paramsDestexheEphysBuono = {
     # recording parameters
     'propSpikemon': 1,
     'recordStateVariables': ['v', ],  # ['v', 'w', 'ge', 'gi'],
-    'nRecordStateExc': 1,
-    'nRecordStateInh': 1,
+    'indsRecordStateExc': [0, ],
+    'indsRecordStateInh': [0, ],
 
     # network params
     'nUnits': 2,  # ***

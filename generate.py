@@ -21,6 +21,41 @@ def generate_poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_i
     return kickTimes, kickSizes
 
 
+def generate_poisson(rate, dt, duration, nUnits):
+    """ given a fixed rate as well as the dt and duration of a simulation,
+    generates nUnits independent Poisson processes and returns them in the way
+    that SpikeGeneratorGroup is expecting them """
+
+    timeArray = np.arange(0, float(duration), float(dt))
+    randArray = np.random.rand(*timeArray.shape, nUnits)
+    spikeBool = randArray < (rate * dt)
+
+    times_lst = []
+    indices_lst = []
+
+    for unitInd in range(nUnits):
+        tmpTimesArray = timeArray[spikeBool[:, unitInd]]
+        times_lst.append(tmpTimesArray)
+        indices_lst.append(np.ones_like(tmpTimesArray) * unitInd)
+
+    indices = np.concatenate(indices_lst)
+    times = np.concatenate(times_lst) * second
+
+    return indices, times
+
+
+def convert_indices_times_to_dict(indices, times):
+
+    uniqueIndices = np.unique(indices.astype(int))
+
+    spikeDict = {}
+    for uniqInd in uniqueIndices:
+        matchingBool = indices == uniqInd
+        spikeDict[uniqInd] = times[matchingBool]
+
+    return spikeDict
+
+
 def convert_kicks_to_current_series(kickDur, kickTau, kickTimes, kickSizes, duration, dt):
     """ given the times and sizes of kicks, generate a time series of injected current values """
 
