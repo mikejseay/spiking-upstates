@@ -1,10 +1,16 @@
-from brian2 import second, ms, mV, pA, uS, Hz, nS, defaultclock
+from brian2 import set_device, second, ms, mV, pA, uS, Hz, nS, defaultclock
 from params import paramsDestexhe as p
 from params import paramsDestexheEphysBuono, paramsDestexheEphysOrig
 from network import DestexheNetwork
 from generate import generate_poisson_kicks_jercog
 from results import Results
 import matplotlib.pyplot as plt
+
+# for using Brian2GENN
+USE_BRIAN2GENN = True
+if USE_BRIAN2GENN:
+    import brian2genn
+    set_device('genn', debug=False)
 
 MAKE_UP_PLOTS = False
 USE_NEW_EPHYS_PARAMS = True
@@ -29,7 +35,7 @@ p['dt'] = 0.1 * ms
 p['qExc'] = 0.6 * uS  # will be divided by total # exc units and proportion of recurrent connectivity
 p['qInh'] = 0.5 * uS  # will be divided by total # inh units and proportion of recurrent connectivity
 
-APPLY_UNCORRELATED_INPUTS = True
+APPLY_UNCORRELATED_INPUTS = False
 APPLY_CORRELATED_INPUTS = True
 MONITOR_CORRELATED_INPUTS = True
 CORRELATED_INPUTS_TARGET_EXC = True
@@ -60,9 +66,8 @@ p['qExcFeedforwardUncorr'] = 0.3 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
 
 # correlated Poisson inputs (feedforward projection with shared targets)
 p['propConnectFeedforwardProjectionCorr'] = 0.05  # proportion of feedforward projections that are connected
-p['poissonCorrInputRate'] = 0.2 * Hz
-p['nPoissonCorrInputUnits'] = 40
-# p['qExcFeedforwardCorr'] = 15 * nS
+p['poissonCorrInputRate'] = 0.15 * Hz
+p['nPoissonCorrInputUnits'] = 20
 p['qExcFeedforwardCorr'] = 13 * nS
 
 p['poissonDriveType'] = 'constant'  # ramp, constant, fullRamp

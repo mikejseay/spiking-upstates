@@ -12,7 +12,7 @@ paramsJercog = {
     'updateMethod': 'euler',
     'reportType': 'stdout',
     'reportPeriod': 1 * second,
-    'doProfile': True,
+    'doProfile': False,
 
     # recording parameters
     'propSpikemon': 1,
@@ -96,7 +96,7 @@ paramsJercogEphysOrig = {
     # 'updateMethod': 'exact',
     'reportType': 'stdout',
     'reportPeriod': 1 * second,
-    'doProfile': True,
+    'doProfile': False,
 
     # recording parameters
     'propSpikemon': 1,
@@ -155,7 +155,7 @@ paramsJercogEphysBuono = {
     # 'updateMethod': 'exact',
     'reportType': 'stdout',
     'reportPeriod': 1 * second,
-    'doProfile': True,
+    'doProfile': False,
 
     # recording parameters
     'propSpikemon': 1,
@@ -218,7 +218,7 @@ paramsDestexhe = {
     'updateMethod': 'euler',
     'reportType': 'stdout',
     'reportPeriod': 1 * second,
-    'doProfile': True,
+    'doProfile': False,
 
     # recording parameters
     'propSpikemon': 1,
@@ -288,7 +288,7 @@ paramsDestexheEphysOrig = {
     'updateMethod': 'euler',
     'reportType': 'stdout',
     'reportPeriod': 1 * second,
-    'doProfile': True,
+    'doProfile': False,
 
     # recording parameters
     'propSpikemon': 1,
@@ -347,7 +347,7 @@ paramsDestexheEphysBuono = {
     'updateMethod': 'euler',
     'reportType': 'stdout',
     'reportPeriod': 1 * second,
-    'doProfile': True,
+    'doProfile': False,
 
     # recording parameters
     'propSpikemon': 1,

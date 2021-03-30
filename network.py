@@ -4,7 +4,6 @@ from datetime import datetime
 import os
 from generate import set_spikes_from_time_varying_rate, fixed_current_series, generate_poisson
 import winsound
-import win32api
 
 
 class BaseNetwork(object):
@@ -134,8 +133,7 @@ class JercogNetwork(object):
     def initialize_units(self):
         unitModel = '''
         dv/dt = (gl * (eLeak - v) - iAdapt +
-                 jE * sE - jI * sI +
-                 kKick * iKick) / Cm +
+                 jE * sE - jI * sI) / Cm +
                  noiseSigma * (Cm / gl)**-0.5 * xi: volt
         diAdapt/dt = -iAdapt / tauAdapt : amp
 
@@ -147,8 +145,6 @@ class JercogNetwork(object):
         eLeak : volt
         jE : amp
         jI : amp
-        kKick : amp
-        iKick = iKickRecorded(t) : 1
         vReset : volt
         vThresh : volt
         betaAdapt : amp * second
@@ -170,7 +166,7 @@ class JercogNetwork(object):
             threshold=threshCode,
             reset=resetCode,
             refractory=self.p['refractoryPeriod'],
-            dt=self.p['dt']
+            clock=defaultclock,
         )
 
         self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
@@ -214,13 +210,14 @@ class JercogNetwork(object):
         unitModel = '''
         dv/dt = (gl * (eLeak - v) - iAdapt +
                  jE * sE - jI * sI +
-                 jE_NMDA * int(v > vStepSigmoid) / (1 + Mg2 * exp(-kSigmoid * (v - vMidSigmoid) / mV)) * s_NMDA_tot +
+                 jE_NMDA * s_NMDA_tot * int(v > vStepSigmoid) / (1 + Mg2 * exp(-kSigmoid * (v - vMidSigmoid) / mV)) +
                  kKick * iKick) / Cm +
                  noiseSigma * (Cm / gl)**-0.5 * xi: volt
         diAdapt/dt = -iAdapt / tauAdapt : amp
 
         dsE/dt = (-sE + uE) / tauFallE : 1
         duE/dt = -uE / tauRiseE : 1
+        
         dsI/dt = (-sI + uI) / tauFallI : 1
         duI/dt = -uI / tauRiseI : 1
 
@@ -229,6 +226,92 @@ class JercogNetwork(object):
         jI : amp
         jE_NMDA : amp
         s_NMDA_tot : 1
+        kKick : amp
+        iKick = iKickRecorded(t) : 1
+        vReset : volt
+        vThresh : volt
+        betaAdapt : amp * second
+        gl : siemens
+        Cm : farad
+        '''
+
+        resetCode = '''
+        v = vReset
+        iAdapt += betaAdapt / tauAdapt 
+        '''
+
+        threshCode = 'v >= vThresh'
+
+        units = NeuronGroup(
+            N=self.p['nUnits'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriod'],
+            dt=self.p['dt']
+        )
+
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = self.p['nUnits'] - self.p['nInh']
+        self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
+        self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
+
+        unitsExc = units[:self.p['nExc']]
+        unitsInh = units[self.p['nExc']:]
+
+        vTauExc = self.p['membraneCapacitanceExc'] / self.p['gLeakExc']
+        vTauInh = self.p['membraneCapacitanceInh'] / self.p['gLeakInh']
+
+        unitsExc.jE = vTauExc * self.p['jEE'] / self.p['nIncExc'] / ms
+        unitsExc.jI = vTauExc * self.p['jEI'] / self.p['nIncInh'] / ms
+        unitsInh.jE = vTauInh * self.p['jIE'] / self.p['nIncExc'] / ms  # 50 nA * ~4 Hz = 200 nA / 100 = 2 nA
+        unitsInh.jI = vTauInh * self.p['jII'] / self.p['nIncInh'] / ms  # 10 nA * ~8 Hz = 80 nA / 100 = 0.8 A
+
+        unitsExc.jE_NMDA = vTauExc * self.p['jEE_NMDA'] / self.p['nIncExc'] / ms
+        unitsInh.jE_NMDA = vTauInh * self.p['jIE_NMDA'] / self.p['nIncExc'] / ms
+
+        unitsExc.v = self.p['eLeakExc']
+        unitsExc.vReset = self.p['vResetExc']
+        unitsExc.vThresh = self.p['vThreshExc']
+        unitsExc.betaAdapt = self.p['betaAdaptExc']
+        unitsExc.eLeak = self.p['eLeakExc']
+        unitsExc.Cm = self.p['membraneCapacitanceExc']
+        unitsExc.gl = self.p['gLeakExc']
+
+        unitsInh.v = self.p['eLeakInh']
+        unitsInh.vReset = self.p['vResetInh']
+        unitsInh.vThresh = self.p['vThreshInh']
+        unitsInh.betaAdapt = self.p['betaAdaptInh']
+        unitsInh.eLeak = self.p['eLeakInh']
+        unitsInh.Cm = self.p['membraneCapacitanceInh']
+        unitsInh.gl = self.p['gLeakInh']
+
+        self.units = units
+        self.unitsExc = unitsExc
+        self.unitsInh = unitsInh
+        self.N.add(units)
+
+    def initialize_units_NMDA2(self):
+        unitModel = '''
+        dv/dt = (gl * (eLeak - v) - iAdapt +
+                 jE * sE - jI * sI +
+                 jE_NMDA * sE_NMDA / (1 + exp(-kSigmoid * (v - vMidSigmoid) / mV)) * int(v > vStepSigmoid) +
+                 kKick * iKick) / Cm +
+                 noiseSigma * (Cm / gl)**-0.5 * xi: volt
+        diAdapt/dt = -iAdapt / tauAdapt : amp
+
+        dsE/dt = (-sE + uE) / tauFallE : 1
+        duE/dt = -uE / tauRiseE : 1
+        dsI/dt = (-sI + uI) / tauFallI : 1
+        duI/dt = -uI / tauRiseI : 1
+        dsE_NMDA/dt = -sE_NMDA / tauFallNMDA + alpha * uE_NMDA * (1 - sE_NMDA) : 1
+        duE_NMDA/dt = -uE_NMDA / tauRiseNMDA : 1
+
+        eLeak : volt
+        jE : amp
+        jI : amp
+        jE_NMDA : amp
         kKick : amp
         iKick = iKickRecorded(t) : 1
         vReset : volt
@@ -417,6 +500,22 @@ class JercogNetwork(object):
         self.synapsesExc = synapsesExc
         self.N.add(synapsesExc)
 
+    def initialize_recurrent_excitation_NMDA2(self):
+
+        synapsesExc = Synapses(
+            source=self.unitsExc,
+            target=self.units,
+            on_pre='uE_NMDA_post += ' + str(1 / self.p['tauRiseNMDA'] * ms) + '\n' + 'uE_post += ' + str(
+                1 / self.p['tauRiseExc'] * ms),
+        )
+        synapsesExc.connect('i!=j', p=self.p['propConnect'])
+
+        synapsesExc.delay = ((rand(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
+                              defaultclock.dt).astype(int) + 1) * defaultclock.dt
+
+        self.synapsesExc = synapsesExc
+        self.N.add(synapsesExc)
+
     def initialize_recurrent_inhibition(self):
 
         synapsesInh = Synapses(
@@ -438,35 +537,47 @@ class JercogNetwork(object):
             source=self.unitsExc,
             target=self.unitsExc,
             on_pre='uE_post += ' + str(1 / self.p['tauRiseExc'] * ms),
+            delay=self.p['delayExc'] / 2,
         )
         synapsesEI = Synapses(
             source=self.unitsInh,
             target=self.unitsExc,
             on_pre='uI_post += ' + str(1 / self.p['tauRiseInh'] * ms),
+            delay=self.p['delayInh'] / 2,
         )
         synapsesIE = Synapses(
             source=self.unitsExc,
             target=self.unitsInh,
             on_pre='uE_post += ' + str(1 / self.p['tauRiseExc'] * ms),
+            delay=self.p['delayExc'] / 2,
         )
         synapsesII = Synapses(
             source=self.unitsInh,
             target=self.unitsInh,
             on_pre='uI_post += ' + str(1 / self.p['tauRiseInh'] * ms),
+            delay=self.p['delayInh'] / 2,
         )
         synapsesEE.connect(p=self.p['propConnect'])
         synapsesEI.connect(p=self.p['propConnect'])
         synapsesIE.connect(p=self.p['propConnect'])
         synapsesII.connect(p=self.p['propConnect'])
 
-        synapsesEE.delay = ((rand(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
-                             defaultclock.dt).astype(int) + 1) * defaultclock.dt
-        synapsesIE.delay = ((rand(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
-                             defaultclock.dt).astype(int) + 1) * defaultclock.dt
-        synapsesEI.delay = ((rand(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
-                             defaultclock.dt).astype(int) + 1) * defaultclock.dt
-        synapsesII.delay = ((rand(synapsesII.delay.shape[0]) * self.p['delayInh'] /
-                             defaultclock.dt).astype(int) + 1) * defaultclock.dt
+        TESTING_GENN = True
+
+        if not TESTING_GENN:
+            nEESynapses = np.round(self.p['nExc'] * self.p['nExc'] * self.p['propConnect'])
+            nEISynapses = np.round(self.p['nInh'] * self.p['nExc'] * self.p['propConnect'])
+            nIESynapses = np.round(self.p['nExc'] * self.p['nInh'] * self.p['propConnect'])
+            nIISynapses = np.round(self.p['nInh'] * self.p['nInh'] * self.p['propConnect'])
+
+            synapsesEE.delay = ((rand(nEESynapses) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesEI.delay = ((rand(nEISynapses) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesIE.delay = ((rand(nIESynapses) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesII.delay = ((rand(nIISynapses) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesEE = synapsesEE
         self.synapsesEI = synapsesEI
@@ -553,9 +664,11 @@ class JercogNetwork(object):
         spikeMonInh = SpikeMonitor(self.unitsInh[:self.p['nInhSpikemon']])
 
         stateMonExc = StateMonitor(self.unitsExc, self.p['recordStateVariables'],
-                                   record=self.p['indsRecordStateExc'])
+                                   record=self.p['indsRecordStateExc'],
+                                   clock=defaultclock)
         stateMonInh = StateMonitor(self.unitsInh, self.p['recordStateVariables'],
-                                   record=self.p['indsRecordStateInh'])
+                                   record=self.p['indsRecordStateInh'],
+                                   clock=defaultclock)
 
         self.spikeMonExc = spikeMonExc
         self.spikeMonInh = spikeMonInh
@@ -573,7 +686,7 @@ class JercogNetwork(object):
 
     def run(self):
 
-        iKickRecorded = self.p['iKickRecorded']
+        # iKickRecorded = self.p['iKickRecorded']  # disabling this to test brian2genn
         noiseSigma = self.p['noiseSigma']
         tauRiseE = self.p['tauRiseExc']
         tauFallE = self.p['tauFallExc']
@@ -605,6 +718,30 @@ class JercogNetwork(object):
         tau_NMDA_decay = self.p['tau_NMDA_decay']
         alpha = self.p['alpha']
         Mg2 = self.p['Mg2']
+
+        self.N.run(self.p['duration'],
+                   report=self.p['reportType'],
+                   report_period=self.p['reportPeriod'],
+                   profile=self.p['doProfile']
+                   )
+
+    def run_NMDA2(self):
+
+        iKickRecorded = self.p['iKickRecorded']
+        noiseSigma = self.p['noiseSigma']
+        tauRiseE = self.p['tauRiseExc']
+        tauFallE = self.p['tauFallExc']
+        tauRiseI = self.p['tauRiseInh']
+        tauFallI = self.p['tauFallInh']
+        tauAdapt = self.p['adaptTau']
+
+        vStepSigmoid = self.p['vStepSigmoid']
+        kSigmoid = self.p['kSigmoid']
+        vMidSigmoid = self.p['vMidSigmoid']
+
+        tauRiseNMDA = self.p['tauRiseNMDA']
+        tauFallNMDA = self.p['tauFallNMDA']
+        alpha = self.p['alpha']
 
         self.N.run(self.p['duration'],
                    report=self.p['reportType'],
@@ -772,8 +909,11 @@ class JercogNetwork(object):
 
         # multExc = critExc / self.unitsExc.jE[0]
         # multInh = critInh / self.unitsInh.jE[0]
-        multExc = critExc / (self.unitsExc.jE[0] * 100 * Mohm)
-        multInh = critInh / (self.unitsInh.jE[0] * 100 * Mohm)
+
+        vTauExc = self.p['membraneCapacitanceExc'] / self.p['gLeakExc']
+        jE = vTauExc * self.p['jEE'] / self.p['nIncExc'] / ms
+        multExc = critExc / (jE * 100 * Mohm)
+        multInh = critInh / (jE * 100 * Mohm)
 
         indices = []
         times = []
@@ -847,7 +987,7 @@ class DestexheNetwork(object):
             threshold=threshCode,
             reset=resetCode,
             refractory=self.p['refractoryPeriod'],
-            dt=self.p['dt']
+            clock=defaultclock,
         )
 
         self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
@@ -1192,17 +1332,7 @@ class DestexheNetwork(object):
 
     def initialize_external_input_correlated(self, targetExc=False, monitorProcesses=False):
 
-        if monitorProcesses:
-            # rate, dt, duration, nUnits
-            indices, times = generate_poisson(rate=self.p['poissonCorrInputRate'],
-                                              dt=self.p['dt'],
-                                              duration=self.p['duration'],
-                                              nUnits=self.p['nPoissonCorrInputUnits'])
-            inputGroupCorrelated = SpikeGeneratorGroup(int(self.p['nPoissonCorrInputUnits']), indices, times)
-            self.poissonCorrInputIndices = indices
-            self.poissonCorrInputTimes = times
-        else:
-            inputGroupCorrelated = PoissonGroup(int(self.p['nPoissonCorrInputUnits']), self.p['poissonCorrInputRate'])
+        inputGroupCorrelated = PoissonGroup(int(self.p['nPoissonCorrInputUnits']), self.p['poissonCorrInputRate'])
 
         if targetExc:
             feedforwardSynapsesCorr = Synapses(inputGroupCorrelated, self.unitsExc,
@@ -1214,7 +1344,13 @@ class DestexheNetwork(object):
         feedforwardSynapsesCorr.connect(p=self.p['propConnectFeedforwardProjectionCorr'])
 
         # self.inputGroupCorrelated = inputGroupCorrelated
-        self.N.add(inputGroupCorrelated, feedforwardSynapsesCorr)
+        if monitorProcesses:
+            self.monitorInpCorr = True
+            spikeMonInpCorr = SpikeMonitor(inputGroupCorrelated)
+            self.spikeMonInpCorr = spikeMonInpCorr
+            self.N.add(inputGroupCorrelated, feedforwardSynapsesCorr, spikeMonInpCorr)
+        else:
+            self.N.add(inputGroupCorrelated, feedforwardSynapsesCorr)
 
     def initialize_external_input_memory(self, useQExcFeedforward, useExternalRate):
 
@@ -1338,11 +1474,12 @@ class DestexheNetwork(object):
         stateMonExcV = np.array(self.stateMonExc.v / mV, dtype=useDType)
         stateMonInhV = np.array(self.stateMonInh.v / mV, dtype=useDType)
 
-        if hasattr(self, 'poissonCorrInputIndices'):
+        if hasattr(self, 'monitorInpCorr'):
+            spikeMonInpCorrT = np.array(self.spikeMonInpCorr.t, dtype=useDType)
+            spikeMonInpCorrI = np.array(self.spikeMonInpCorr.i, dtype=useDType)
             np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
                      spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV,
-                     poissonCorrInputIndices=self.poissonCorrInputIndices,
-                     poissonCorrInputTimes=self.poissonCorrInputTimes)
+                     spikeMonInpCorrT=spikeMonInpCorrT, spikeMonInpCorrI=spikeMonInpCorrI)
         else:
             np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
                      spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV)
@@ -1821,3 +1958,30 @@ class DestexheEphysNetwork(object):
                                 self.saveName + '_params.pkl')
         with open(savePath, 'wb') as f:
             dill.dump(self.p, f)
+
+
+# OLD JERCOG WITH TIMEDARRAY
+
+# unitModel = '''
+#         dv/dt = (gl * (eLeak - v) - iAdapt +
+#                  jE * sE - jI * sI +
+#                  kKick * iKick) / Cm +
+#                  noiseSigma * (Cm / gl)**-0.5 * xi: volt
+#         diAdapt/dt = -iAdapt / tauAdapt : amp
+#
+#         dsE/dt = (-sE + uE) / tauFallE : 1
+#         duE/dt = -uE / tauRiseE : 1
+#         dsI/dt = (-sI + uI) / tauFallI : 1
+#         duI/dt = -uI / tauRiseI : 1
+#
+#         eLeak : volt
+#         jE : amp
+#         jI : amp
+#         kKick : amp
+#         iKick = iKickRecorded(t) : 1
+#         vReset : volt
+#         vThresh : volt
+#         betaAdapt : amp * second
+#         gl : siemens
+#         Cm : farad
+#         '''

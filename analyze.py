@@ -10,9 +10,11 @@ loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/'
 # targetSim = 'jercogFullConn_2020-11-04-16-38'  # shows that the Buono paramters lead to a never-ending Up state
 
 
-targetSim = 'jercogUpCritFullConn500Units_2020-10-26-17-07'  # shows the tuning of the UpCrit
+# targetSim = 'jercogUpCritFullConn500Units_2020-10-26-17-07'  # shows the tuning of the UpCrit
 # targetSim = 'jercogUpCritFullConn500Units_2020-11-25-11-28'  # shows the currents
 
+# targetSim = 'destexheEphysBuono_2021-03-29-15-23'  # random one (good)
+targetSim = 'destexheEphysBuono_2021-03-29-16-24'  # also good with half as many sources
 
 # loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/perfect_files/'
 
@@ -39,6 +41,12 @@ targetSim = 'jercogUpCritFullConn500Units_2020-10-26-17-07'  # shows the tuning 
 # targetSim = 'destexheEphysBuono_2020-11-11-12-55'
 
 R = Results(targetSim, loadFolder)
+
+printParameters = ['propConnectFeedforwardProjectionCorr', 'poissonCorrInputRate', 'nPoissonCorrInputUnits',
+                   'qExcFeedforwardCorr']
+for printParam in printParameters:
+    print(printParam, ':', R.p[printParam])
+
 R.calculate_spike_rate()
 R.calculate_voltage_histogram(removeMode=True)
 R.calculate_upstates()

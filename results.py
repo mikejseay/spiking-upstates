@@ -12,6 +12,22 @@ def bins_to_centers(bins):
     return (bins[:-1] + bins[1:]) / 2
 
 
+def convert_sNMDA_to_current_exc_Jercog_CellNotSyn(JN, ind):
+    v = JN.stateMonExc.v[ind, :]
+    sE_NMDA = JN.stateMonExc.sE_NMDA[ind, :]
+    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
+    NMDACurrent = JN.unitsExc.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * sE_NMDA
+    return hardGatePart * NMDACurrent
+
+
+def convert_sNMDA_to_current_inh_Jercog_CellNotSyn(JN, ind):
+    v = JN.stateMonInh.v[ind, :]
+    sE_NMDA = JN.stateMonInh.sE_NMDA[ind, :]
+    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
+    NMDACurrent = JN.unitsInh.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * sE_NMDA
+    return hardGatePart * NMDACurrent
+
+
 def convert_sNMDA_to_current_exc_Jercog(JN, ind):
     v = JN.stateMonExc.v[ind, :]
     s_NMDA_tot = JN.stateMonExc.s_NMDA_tot[ind, :]
@@ -73,9 +89,9 @@ class Results(object):
         self.stateMonExcV = npzObject['stateMonExcV']
         self.stateMonInhV = npzObject['stateMonInhV']
 
-        if 'poissonCorrInputIndices' in npzObject:
-            self.poissonCorrInputIndices = npzObject['poissonCorrInputIndices']
-            self.poissonCorrInputTimes = npzObject['poissonCorrInputTimes']
+        if 'spikeMonInpCorrT' in npzObject:
+            self.spikeMonInpCorrT = npzObject['spikeMonInpCorrT']
+            self.spikeMonInpCorrI = npzObject['spikeMonInpCorrI']
 
     def calculate_spike_rate(self):
         dtHist = float(5 * ms)
@@ -375,15 +391,15 @@ class Results(object):
             kickTimes = array(self.p['kickTimes'])
             ax.scatter(kickTimes, np.ones_like(kickTimes) * self.p['eLeakExc'] / mV - 10)
 
-        if hasattr(self, 'poissonCorrInputIndices'):
+        if hasattr(self, 'spikeMonInpCorrI'):
             # spikeDict = convert_indices_times_to_dict(self.poissonCorrInputIndices, self.poissonCorrInputTimes)
             yOffset = self.p['eLeakExc'] / mV - 10
             yDist = -20
-            maxInd = self.poissonCorrInputIndices.max()
+            maxInd = self.spikeMonInpCorrI.max()
             # for unitInd, spikeTimeArray in spikeDict.items():
-            ax.scatter(x=self.poissonCorrInputTimes,
-                       y=yOffset + yDist * self.poissonCorrInputIndices / maxInd,
-                       c=self.poissonCorrInputIndices,
+            ax.scatter(x=self.spikeMonInpCorrT,
+                       y=yOffset + yDist * self.spikeMonInpCorrI / maxInd,
+                       c=self.spikeMonInpCorrI,
                        cmap='viridis',
                        s=10, marker='.',  # this makes them quite small!
                        )

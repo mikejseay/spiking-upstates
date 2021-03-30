@@ -1,9 +1,15 @@
-from brian2 import defaultclock, ms, second, pA
+from brian2 import set_device, defaultclock, ms, second, pA
 from params import paramsJercog as p
 from params import paramsJercogEphysBuono
 from network import JercogNetwork
 from results import Results
 import matplotlib.pyplot as plt
+
+# for using Brian2GENN
+USE_BRIAN2GENN = False
+if USE_BRIAN2GENN:
+    import brian2genn
+    set_device('genn', debug=False)
 
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
