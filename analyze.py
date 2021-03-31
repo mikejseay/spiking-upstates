@@ -1,3 +1,11 @@
+"""
+script used to perform an analysis of the results of a simulation.
+loads results files
+    (.npz, which contains the data, and the .pkl, which contains the parameters),
+does certain calculations,
+then plots results.
+"""
+
 from results import Results
 import matplotlib.pyplot as plt
 
@@ -13,8 +21,11 @@ loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/'
 # targetSim = 'jercogUpCritFullConn500Units_2020-10-26-17-07'  # shows the tuning of the UpCrit
 # targetSim = 'jercogUpCritFullConn500Units_2020-11-25-11-28'  # shows the currents
 
-# targetSim = 'destexheEphysBuono_2021-03-29-15-23'  # random one (good)
-targetSim = 'destexheEphysBuono_2021-03-29-16-24'  # also good with half as many sources
+targetSim = 'destexheEphysBuono_2021-03-29-15-23'  # good one
+# targetSim = 'destexheEphysBuono_2021-03-29-16-24'  # also good with half as many sources
+# targetSim = 'destexheEphysBuono_2021-03-30-09-01'  # pretty good 60 s one
+
+# targetSim = 'destexheEphysOrig_2021-03-30-14-34'  # current check
 
 # loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/perfect_files/'
 

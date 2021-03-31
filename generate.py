@@ -1,5 +1,12 @@
-from brian2 import *
+"""
+mathematical type functions that often generate something using RNG
+or convert something related to that
+"""
+
+
+import numpy as np
 from tqdm import tqdm
+from brian2 import ms, second, TimedArray
 
 
 def generate_poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_iki):
@@ -10,7 +17,7 @@ def generate_poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_i
     kickInd = -1
     nextTime = 0
     while nextTime < duration:
-        nextISI = -lambda_value / log(1 - rand())
+        nextISI = -lambda_value / np.log(1 - np.random.rand())
         if nextISI < minimum_iki or nextISI > maximum_iki:
             continue
         kickInd += 1
@@ -45,6 +52,10 @@ def generate_poisson(rate, dt, duration, nUnits):
 
 
 def convert_indices_times_to_dict(indices, times):
+    """ convert two equal-sized arrays representing times and indices of events (spikes, for examples)
+    into a dict
+        in which each key is an index (e.g. unit #)
+        and the value is a list of the times that thing had an event """
 
     uniqueIndices = np.unique(indices.astype(int))
 
@@ -59,9 +70,9 @@ def convert_indices_times_to_dict(indices, times):
 def convert_kicks_to_current_series(kickDur, kickTau, kickTimes, kickSizes, duration, dt):
     """ given the times and sizes of kicks, generate a time series of injected current values """
 
-    tRecorded = arange(int(duration / dt)) * dt
-    iKickNumpy = zeros(tRecorded.shape)
-    kickShape = (1 - exp(-arange(0, kickDur, dt) / kickTau))
+    tRecorded = np.arange(int(duration / dt)) * dt
+    iKickNumpy = np.zeros(tRecorded.shape)
+    kickShape = (1 - np.exp(-np.arange(0, kickDur, dt) / kickTau))
     kickDurInd = kickShape.size
     for tKick, sKick in zip(kickTimes, kickSizes):
         startInd = int(tKick / dt)
@@ -71,8 +82,10 @@ def convert_kicks_to_current_series(kickDur, kickTau, kickTimes, kickSizes, dura
 
 
 def fixed_current_series(amplitude, duration, dt):
-    tRecorded = arange(int(duration / dt)) * dt
-    iKickNumpy = amplitude * ones_like(tRecorded)
+    """ generate a fixed current series of a given amplitude / duration at a given dt """
+
+    tRecorded = np.arange(int(duration / dt)) * dt
+    iKickNumpy = amplitude * np.ones_like(tRecorded)
     iKickRecorded = TimedArray(iKickNumpy, dt=dt)
     return iKickRecorded
 
@@ -98,4 +111,38 @@ def set_spikes_from_time_varying_rate(time_array, rate_array, nPoissonInputUnits
             outIndices.append(ii)  # all the indicces
             outTimes.append(time_array[it])  # all the same time !
 
-    return array(outIndices), array(outTimes) * ms
+    return np.array(outIndices), np.array(outTimes) * ms
+
+
+def generate_adjacency_matrix_within(nUnits, pConn, allowAutapses=False):
+    """ creates a square bool array representing synaptic connections within nUnits
+        that has a certain probability of connection and may or may not allow autapses.
+        pre is row, post is column. """
+
+    bestNumberOfSynapses = int(np.round(pConn * nUnits ** 2))
+
+    if allowAutapses:
+        indicesFlat = np.random.choice(nUnits ** 2, bestNumberOfSynapses, replace=False)
+        adjMat = np.zeros((nUnits, nUnits), dtype=bool)
+        adjMat[np.unravel_index(indicesFlat, (nUnits, nUnits))] = True
+    else:
+        probabilityArray = np.full((nUnits, nUnits), 1 / (nUnits * (nUnits - 1)))
+        probabilityArray[np.diag_indices_from(probabilityArray)] = 0
+        indicesFlat = np.random.choice(nUnits ** 2, bestNumberOfSynapses, replace=False, p=probabilityArray.ravel())
+        adjMat = np.zeros((nUnits, nUnits), dtype=bool)
+        adjMat[np.unravel_index(indicesFlat, (nUnits, nUnits))] = True
+
+    return adjMat
+
+
+def generate_adjacency_matrix_between(nUnitsPre, nUnitsPost, pConn):
+    """ creates a rectangular bool array representing synaptic connections between 2 populations
+        with a certain probability of connection
+        pre is row, post is column. """
+
+    bestNumberOfSynapses = int(np.round(pConn * nUnitsPre * nUnitsPost))
+    indicesFlat = np.random.choice(nUnitsPre * nUnitsPost, bestNumberOfSynapses, replace=False)
+    adjMat = np.zeros((nUnitsPre, nUnitsPost), dtype=bool)
+    adjMat[np.unravel_index(indicesFlat, (nUnitsPre, nUnitsPost))] = True
+
+    return adjMat

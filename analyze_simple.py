@@ -1,3 +1,8 @@
+"""
+analysis script that is maximally simple:
+loads the results and plots the voltage of a single Exc and Inh unit
+"""
+
 from results import Results
 import matplotlib.pyplot as plt
 

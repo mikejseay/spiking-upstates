@@ -7,8 +7,10 @@ from results import Results
 import matplotlib.pyplot as plt
 
 # for using Brian2GENN
-USE_BRIAN2GENN = True
+USE_BRIAN2GENN = False
 if USE_BRIAN2GENN:
+    from datetime import datetime
+    t0 = datetime.now()
     import brian2genn
     set_device('genn', debug=False)
 
@@ -17,7 +19,7 @@ USE_NEW_EPHYS_PARAMS = True
 KICKS_POISSON = True
 
 # remove protected keys from the dict whose params are being imported
-ephysParams = paramsDestexheEphysBuono.copy()
+ephysParams = paramsDestexheEphysOrig.copy()
 protectedKeys = ('nUnits', 'propInh', 'duration')
 for pK in protectedKeys:
     del ephysParams[pK]
@@ -28,15 +30,20 @@ if USE_NEW_EPHYS_PARAMS:
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
 
-p['nUnits'] = 5e4
-p['duration'] = 20 * second
+p['nUnits'] = 1e4
+p['duration'] = 10 * second
 p['dt'] = 0.1 * ms
 
 p['qExc'] = 0.6 * uS  # will be divided by total # exc units and proportion of recurrent connectivity
 p['qInh'] = 0.5 * uS  # will be divided by total # inh units and proportion of recurrent connectivity
 
-APPLY_UNCORRELATED_INPUTS = False
-APPLY_CORRELATED_INPUTS = True
+APPLY_UNCORRELATED_INPUTS = True
+APPLY_CORRELATED_INPUTS = False
+
+USE_PRIOR_CORRELATED_INPUT_PATTERN = False  # note this will overwrite several paramters below
+loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/'
+targetSim = 'destexheEphysBuono_2021-03-29-16-24'
+
 MONITOR_CORRELATED_INPUTS = True
 CORRELATED_INPUTS_TARGET_EXC = True
 APPLY_KICKS = False
@@ -57,18 +64,27 @@ p['nPoissonUncorrInputUnits'] = p['nUnits']
 
 p['nUncorrFeedforwardSynapsesPerUnit'] = int(p['propConnectFeedforwardProjectionUncorr'] *
                                         1e4 * (1 - p['propInh']))
-p['poissonUncorrInputRate'] = 0.16 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
-p['qExcFeedforwardUncorr'] = 0.3 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
+p['poissonUncorrInputRate'] = 0.315 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
+p['qExcFeedforwardUncorr'] = 0.6 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
+
+# p['nUncorrFeedforwardSynapsesPerUnit'] = int(p['propConnectFeedforwardProjectionUncorr'] *
+#                                         1e4 * (1 - p['propInh']))
+# p['poissonUncorrInputRate'] = 0.16 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
+# p['qExcFeedforwardUncorr'] = 0.3 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
+
 
 # to try to make the 5e4 work with only uncorr inputs...
 # p['poissonUncorrInputRate'] = 0.3168 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
 # p['qExcFeedforwardUncorr'] = 0.6138 * uS / p['nUncorrFeedforwardSynapsesPerUnit']
 
 # correlated Poisson inputs (feedforward projection with shared targets)
-p['propConnectFeedforwardProjectionCorr'] = 0.05  # proportion of feedforward projections that are connected
-p['poissonCorrInputRate'] = 0.15 * Hz
+p['propConnectFeedforwardProjectionCorr'] = 0.04  # proportion of feedforward projections that are connected
+
+# IF USING INHERITED POISSON PATTERN THESE DON'T MATTER
+p['poissonCorrInputRate'] = 0.2 * Hz
 p['nPoissonCorrInputUnits'] = 20
-p['qExcFeedforwardCorr'] = 13 * nS
+
+p['qExcFeedforwardCorr'] = 12.5 * nS
 
 p['poissonDriveType'] = 'constant'  # ramp, constant, fullRamp
 p['poissonInputRateDivider'] = 1  # the factor by which to divide the rate
@@ -115,16 +131,26 @@ DN.initialize_units()
 if APPLY_UNCORRELATED_INPUTS:
     DN.initialize_external_input_uncorrelated()
 if APPLY_CORRELATED_INPUTS:
-    DN.initialize_external_input_correlated(targetExc=CORRELATED_INPUTS_TARGET_EXC,
-                                            monitorProcesses=MONITOR_CORRELATED_INPUTS)
+    if USE_PRIOR_CORRELATED_INPUT_PATTERN:
+        DN.initialize_prior_external_input_correlated(targetSim, loadFolder,
+                                                      targetExc=CORRELATED_INPUTS_TARGET_EXC)
+    else:
+        DN.initialize_external_input_correlated(targetExc=CORRELATED_INPUTS_TARGET_EXC,
+                                                monitorProcesses=MONITOR_CORRELATED_INPUTS)
 if APPLY_KICKS:
     DN.set_spiked_units(onlySpikeExc=p['onlyKickExc'])
 
-DN.initialize_recurrent_synapses()
+# DN.initialize_recurrent_synapses()
+# DN.initialize_recurrent_synapses_4bundles()
+DN.initialize_recurrent_synapses_4bundles_distributed(normalMean=1, normalSD=0.2)
 DN.create_monitors()
 DN.run()
 DN.save_results()
 DN.save_params()
+
+if USE_BRIAN2GENN:
+    t1 = datetime.now()
+    print('took:', t1 - t0)
 
 R = Results(DN.saveName, DN.p['saveFolder'])
 R.calculate_spike_rate()

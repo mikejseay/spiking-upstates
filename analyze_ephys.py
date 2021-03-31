@@ -1,3 +1,7 @@
+"""
+specialized script for analyzing the results of simulateDestexheEphys or simulateJercogEphys
+"""
+
 from results import ResultsEphys
 import matplotlib.pyplot as plt
 

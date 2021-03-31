@@ -1,3 +1,7 @@
+""" statistical functions.
+they support analysis and plotting.
+"""
+
 import numpy as np
 from sklearn import linear_model
 import statsmodels.api as sm

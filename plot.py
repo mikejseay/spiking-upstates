@@ -1,3 +1,7 @@
+"""
+dedicated plotting functionality that does not belong to a specific class
+"""
+
 from brian2 import *
 
 

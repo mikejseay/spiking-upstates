@@ -1,18 +1,36 @@
+"""
+classes for representing networks of simulated neurons in Brian2.
+classes consume a parameter dictionary,
+but they also have numerous "hardcoded" aspects inside of them, such as the equations.
+the classes do the following:
+    create the units based on specific mathematical specification (given needed parameters)
+    create the synapses and set their weights (external or recurrent)
+    create monitors, which allow one to record spiking and state variables
+    build the network out of the above Brian2 objects
+    runs the network for a given duration at a given dt
+    saves the results as a Results object
+    saves the params in a pickle
+can ALSO set up certain classic types of experiments for characterizing a network.
+"""
+
 from brian2 import *
 import dill
 from datetime import datetime
 import os
-from generate import set_spikes_from_time_varying_rate, fixed_current_series, generate_poisson
+from generate import set_spikes_from_time_varying_rate, fixed_current_series, generate_adjacency_matrix_within, \
+    generate_adjacency_matrix_between
 import winsound
+from results import Results
 
 
 class BaseNetwork(object):
     """ represents descriptive information needed to create network in Brian.
-        creates the NeuronGroup, sets variable/randomized self.p of units,
+        creates the NeuronGroup, sets variable/randomized params of units,
         creates the Synapses, connects them, sets any variable/randomized params of synapses,
         creates Monitor objects,
         eventually saves all created objects in a Network object (Brian), which can be passed
         for various simulation goals
+        SERVES AS A TEMPLATE AND IS NOT USED
     """
 
     def __init__(self, params):
@@ -117,6 +135,11 @@ class BaseNetwork(object):
 
 
 class JercogNetwork(object):
+
+    """ represents a network inspired by:
+        Jercog, D., Roxin, A., Barthó, P., Luczak, A., Compte, A., & De La Rocha, J. (2017).
+        UP-DOWN cortical dynamics reflect state transitions in a bistable network.
+        ELife, 6, 1–33. https://doi.org/10.7554/eLife.22425 """
 
     def __init__(self, params):
         self.p = params
@@ -941,6 +964,11 @@ class JercogNetwork(object):
 
 class DestexheNetwork(object):
 
+    """ represents a network inspired by:
+        Volo MD, Romagnoni A, Capone C, Destexhe A.
+        Biologically Realistic Mean-Field Models of Conductance-Based Networks of Spiking Neurons with Adaptation.
+        Neural Comput. 2019 Apr;31(4):653-680. doi: 10.1162/neco_a_01173. Epub 2019 Feb 14. PMID: 30764741. """
+
     def __init__(self, params):
         self.p = params
         self.p['initTime'] = datetime.now().strftime('%Y-%m-%d-%H-%M')
@@ -1224,6 +1252,132 @@ class DestexheNetwork(object):
         self.synapsesII = synapsesII
         self.N.add(synapsesEE, synapsesIE, synapsesEI, synapsesII)
 
+    def initialize_recurrent_synapses_4bundles(self):
+
+        nRecurrentExcitatorySynapsesPerUnit = int(self.p['nExc'] * self.p['propConnect'])
+        nRecurrentInhibitorySynapsesPerUnit = int(self.p['nInh'] * self.p['propConnect'])
+
+        useQExc = self.p['qExc'] / nRecurrentExcitatorySynapsesPerUnit
+        useQInh = self.p['qInh'] / nRecurrentInhibitorySynapsesPerUnit
+
+        # from E to E
+        synapsesEE = Synapses(
+            source=self.unitsExc,
+            target=self.unitsExc,
+            on_pre='ge_post += ' + str(useQExc / nS) + ' * nS',
+        )
+        aEE = generate_adjacency_matrix_within(self.p['nExc'], self.p['propConnect'], allowAutapses=False)
+        preInds, postInds = np.where(aEE)
+        synapsesEE.connect(i=preInds, j=postInds)
+
+        # from E to I
+        synapsesIE = Synapses(
+            source=self.unitsExc,
+            target=self.unitsInh,
+            on_pre='ge_post += ' + str(useQExc / nS) + ' * nS',
+        )
+        aIE = generate_adjacency_matrix_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'])
+        preInds, postInds = np.where(aIE)
+        synapsesIE.connect(i=preInds, j=postInds)
+
+        # from I to E
+        synapsesEI = Synapses(
+            source=self.unitsInh,
+            target=self.unitsExc,
+            on_pre='gi_post += ' + str(useQInh / nS) + ' * nS',
+        )
+        aEI = generate_adjacency_matrix_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'])
+        preInds, postInds = np.where(aEI)
+        synapsesEI.connect(i=preInds, j=postInds)
+
+        # from I to I
+        synapsesII = Synapses(
+            source=self.unitsInh,
+            target=self.unitsInh,
+            on_pre='gi_post += ' + str(useQInh / nS) + ' * nS',
+        )
+        aII = generate_adjacency_matrix_within(self.p['nInh'], self.p['propConnect'], allowAutapses=False)
+        preInds, postInds = np.where(aII)
+        synapsesII.connect(i=preInds, j=postInds)
+
+        self.synapsesEE = synapsesEE
+        self.synapsesIE = synapsesIE
+        self.synapsesEI = synapsesEI
+        self.synapsesII = synapsesII
+        self.N.add(synapsesEE, synapsesIE, synapsesEI, synapsesII)
+
+    def initialize_recurrent_synapses_4bundles_distributed(self, normalMean, normalSD):
+
+        self.weightsDistributed = True
+
+        nRecurrentExcitatorySynapsesPerUnit = int(self.p['nExc'] * self.p['propConnect'])
+        nRecurrentInhibitorySynapsesPerUnit = int(self.p['nInh'] * self.p['propConnect'])
+
+        useQExc = self.p['qExc'] / nRecurrentExcitatorySynapsesPerUnit
+        useQInh = self.p['qInh'] / nRecurrentInhibitorySynapsesPerUnit
+
+        # from E to E
+        synapsesEE = Synapses(
+            model='wSyn : 1',
+            source=self.unitsExc,
+            target=self.unitsExc,
+            on_pre='ge_post += wSyn * ' + str(useQExc / nS) + ' * nS',
+        )
+        aEE = generate_adjacency_matrix_within(self.p['nExc'], self.p['propConnect'], allowAutapses=False)
+        preInds, postInds = np.where(aEE)
+        synapsesEE.connect(i=preInds, j=postInds)
+        weights = np.random.normal(normalMean, normalSD, preInds.size)
+        weights[weights < 0] = 0
+        synapsesEE.wSyn = weights
+
+        # from E to I
+        synapsesIE = Synapses(
+            model='wSyn : 1',
+            source=self.unitsExc,
+            target=self.unitsInh,
+            on_pre='ge_post += wSyn * ' + str(useQExc / nS) + ' * nS',
+        )
+        aIE = generate_adjacency_matrix_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'])
+        preInds, postInds = np.where(aIE)
+        synapsesIE.connect(i=preInds, j=postInds)
+        weights = np.random.normal(normalMean, normalSD, preInds.size)
+        weights[weights < 0] = 0
+        synapsesIE.wSyn = weights
+
+        # from I to E
+        synapsesEI = Synapses(
+            model='wSyn : 1',
+            source=self.unitsInh,
+            target=self.unitsExc,
+            on_pre='gi_post += wSyn * ' + str(useQInh / nS) + ' * nS',
+        )
+        aEI = generate_adjacency_matrix_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'])
+        preInds, postInds = np.where(aEI)
+        synapsesEI.connect(i=preInds, j=postInds)
+        weights = np.random.normal(normalMean, normalSD, preInds.size)
+        weights[weights < 0] = 0
+        synapsesEI.wSyn = weights
+
+        # from I to I
+        synapsesII = Synapses(
+            model='wSyn : 1',
+            source=self.unitsInh,
+            target=self.unitsInh,
+            on_pre='gi_post += wSyn * ' + str(useQInh / nS) + ' * nS',
+        )
+        aII = generate_adjacency_matrix_within(self.p['nInh'], self.p['propConnect'], allowAutapses=False)
+        preInds, postInds = np.where(aII)
+        synapsesII.connect(i=preInds, j=postInds)
+        weights = np.random.normal(normalMean, normalSD, preInds.size)
+        weights[weights < 0] = 0
+        synapsesII.wSyn = weights
+
+        self.synapsesEE = synapsesEE
+        self.synapsesIE = synapsesIE
+        self.synapsesEI = synapsesEI
+        self.synapsesII = synapsesII
+        self.N.add(synapsesEE, synapsesIE, synapsesEI, synapsesII)
+
     def initialize_recurrent_excitation_NMDA(self, scaleWeightsByIncSynapses=True):
 
         eqs_glut = '''
@@ -1352,6 +1506,43 @@ class DestexheNetwork(object):
         else:
             self.N.add(inputGroupCorrelated, feedforwardSynapsesCorr)
 
+    def initialize_prior_external_input_correlated(self, targetSim, loadFolder, targetExc=False):
+
+        # TODO: be able to inherit the exact same feedforward connnectivity as well
+
+        R = Results(targetSim, loadFolder)
+
+        # the total sim duration (and dt?) should be the same for this to make sense
+        assert self.p['duration'] == R.p['duration']
+        assert self.p['dt'] == R.p['dt']
+
+        # transfered parameters:
+        # nPoissonCorrInputUnits, poissonCorrInputRate, indices, times
+        # by default we will not monitor since the series is already known
+
+        self.p['nPoissonCorrInputUnits'] = R.p['nPoissonCorrInputUnits']
+        self.p['poissonCorrInputRate'] = R.p['poissonCorrInputRate']
+        self.monitorInpCorr = 'inherit'
+        self.spikeMonInpCorrI = R.spikeMonInpCorrI
+        self.spikeMonInpCorrT = R.spikeMonInpCorrT
+
+        # new parameters:
+        # qExcFeedforwardCorr, propConnectFeedforwardProjectionCorr
+
+        inputGroupCorrelated = SpikeGeneratorGroup(int(self.p['nPoissonCorrInputUnits']),
+                                                   self.spikeMonInpCorrI,
+                                                   self.spikeMonInpCorrT * second)
+
+        if targetExc:
+            feedforwardSynapsesCorr = Synapses(inputGroupCorrelated, self.unitsExc,
+                                               on_pre='ge_post += ' + str(self.p['qExcFeedforwardCorr'] / nS) + ' * nS')
+        else:
+            feedforwardSynapsesCorr = Synapses(inputGroupCorrelated, self.units,
+                                               on_pre='ge_post += ' + str(self.p['qExcFeedforwardCorr'] / nS) + ' * nS')
+
+        feedforwardSynapsesCorr.connect(p=self.p['propConnectFeedforwardProjectionCorr'])
+        self.N.add(inputGroupCorrelated, feedforwardSynapsesCorr)
+
     def initialize_external_input_memory(self, useQExcFeedforward, useExternalRate):
 
         inputGroupWeak = PoissonGroup(int(self.p['nPoissonInputUnits']), useExternalRate)
@@ -1475,14 +1666,21 @@ class DestexheNetwork(object):
         stateMonInhV = np.array(self.stateMonInh.v / mV, dtype=useDType)
 
         if hasattr(self, 'monitorInpCorr'):
-            spikeMonInpCorrT = np.array(self.spikeMonInpCorr.t, dtype=useDType)
-            spikeMonInpCorrI = np.array(self.spikeMonInpCorr.i, dtype=useDType)
+            if self.monitorInpCorr == 'inherit':
+                spikeMonInpCorrT = self.spikeMonInpCorrT
+                spikeMonInpCorrI = self.spikeMonInpCorrI
+            else:
+                spikeMonInpCorrT = np.array(self.spikeMonInpCorr.t, dtype=useDType)
+                spikeMonInpCorrI = np.array(self.spikeMonInpCorr.i, dtype=useDType)
             np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
                      spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV,
                      spikeMonInpCorrT=spikeMonInpCorrT, spikeMonInpCorrI=spikeMonInpCorrI)
         else:
             np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
                      spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV)
+
+        if hasattr(self, 'weightsDistributed'):
+            pass
 
     def save_params(self):
         savePath = os.path.join(self.p['saveFolder'],
@@ -1660,6 +1858,9 @@ class DestexheNetwork(object):
 
         self.p['duration'] = (array(times).max() * second + timeSpacing)
 
+
+# THE BELOW ARE STRIPPED-DOWN VERSIONS OF THE ORIGINAL NETWORKS THAT ARE DESIGNED FOR TESTING EPHYS CHARACTERISTICS
+# I.E. FIRING RATE / PATTERN GIVEN A SQUARE-WAVE CURRENT INJECTION
 
 class JercogEphysNetwork(object):
 
@@ -1958,7 +2159,6 @@ class DestexheEphysNetwork(object):
                                 self.saveName + '_params.pkl')
         with open(savePath, 'wb') as f:
             dill.dump(self.p, f)
-
 
 # OLD JERCOG WITH TIMEDARRAY
 

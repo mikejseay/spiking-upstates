@@ -1,3 +1,9 @@
+"""
+contains parameter dictionaries for different types of networks.
+mainly intended to represent default values.
+i.e. new analyses should copy the dictionary and alter values as needed.
+"""
+
 from brian2 import *
 
 paramsJercog = {

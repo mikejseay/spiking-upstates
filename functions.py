@@ -1,3 +1,7 @@
+"""
+general functions that can't be categorized easily
+"""
+
 import numpy as np
 
 

@@ -1,3 +1,7 @@
+"""
+a script for comparing the parameters used for two different simulations
+"""
+
 from results import Results
 
 loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/long_files/'

@@ -1,3 +1,8 @@
+"""
+classes for representing the results of simulations.
+i.e. spikes and unit state variables (membrane voltage, synaptic variables, etc)
+"""
+
 from brian2 import *
 import dill
 import numpy as np
