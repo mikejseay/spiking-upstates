@@ -17,8 +17,8 @@ from brian2 import *
 import dill
 from datetime import datetime
 import os
-from generate import set_spikes_from_time_varying_rate, fixed_current_series, generate_adjacency_matrix_within, \
-    generate_adjacency_matrix_between
+from generate import set_spikes_from_time_varying_rate, fixed_current_series, \
+    generate_adjacency_indices_within, generate_adjacency_indices_between, normal_positive_weights
 import winsound
 from results import Results
 
@@ -1266,9 +1266,12 @@ class DestexheNetwork(object):
             target=self.unitsExc,
             on_pre='ge_post += ' + str(useQExc / nS) + ' * nS',
         )
-        aEE = generate_adjacency_matrix_within(self.p['nExc'], self.p['propConnect'], allowAutapses=False)
-        preInds, postInds = np.where(aEE)
-        synapsesEE.connect(i=preInds, j=postInds)
+        if self.p['propConnect'] == 1:
+            synapsesEE.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
+                                                                  allowAutapses=False)
+            synapsesEE.connect(i=preInds, j=postInds)
 
         # from E to I
         synapsesIE = Synapses(
@@ -1276,9 +1279,11 @@ class DestexheNetwork(object):
             target=self.unitsInh,
             on_pre='ge_post += ' + str(useQExc / nS) + ' * nS',
         )
-        aIE = generate_adjacency_matrix_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'])
-        preInds, postInds = np.where(aIE)
-        synapsesIE.connect(i=preInds, j=postInds)
+        if self.p['propConnect'] == 1:
+            synapsesIE.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'])
+            synapsesIE.connect(i=preInds, j=postInds)
 
         # from I to E
         synapsesEI = Synapses(
@@ -1286,9 +1291,11 @@ class DestexheNetwork(object):
             target=self.unitsExc,
             on_pre='gi_post += ' + str(useQInh / nS) + ' * nS',
         )
-        aEI = generate_adjacency_matrix_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'])
-        preInds, postInds = np.where(aEI)
-        synapsesEI.connect(i=preInds, j=postInds)
+        if self.p['propConnect'] == 1:
+            synapsesEI.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'])
+            synapsesEI.connect(i=preInds, j=postInds)
 
         # from I to I
         synapsesII = Synapses(
@@ -1296,9 +1303,12 @@ class DestexheNetwork(object):
             target=self.unitsInh,
             on_pre='gi_post += ' + str(useQInh / nS) + ' * nS',
         )
-        aII = generate_adjacency_matrix_within(self.p['nInh'], self.p['propConnect'], allowAutapses=False)
-        preInds, postInds = np.where(aII)
-        synapsesII.connect(i=preInds, j=postInds)
+        if self.p['propConnect'] == 1:
+            synapsesII.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
+                                                                  allowAutapses=False)
+            synapsesII.connect(i=preInds, j=postInds)
 
         self.synapsesEE = synapsesEE
         self.synapsesIE = synapsesIE
@@ -1323,12 +1333,13 @@ class DestexheNetwork(object):
             target=self.unitsExc,
             on_pre='ge_post += wSyn * ' + str(useQExc / nS) + ' * nS',
         )
-        aEE = generate_adjacency_matrix_within(self.p['nExc'], self.p['propConnect'], allowAutapses=False)
-        preInds, postInds = np.where(aEE)
+        preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'], allowAutapses=False)
         synapsesEE.connect(i=preInds, j=postInds)
-        weights = np.random.normal(normalMean, normalSD, preInds.size)
-        weights[weights < 0] = 0
+        weights = normal_positive_weights(preInds.size, normalMean, normalSD)
         synapsesEE.wSyn = weights
+        self.preInds_EE = preInds
+        self.postInds_EE = postInds
+        self.weights_EE = weights
 
         # from E to I
         synapsesIE = Synapses(
@@ -1337,12 +1348,13 @@ class DestexheNetwork(object):
             target=self.unitsInh,
             on_pre='ge_post += wSyn * ' + str(useQExc / nS) + ' * nS',
         )
-        aIE = generate_adjacency_matrix_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'])
-        preInds, postInds = np.where(aIE)
+        preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'])
         synapsesIE.connect(i=preInds, j=postInds)
-        weights = np.random.normal(normalMean, normalSD, preInds.size)
-        weights[weights < 0] = 0
+        weights = normal_positive_weights(preInds.size, normalMean, normalSD)
         synapsesIE.wSyn = weights
+        self.preInds_IE = preInds
+        self.postInds_IE = postInds
+        self.weights_IE = weights
 
         # from I to E
         synapsesEI = Synapses(
@@ -1351,12 +1363,13 @@ class DestexheNetwork(object):
             target=self.unitsExc,
             on_pre='gi_post += wSyn * ' + str(useQInh / nS) + ' * nS',
         )
-        aEI = generate_adjacency_matrix_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'])
-        preInds, postInds = np.where(aEI)
+        preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'])
         synapsesEI.connect(i=preInds, j=postInds)
-        weights = np.random.normal(normalMean, normalSD, preInds.size)
-        weights[weights < 0] = 0
+        weights = normal_positive_weights(preInds.size, normalMean, normalSD)
         synapsesEI.wSyn = weights
+        self.preInds_EI = preInds
+        self.postInds_EI = postInds
+        self.weights_EI = weights
 
         # from I to I
         synapsesII = Synapses(
@@ -1365,12 +1378,14 @@ class DestexheNetwork(object):
             target=self.unitsInh,
             on_pre='gi_post += wSyn * ' + str(useQInh / nS) + ' * nS',
         )
-        aII = generate_adjacency_matrix_within(self.p['nInh'], self.p['propConnect'], allowAutapses=False)
-        preInds, postInds = np.where(aII)
+        preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
+                                                              allowAutapses=False)
         synapsesII.connect(i=preInds, j=postInds)
-        weights = np.random.normal(normalMean, normalSD, preInds.size)
-        weights[weights < 0] = 0
+        weights = normal_positive_weights(preInds.size, normalMean, normalSD)
         synapsesII.wSyn = weights
+        self.preInds_II = preInds
+        self.postInds_II = postInds
+        self.weights_II = weights
 
         self.synapsesEE = synapsesEE
         self.synapsesIE = synapsesIE
@@ -1653,34 +1668,38 @@ class DestexheNetwork(object):
                    )
 
     def save_results(self):
-        useDType = np.single
+        useDType = np.float32
 
         savePath = os.path.join(self.p['saveFolder'],
                                 self.saveName + '_results.npz')
 
-        spikeMonExcT = np.array(self.spikeMonExc.t, dtype=useDType)
-        spikeMonExcI = np.array(self.spikeMonExc.i, dtype=useDType)
-        spikeMonInhT = np.array(self.spikeMonInh.t, dtype=useDType)
-        spikeMonInhI = np.array(self.spikeMonInh.i, dtype=useDType)
-        stateMonExcV = np.array(self.stateMonExc.v / mV, dtype=useDType)
-        stateMonInhV = np.array(self.stateMonInh.v / mV, dtype=useDType)
+        saveDict = dict()
+        saveDict['spikeMonExcT'] = np.array(self.spikeMonExc.t, dtype=useDType)
+        saveDict['spikeMonExcI'] = np.array(self.spikeMonExc.i, dtype=useDType)
+        saveDict['spikeMonInhT'] = np.array(self.spikeMonInh.t, dtype=useDType)
+        saveDict['spikeMonInhI'] = np.array(self.spikeMonInh.i, dtype=useDType)
+        saveDict['stateMonExcV'] = np.array(self.stateMonExc.v / mV, dtype=useDType)
+        saveDict['stateMonInhV'] = np.array(self.stateMonInh.v / mV, dtype=useDType)
 
         if hasattr(self, 'monitorInpCorr'):
             if self.monitorInpCorr == 'inherit':
-                spikeMonInpCorrT = self.spikeMonInpCorrT
-                spikeMonInpCorrI = self.spikeMonInpCorrI
+                saveDict['spikeMonInpCorrT'] = self.spikeMonInpCorrT
+                saveDict['spikeMonInpCorrI'] = self.spikeMonInpCorrI
             else:
-                spikeMonInpCorrT = np.array(self.spikeMonInpCorr.t, dtype=useDType)
-                spikeMonInpCorrI = np.array(self.spikeMonInpCorr.i, dtype=useDType)
-            np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
-                     spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV,
-                     spikeMonInpCorrT=spikeMonInpCorrT, spikeMonInpCorrI=spikeMonInpCorrI)
-        else:
-            np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
-                     spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV)
+                saveDict['spikeMonInpCorrT'] = np.array(self.spikeMonInpCorr.t, dtype=useDType)
+                saveDict['spikeMonInpCorrI'] = np.array(self.spikeMonInpCorr.i, dtype=useDType)
 
+        # these are big arrays so we'll be careful about how we save them
         if hasattr(self, 'weightsDistributed'):
-            pass
+            saveUInt16 = ['preInds_EE', 'preInds_IE', 'preInds_EI', 'preInds_II',
+                          'postInds_EE', 'postInds_IE', 'postInds_EI', 'postInds_II',]
+            saveFloat32 = ['weights_EE', 'weights_IE', 'weights_EI', 'weights_II',]
+            for sA in saveUInt16:
+                saveDict[sA] = getattr(self, sA).astype(np.uint16)
+            for sA in saveFloat32:
+                saveDict[sA] = getattr(self, sA).astype(np.float32)
+
+        np.savez(savePath, **saveDict)
 
     def save_params(self):
         savePath = os.path.join(self.p['saveFolder'],

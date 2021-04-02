@@ -9,15 +9,24 @@ defaultclock.dt = p['dt']
 
 # determine 'up crit' empirically
 
-p['simName'] = 'destexheUpCrit0p05Conn5e4units'
-p['nUnits'] = 5e4
+p['simName'] = 'destexheUpCritFullConn'
+p['nUnits'] = 1e3
+p['propConnect'] = 1
+
+USE_DISTRIBUTED_WEIGHTS = True
+normalMean = 1
+normalSD = 0.2
 
 DN = DestexheNetwork(p)
 DN.initialize_network()
 DN.initialize_units()
-DN.initialize_recurrent_synapses2()
 
-DN.prepare_upCrit_experiment(minUnits=1000, maxUnits=1400, unitSpacing=200, timeSpacing=3000 * ms)
+if USE_DISTRIBUTED_WEIGHTS:
+    DN.initialize_recurrent_synapses_4bundles_distributed(normalMean=normalMean, normalSD=normalSD)
+else:
+    DN.initialize_recurrent_synapses_4bundles()
+
+DN.prepare_upCrit_experiment(minUnits=40, maxUnits=80, unitSpacing=10, timeSpacing=3000 * ms)
 
 DN.create_monitors()
 DN.run()

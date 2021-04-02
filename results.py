@@ -87,16 +87,9 @@ class Results(object):
         npzObject = np.load(loadPath)
         self.npzObject = npzObject
 
-        self.spikeMonExcT = npzObject['spikeMonExcT']
-        self.spikeMonExcI = npzObject['spikeMonExcI']
-        self.spikeMonInhT = npzObject['spikeMonInhT']
-        self.spikeMonInhI = npzObject['spikeMonInhI']
-        self.stateMonExcV = npzObject['stateMonExcV']
-        self.stateMonInhV = npzObject['stateMonInhV']
-
-        if 'spikeMonInpCorrT' in npzObject:
-            self.spikeMonInpCorrT = npzObject['spikeMonInpCorrT']
-            self.spikeMonInpCorrI = npzObject['spikeMonInpCorrI']
+        # simply assign each object name to an attribute of the results object
+        for savedObjectName in npzObject.files:
+            setattr(self, savedObjectName, npzObject[savedObjectName])
 
     def calculate_spike_rate(self):
         dtHist = float(5 * ms)

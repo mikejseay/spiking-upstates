@@ -1,7 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c50fe96e-73b6-429f-aab6-173e82858304" name="Default Changelist" comment="" />
+    <list default="true" id="c50fe96e-73b6-429f-aab6-173e82858304" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analyze.py" beforeDir="false" afterPath="$PROJECT_DIR$/analyze.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analyze_ephys.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/generate.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/plot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/results.py" beforeDir="false" afterPath="$PROJECT_DIR$/results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateDestexhe.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateDestexhe.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateDestexheAndAnalyze.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateDestexheEphys.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateDestexheNMDAFanIn.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateDestexheNMDATest.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateDestexheNMDAUpCrit.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateDestexheNMDAUpCrit2.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateDestexheNMDAUpstates.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateDestexheUpCrit.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateDestexheUpCrit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateJercog.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercog.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateJercogAndAnalyze.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateJercogEphys.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateJercogNMDAUpCrit.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateJercogNMDAUpCrit2.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateJercogNMDAUpCritCellNotSyn.py" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -36,11 +59,16 @@
     <option name="myAttachToSubprocess" value="false" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\mikejseay\PycharmProjects\spiking-upstates\old_stash" />
+      <recent name="C:\Users\mikejseay\PycharmProjects\spiking-upstates\ephys_stash" />
+      <recent name="C:\Users\mikejseay\PycharmProjects\spiking-upstates\NMDA_stash" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\mikejseay\PycharmProjects\spiking-upstates" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.analyze">
+  <component name="RunManager" selected="Python.simulateDestexhe">
     <configuration name="analyze" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="spiking-upstates" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -80,7 +108,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="simulateDestexheAndAnalyze" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="network" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="spiking-upstates" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -92,7 +120,46 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulateDestexheAndAnalyze.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/network.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="simulateDestexhe" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="spiking-upstates" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulateDestexhe.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="simulateDestexheUpCrit" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="spiking-upstates" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulateDestexheUpCrit.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -113,49 +180,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulateJercogEphys.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="simulateJercogNMDAUpCrit2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="spiking-upstates" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulateJercogNMDAUpCrit2.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="simulateJercogNMDAUpCritCellNotSyn" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="spiking-upstates" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulateJercogNMDAUpCritCellNotSyn.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\mikejseay\PycharmProjects\spiking-upstates\ephys_stash\simulateJercogEphys.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -189,18 +214,17 @@
       <item itemvalue="Python.compare_results" />
       <item itemvalue="Python.simulateJercogEphys" />
       <item itemvalue="Python.analyze" />
-      <item itemvalue="Python.simulateJercogNMDAUpCrit2" />
-      <item itemvalue="Python.simulateJercogNMDAUpCritCellNotSyn" />
       <item itemvalue="Python.simulateJercogUpCrit" />
-      <item itemvalue="Python.simulateDestexheAndAnalyze" />
+      <item itemvalue="Python.network" />
+      <item itemvalue="Python.simulateDestexhe" />
+      <item itemvalue="Python.simulateDestexheUpCrit" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.analyze" />
-        <item itemvalue="Python.simulateDestexheAndAnalyze" />
+        <item itemvalue="Python.simulateDestexheUpCrit" />
+        <item itemvalue="Python.network" />
         <item itemvalue="Python.simulateJercogUpCrit" />
-        <item itemvalue="Python.simulateJercogNMDAUpCritCellNotSyn" />
-        <item itemvalue="Python.simulateJercogNMDAUpCrit2" />
       </list>
     </recent_temporary>
   </component>
@@ -218,81 +242,95 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
+    <state x="414" y="175" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1617225837540">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="414" y="175" key="#com.intellij.execution.impl.EditConfigurationsDialog/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617225837540" />
+    <state x="679" y="146" key="#simulateDestexhe" timestamp="1617225849852">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="679" y="146" key="#simulateDestexhe/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617225849852" />
+    <state x="679" y="146" key="#simulateDestexheAndAnalyze" timestamp="1617219172152">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="679" y="146" key="#simulateDestexheAndAnalyze/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617219172152" />
+    <state x="679" y="146" key="#simulateDestexhe_(1)" timestamp="1617220145610">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="679" y="146" key="#simulateDestexhe_(1)/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617220145610" />
     <state x="679" y="146" key="#simulateJercogUpCrit" timestamp="1617035721946">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="679" y="146" key="#simulateJercogUpCrit/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617035721946" />
-    <state x="1240" y="317" key="#xdebugger.evaluate" timestamp="1617137891882">
+    <state x="826" y="432" key="#xdebugger.evaluate" timestamp="1617255387471">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="1240" y="317" key="#xdebugger.evaluate/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617137891882" />
-    <state width="1899" height="195" key="GridCell.Tab.0.bottom" timestamp="1617140777414">
+    <state x="826" y="432" key="#xdebugger.evaluate/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617255387471" />
+    <state x="740" y="275" key="FileChooserDialogImpl" timestamp="1617219241736">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="195" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617140777414" />
-    <state width="1899" height="195" key="GridCell.Tab.0.center" timestamp="1617140777414">
+    <state x="740" y="275" key="FileChooserDialogImpl/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617219241736" />
+    <state width="1899" height="195" key="GridCell.Tab.0.bottom" timestamp="1617257617008">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="195" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617140777414" />
-    <state width="1899" height="195" key="GridCell.Tab.0.left" timestamp="1617140777414">
+    <state width="1899" height="195" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617257617008" />
+    <state width="1899" height="195" key="GridCell.Tab.0.center" timestamp="1617257617008">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="195" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617140777414" />
-    <state width="1899" height="195" key="GridCell.Tab.0.right" timestamp="1617140777414">
+    <state width="1899" height="195" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617257617008" />
+    <state width="1899" height="195" key="GridCell.Tab.0.left" timestamp="1617257617007">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="195" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617140777414" />
+    <state width="1899" height="195" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617257617007" />
+    <state width="1899" height="195" key="GridCell.Tab.0.right" timestamp="1617257617008">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="195" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617257617008" />
     <state x="769" y="437" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1617123430175">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="769" y="437" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617123430175" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1617224690072">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617224690072" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/results.py</url>
-          <line>283</line>
+          <line>276</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/results.py</url>
-          <line>452</line>
+          <line>445</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>808</line>
+          <line>823</line>
           <option name="timeStamp" value="32" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>638</line>
+          <line>653</line>
           <option name="timeStamp" value="44" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/results.py</url>
-          <line>524</line>
+          <line>517</line>
           <option name="timeStamp" value="49" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>392</line>
+          <line>407</line>
           <option name="timeStamp" value="68" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>1588</line>
-          <option name="timeStamp" value="89" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/network.py</url>
-          <line>1475</line>
-          <option name="timeStamp" value="91" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/network.py</url>
-          <line>578</line>
+          <line>593</line>
           <option name="timeStamp" value="99" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -301,19 +339,9 @@
           <option name="timeStamp" value="100" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/analyze.py</url>
-          <line>55</line>
-          <option name="timeStamp" value="105" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>1255</line>
-          <option name="timeStamp" value="112" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/network.py</url>
-          <line>1329</line>
-          <option name="timeStamp" value="113" />
+          <line>1697</line>
+          <option name="timeStamp" value="122" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

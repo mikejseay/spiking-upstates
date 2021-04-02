@@ -114,35 +114,65 @@ def set_spikes_from_time_varying_rate(time_array, rate_array, nPoissonInputUnits
     return np.array(outIndices), np.array(outTimes) * ms
 
 
-def generate_adjacency_matrix_within(nUnits, pConn, allowAutapses=False):
-    """ creates a square bool array representing synaptic connections within nUnits
+def generate_adjacency_indices_within(nUnits, pConn, allowAutapses=False):
+    """ creates indices representing pre- and post-synaptic units within 1 population
         that has a certain probability of connection and may or may not allow autapses.
-        pre is row, post is column. """
+        preInds are first output, postInds are second. """
 
     bestNumberOfSynapses = int(np.round(pConn * nUnits ** 2))
 
     if allowAutapses:
         indicesFlat = np.random.choice(nUnits ** 2, bestNumberOfSynapses, replace=False)
-        adjMat = np.zeros((nUnits, nUnits), dtype=bool)
-        adjMat[np.unravel_index(indicesFlat, (nUnits, nUnits))] = True
     else:
         probabilityArray = np.full((nUnits, nUnits), 1 / (nUnits * (nUnits - 1)))
         probabilityArray[np.diag_indices_from(probabilityArray)] = 0
+
+        if pConn > (nUnits - 1) / nUnits:
+            bestNumberOfSynapses -= int(np.round(nUnits ** 2 * (pConn - (nUnits - 1) / nUnits)))
+
         indicesFlat = np.random.choice(nUnits ** 2, bestNumberOfSynapses, replace=False, p=probabilityArray.ravel())
-        adjMat = np.zeros((nUnits, nUnits), dtype=bool)
-        adjMat[np.unravel_index(indicesFlat, (nUnits, nUnits))] = True
 
-    return adjMat
+    preInds, postInds = np.unravel_index(indicesFlat, (nUnits, nUnits))
+    return preInds, postInds
 
 
-def generate_adjacency_matrix_between(nUnitsPre, nUnitsPost, pConn):
-    """ creates a rectangular bool array representing synaptic connections between 2 populations
+def generate_adjacency_indices_between(nUnitsPre, nUnitsPost, pConn):
+    """ creates indices representing pre- and post-synaptic units between 2 populations
         with a certain probability of connection
-        pre is row, post is column. """
+        preInds are first output, postInds are second. """
 
     bestNumberOfSynapses = int(np.round(pConn * nUnitsPre * nUnitsPost))
     indicesFlat = np.random.choice(nUnitsPre * nUnitsPost, bestNumberOfSynapses, replace=False)
-    adjMat = np.zeros((nUnitsPre, nUnitsPost), dtype=bool)
-    adjMat[np.unravel_index(indicesFlat, (nUnitsPre, nUnitsPost))] = True
 
-    return adjMat
+    preInds, postInds = np.unravel_index(indicesFlat, (nUnitsPre, nUnitsPost))
+
+    return preInds, postInds
+
+
+def normal_positive_weights(nConnections, mean, sd):
+    """ given adjacency indices preInds and postinds, generate weight matrix w
+    from a random normal distribution with mean and sd.
+    clip negative weights to be 0.
+    """
+
+    weights = np.random.normal(mean, sd, nConnections)
+    weights[weights < 0] = 0
+
+    return weights
+
+
+def weight_matrix_from_flat_inds_weights(nUnitsPre, nUnitsPost, preInds, postInds, weights):
+    """ given the total number of pre- and post-synaptic units,
+    and 3 flat arrays:
+        the indices of the presynaptic units
+        the indices of the postsynaptic units
+        the weights
+    generate a weight matrix that represents the synaptic weights
+    """
+
+    # these can be quite big so let's be careful about data type...
+    shape = (nUnitsPre, nUnitsPost)
+    w = np.zeros(shape, dtype=np.float32)
+    w[preInds, postInds] = weights
+
+    return w

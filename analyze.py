@@ -8,6 +8,9 @@ then plots results.
 
 from results import Results
 import matplotlib.pyplot as plt
+from generate import weight_matrix_from_flat_inds_weights
+from plot import weight_matrix
+import numpy as np
 
 MAKE_UP_PLOTS = False
 
@@ -21,11 +24,11 @@ loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/'
 # targetSim = 'jercogUpCritFullConn500Units_2020-10-26-17-07'  # shows the tuning of the UpCrit
 # targetSim = 'jercogUpCritFullConn500Units_2020-11-25-11-28'  # shows the currents
 
-targetSim = 'destexheEphysBuono_2021-03-29-15-23'  # good one
+# targetSim = 'destexheEphysBuono_2021-03-29-15-23'  # good one
 # targetSim = 'destexheEphysBuono_2021-03-29-16-24'  # also good with half as many sources
 # targetSim = 'destexheEphysBuono_2021-03-30-09-01'  # pretty good 60 s one
 
-# targetSim = 'destexheEphysOrig_2021-03-30-14-34'  # current check
+targetSim = 'destexheUpCritFullConn_2021-03-31-23-12'  # current check
 
 # loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/perfect_files/'
 
@@ -56,7 +59,8 @@ R = Results(targetSim, loadFolder)
 printParameters = ['propConnectFeedforwardProjectionCorr', 'poissonCorrInputRate', 'nPoissonCorrInputUnits',
                    'qExcFeedforwardCorr']
 for printParam in printParameters:
-    print(printParam, ':', R.p[printParam])
+    if printParam in R.p:
+        print(printParam, ':', R.p[printParam])
 
 R.calculate_spike_rate()
 R.calculate_voltage_histogram(removeMode=True)
@@ -88,7 +92,6 @@ else:
     R.plot_updur_lines(ax2[1])
 
 fig2b, ax2b = plt.subplots(1, 1, num=21, figsize=(4, 3))
-R.plot_updur_lines(ax2b)
 R.plot_voltage_histogram(ax2b, yScaleLog=True)
 
 if MAKE_UP_PLOTS:
@@ -107,3 +110,15 @@ if MAKE_UP_PLOTS:
                              sharex=True)
     R.plot_upstate_raster(ax6[0])
     R.plot_upstate_FR(ax6[1])
+
+# plotting weight matrices
+if hasattr(R, 'weights_EE'):
+    wEE = weight_matrix_from_flat_inds_weights(R.p['nExc'], R.p['nExc'], R.preInds_EE, R.postInds_EE, R.weights_EE)
+    wIE = weight_matrix_from_flat_inds_weights(R.p['nExc'], R.p['nInh'], R.preInds_IE, R.postInds_IE, R.weights_IE)
+    wEI = weight_matrix_from_flat_inds_weights(R.p['nInh'], R.p['nExc'], R.preInds_EI, R.postInds_EI, R.weights_EI)
+    wII = weight_matrix_from_flat_inds_weights(R.p['nInh'], R.p['nInh'], R.preInds_II, R.postInds_II, R.weights_II)
+
+    wFull = np.block([[wEE, wIE], [-wEI, -wII]])
+
+    fig7, ax7 = plt.subplots(num=7, figsize=(10, 9))
+    weight_matrix(ax7, wFull, xlabel='Post Index', ylabel='Pre Index', clabel='Normalized Weight',)
