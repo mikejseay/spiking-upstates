@@ -56,8 +56,8 @@ JN.prepare_upCrit_experiment(minUnits=15, maxUnits=25, unitSpacing=5, timeSpacin
 
 JN.create_monitors()
 JN.run_NMDA()
-JN.save_results()
-JN.save_params()
+JN.save_results_to_file()
+JN.save_params_to_file()
 
 R = Results(JN.saveName, JN.p['saveFolder'])
 

@@ -19,6 +19,7 @@ DEN.save_results()
 DEN.save_params()
 
 R = ResultsEphys(DEN.saveName, DEN.p['saveFolder'])
+R.calculate_thresh_and_gain()
 
 fig1, ax1 = plt.subplots(2, 2, num=1)
 

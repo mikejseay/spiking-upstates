@@ -56,5 +56,5 @@ JN.initialize_units()
 # JN.determine_fan_in(minUnits=800, maxUnits=900, unitSpacing=10, timeSpacing=250 * ms)  # *** perfect
 JN.determine_fan_in(minUnits=800, maxUnits=810, unitSpacing=1, timeSpacing=250 * ms)  # *** perfect
 # JN.determine_fan_in(minUnits=20, maxUnits=30, unitSpacing=1, timeSpacing=250 * ms)  # *** perfect
-JN.save_results()
-JN.save_params()
+JN.save_results_to_file()
+JN.save_params_to_file()

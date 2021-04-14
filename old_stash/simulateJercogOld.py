@@ -104,5 +104,5 @@ elif KICK_TYPE == 'spike':
 JN.initialize_recurrent_synapses()
 JN.create_monitors()
 JN.run()
-JN.save_results()
-JN.save_params()
+JN.save_results_to_file()
+JN.save_params_to_file()

@@ -13,7 +13,8 @@ the classes do the following:
 can ALSO set up certain classic types of experiments for characterizing a network.
 """
 
-from brian2 import *
+from brian2 import start_scope, NeuronGroup, Synapses, SpikeMonitor, StateMonitor, Network, defaultclock, mV, ms, volt, \
+    PoissonGroup, SpikeGeneratorGroup, Mohm, second, nS, uS, TimedArray, Hz
 import dill
 from datetime import datetime
 import os
@@ -21,6 +22,9 @@ from generate import set_spikes_from_time_varying_rate, fixed_current_series, \
     generate_adjacency_indices_within, generate_adjacency_indices_between, normal_positive_weights
 import winsound
 from results import Results
+from functions import find_upstates
+from results import bins_to_centers
+import numpy as np
 
 
 class BaseNetwork(object):
@@ -135,7 +139,6 @@ class BaseNetwork(object):
 
 
 class JercogNetwork(object):
-
     """ represents a network inspired by:
         Jercog, D., Roxin, A., Barthó, P., Luczak, A., Compte, A., & De La Rocha, J. (2017).
         UP-DOWN cortical dynamics reflect state transitions in a bistable network.
@@ -193,7 +196,86 @@ class JercogNetwork(object):
         )
 
         self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
-        self.p['nExc'] = self.p['nUnits'] - self.p['nInh']
+        self.p['nExc'] = int(self.p['nUnits'] - self.p['nInh'])
+        self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
+        self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
+
+        unitsExc = units[:self.p['nExc']]
+        unitsInh = units[self.p['nExc']:]
+
+        vTauExc = self.p['membraneCapacitanceExc'] / self.p['gLeakExc']
+        vTauInh = self.p['membraneCapacitanceInh'] / self.p['gLeakInh']
+
+        unitsExc.jE = vTauExc * self.p['jEE'] / self.p['nIncExc'] / ms
+        unitsExc.jI = vTauExc * self.p['jEI'] / self.p['nIncInh'] / ms
+        unitsInh.jE = vTauInh * self.p['jIE'] / self.p['nIncExc'] / ms  # 50 nA * ~4 Hz = 200 nA / 100 = 2 nA
+        unitsInh.jI = vTauInh * self.p['jII'] / self.p['nIncInh'] / ms  # 10 nA * ~8 Hz = 80 nA / 100 = 0.8 A
+
+        unitsExc.v = self.p['eLeakExc']
+        unitsExc.vReset = self.p['vResetExc']
+        unitsExc.vThresh = self.p['vThreshExc']
+        unitsExc.betaAdapt = self.p['betaAdaptExc']
+        unitsExc.eLeak = self.p['eLeakExc']
+        unitsExc.Cm = self.p['membraneCapacitanceExc']
+        unitsExc.gl = self.p['gLeakExc']
+
+        unitsInh.v = self.p['eLeakInh']
+        unitsInh.vReset = self.p['vResetInh']
+        unitsInh.vThresh = self.p['vThreshInh']
+        unitsInh.betaAdapt = self.p['betaAdaptInh']
+        unitsInh.eLeak = self.p['eLeakInh']
+        unitsInh.Cm = self.p['membraneCapacitanceInh']
+        unitsInh.gl = self.p['gLeakInh']
+
+        self.units = units
+        self.unitsExc = unitsExc
+        self.unitsInh = unitsInh
+        self.N.add(units)
+
+    def initialize_units_kickable(self):
+        unitModel = '''
+                dv/dt = (gl * (eLeak - v) - iAdapt +
+                         jE * sE - jI * sI +
+                         kKick * iKick) / Cm +
+                         noiseSigma * (Cm / gl)**-0.5 * xi: volt
+                diAdapt/dt = -iAdapt / tauAdapt : amp
+
+                dsE/dt = (-sE + uE) / tauFallE : 1
+                duE/dt = -uE / tauRiseE : 1
+                dsI/dt = (-sI + uI) / tauFallI : 1
+                duI/dt = -uI / tauRiseI : 1
+
+                eLeak : volt
+                jE : amp
+                jI : amp
+                kKick : amp
+                iKick = iKickRecorded(t) : 1
+                vReset : volt
+                vThresh : volt
+                betaAdapt : amp * second
+                gl : siemens
+                Cm : farad
+                '''
+
+        resetCode = '''
+        v = vReset
+        iAdapt += betaAdapt / tauAdapt 
+        '''
+
+        threshCode = 'v >= vThresh'
+
+        units = NeuronGroup(
+            N=self.p['nUnits'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriod'],
+            clock=defaultclock,
+        )
+
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = int(self.p['nUnits'] - self.p['nInh'])
         self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
         self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
 
@@ -427,7 +509,7 @@ class JercogNetwork(object):
             indices.extend(list(range(nSpikedUnits)))
             times.extend([float(kickTime), ] * nSpikedUnits)
 
-        Spikers = SpikeGeneratorGroup(nSpikedUnits, array(indices), array(times) * second)
+        Spikers = SpikeGeneratorGroup(nSpikedUnits, np.array(indices), np.array(times) * second)
 
         if onlySpikeExc:
             feedforwardUpExc = Synapses(
@@ -482,9 +564,9 @@ class JercogNetwork(object):
         synapsesExc.connect(p=self.p['propConnect'])
         synapsesInh.connect(p=self.p['propConnect'])
 
-        synapsesExc.delay = ((rand(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
+        synapsesExc.delay = ((np.random.rand(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
                               defaultclock.dt).astype(int) + 1) * defaultclock.dt
-        synapsesInh.delay = ((rand(synapsesInh.delay.shape[0]) * self.p['delayInh'] /
+        synapsesInh.delay = ((np.random.rand(synapsesInh.delay.shape[0]) * self.p['delayInh'] /
                               defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesExc = synapsesExc
@@ -517,7 +599,7 @@ class JercogNetwork(object):
         synapsesExc.connect('i!=j', p=self.p['propConnect'])
         synapsesExc.w_NMDA[:] = 1
 
-        synapsesExc.delay = ((rand(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
+        synapsesExc.delay = ((np.random.rand(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
                               defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesExc = synapsesExc
@@ -533,7 +615,7 @@ class JercogNetwork(object):
         )
         synapsesExc.connect('i!=j', p=self.p['propConnect'])
 
-        synapsesExc.delay = ((rand(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
+        synapsesExc.delay = ((np.random.rand(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
                               defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesExc = synapsesExc
@@ -547,7 +629,7 @@ class JercogNetwork(object):
             on_pre='uI_post += ' + str(1 / self.p['tauRiseInh'] * ms),
         )
         synapsesInh.connect(p=self.p['propConnect'])
-        synapsesInh.delay = ((rand(synapsesInh.delay.shape[0]) * self.p['delayInh'] /
+        synapsesInh.delay = ((np.random.rand(synapsesInh.delay.shape[0]) * self.p['delayInh'] /
                               defaultclock.dt).astype(int) + 1) * defaultclock.dt
         self.synapsesInh = synapsesInh
         self.N.add(synapsesInh)
@@ -560,46 +642,55 @@ class JercogNetwork(object):
             source=self.unitsExc,
             target=self.unitsExc,
             on_pre='uE_post += ' + str(1 / self.p['tauRiseExc'] * ms),
-            delay=self.p['delayExc'] / 2,
+            # delay=self.p['delayExc'] / 2,
         )
         synapsesEI = Synapses(
             source=self.unitsInh,
             target=self.unitsExc,
             on_pre='uI_post += ' + str(1 / self.p['tauRiseInh'] * ms),
-            delay=self.p['delayInh'] / 2,
+            # delay=self.p['delayInh'] / 2,
         )
         synapsesIE = Synapses(
             source=self.unitsExc,
             target=self.unitsInh,
             on_pre='uE_post += ' + str(1 / self.p['tauRiseExc'] * ms),
-            delay=self.p['delayExc'] / 2,
+            # delay=self.p['delayExc'] / 2,
         )
         synapsesII = Synapses(
             source=self.unitsInh,
             target=self.unitsInh,
             on_pre='uI_post += ' + str(1 / self.p['tauRiseInh'] * ms),
-            delay=self.p['delayInh'] / 2,
+            # delay=self.p['delayInh'] / 2,
         )
         synapsesEE.connect(p=self.p['propConnect'])
         synapsesEI.connect(p=self.p['propConnect'])
         synapsesIE.connect(p=self.p['propConnect'])
         synapsesII.connect(p=self.p['propConnect'])
 
-        TESTING_GENN = True
+        TESTING_GENN = False
 
-        if not TESTING_GENN:
+        if TESTING_GENN:
             nEESynapses = np.round(self.p['nExc'] * self.p['nExc'] * self.p['propConnect'])
             nEISynapses = np.round(self.p['nInh'] * self.p['nExc'] * self.p['propConnect'])
             nIESynapses = np.round(self.p['nExc'] * self.p['nInh'] * self.p['propConnect'])
             nIISynapses = np.round(self.p['nInh'] * self.p['nInh'] * self.p['propConnect'])
 
-            synapsesEE.delay = ((rand(nEESynapses) * self.p['delayExc'] /
+            synapsesEE.delay = ((np.random.rand(nEESynapses) * self.p['delayExc'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesEI.delay = ((rand(nEISynapses) * self.p['delayInh'] /
+            synapsesEI.delay = ((np.random.rand(nEISynapses) * self.p['delayInh'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesIE.delay = ((rand(nIESynapses) * self.p['delayExc'] /
+            synapsesIE.delay = ((np.random.rand(nIESynapses) * self.p['delayExc'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesII.delay = ((rand(nIISynapses) * self.p['delayInh'] /
+            synapsesII.delay = ((np.random.rand(nIISynapses) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+        else:
+            synapsesEE.delay = ((np.random.rand(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesIE.delay = ((np.random.rand(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesEI.delay = ((np.random.rand(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesII.delay = ((np.random.rand(synapsesII.delay.shape[0]) * self.p['delayInh'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesEE = synapsesEE
@@ -666,13 +757,13 @@ class JercogNetwork(object):
                 jArray = np.concatenate(jList).astype(int)
                 synapseBundle.connect(i=iArray, j=jArray)
 
-        synapsesEE.delay = ((rand(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
+        synapsesEE.delay = ((np.random.rand(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
                              defaultclock.dt).astype(int) + 1) * defaultclock.dt
-        synapsesIE.delay = ((rand(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
+        synapsesIE.delay = ((np.random.rand(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
                              defaultclock.dt).astype(int) + 1) * defaultclock.dt
-        synapsesEI.delay = ((rand(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
+        synapsesEI.delay = ((np.random.rand(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
                              defaultclock.dt).astype(int) + 1) * defaultclock.dt
-        synapsesII.delay = ((rand(synapsesII.delay.shape[0]) * self.p['delayInh'] /
+        synapsesII.delay = ((np.random.rand(synapsesII.delay.shape[0]) * self.p['delayInh'] /
                              defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesEE = synapsesEE
@@ -772,7 +863,7 @@ class JercogNetwork(object):
                    profile=self.p['doProfile']
                    )
 
-    def save_results(self):
+    def save_results_to_file(self):
         useDType = np.single
 
         spikeMonExcT = np.array(self.spikeMonExc.t, dtype=useDType)
@@ -788,7 +879,7 @@ class JercogNetwork(object):
         np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
                  spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV)
 
-    def save_params(self):
+    def save_params_to_file(self):
         savePath = os.path.join(self.p['saveFolder'],
                                 self.saveName + '_params.pkl')
         with open(savePath, 'wb') as f:
@@ -823,7 +914,7 @@ class JercogNetwork(object):
             times.extend([float(timeSpacing) * dummyInd, ] * (unitInd))
 
         # create the spike generator and the synapses from it to the 2 units, connect them
-        Fanners = SpikeGeneratorGroup(maxUnits, array(indices), array(times) * second)
+        Fanners = SpikeGeneratorGroup(maxUnits, np.array(indices), np.array(times) * second)
         feedforwardFanExc = Synapses(
             source=Fanners,
             target=self.unitsExc,
@@ -839,7 +930,7 @@ class JercogNetwork(object):
 
         # add them to the network, set the run duration, create a bogus kick current
         self.N.add(Fanners, feedforwardFanExc, feedforwardFanInh)
-        self.p['duration'] = (array(times).max() * second + timeSpacing)
+        self.p['duration'] = (np.array(times).max() * second + timeSpacing)
         iKickRecorded = fixed_current_series(0, self.p['duration'], self.p['dt'])
 
         # all that's left is to monitor and run
@@ -892,7 +983,7 @@ class JercogNetwork(object):
             times.extend([float(timeSpacing) * dummyInd, ] * (unitInd))
 
         # create the spike generator and the synapses from it to the 2 units, connect them
-        Fanners = SpikeGeneratorGroup(maxUnits, array(indices), array(times) * second)
+        Fanners = SpikeGeneratorGroup(maxUnits, np.array(indices), np.array(times) * second)
         feedforwardFanExc = Synapses(
             source=Fanners,
             target=self.unitsExc,
@@ -912,7 +1003,7 @@ class JercogNetwork(object):
 
         # add them to the network, set the run duration, create a bogus kick current
         self.N.add(Fanners, feedforwardFanExc, feedforwardFanInh)
-        self.p['duration'] = (array(times).max() * second + timeSpacing)
+        self.p['duration'] = (np.array(times).max() * second + timeSpacing)
 
         # this must be defined...
         iExtRecorded = fixed_current_series(1, self.p['duration'], self.p['dt'])
@@ -947,7 +1038,7 @@ class JercogNetwork(object):
             indices.extend(list(range(unitInd)))
             times.extend([float(startTime) + float(timeSpacing) * dummyInd, ] * (unitInd))
 
-        Uppers = SpikeGeneratorGroup(maxUnits, array(indices), array(times) * second)
+        Uppers = SpikeGeneratorGroup(maxUnits, np.array(indices), np.array(times) * second)
 
         feedforwardUpExc = Synapses(
             source=Uppers,
@@ -958,12 +1049,11 @@ class JercogNetwork(object):
 
         self.N.add(Uppers, feedforwardUpExc)
 
-        self.p['duration'] = (array(times).max() * second + timeSpacing)
+        self.p['duration'] = (np.array(times).max() * second + timeSpacing)
         self.p['iKickRecorded'] = fixed_current_series(0, self.p['duration'], self.p['dt'])
 
 
 class DestexheNetwork(object):
-
     """ represents a network inspired by:
         Volo MD, Romagnoni A, Capone C, Destexhe A.
         Biologically Realistic Mean-Field Models of Conductance-Based Networks of Spiking Neurons with Adaptation.
@@ -1260,6 +1350,9 @@ class DestexheNetwork(object):
         useQExc = self.p['qExc'] / nRecurrentExcitatorySynapsesPerUnit
         useQInh = self.p['qInh'] / nRecurrentInhibitorySynapsesPerUnit
 
+        print(self.p['qExc'], nRecurrentExcitatorySynapsesPerUnit, useQExc)
+        print(self.p['qInh'], nRecurrentInhibitorySynapsesPerUnit, useQInh)
+
         # from E to E
         synapsesEE = Synapses(
             source=self.unitsExc,
@@ -1282,7 +1375,8 @@ class DestexheNetwork(object):
         if self.p['propConnect'] == 1:
             synapsesIE.connect('i!=j', p=self.p['propConnect'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'])
+            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'],
+                                                                   self.p['propConnect'])
             synapsesIE.connect(i=preInds, j=postInds)
 
         # from I to E
@@ -1294,7 +1388,8 @@ class DestexheNetwork(object):
         if self.p['propConnect'] == 1:
             synapsesEI.connect('i!=j', p=self.p['propConnect'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'])
+            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'],
+                                                                   self.p['propConnect'])
             synapsesEI.connect(i=preInds, j=postInds)
 
         # from I to I
@@ -1309,6 +1404,150 @@ class DestexheNetwork(object):
             preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
                                                                   allowAutapses=False)
             synapsesII.connect(i=preInds, j=postInds)
+
+        self.synapsesEE = synapsesEE
+        self.synapsesIE = synapsesIE
+        self.synapsesEI = synapsesEI
+        self.synapsesII = synapsesII
+        self.N.add(synapsesEE, synapsesIE, synapsesEI, synapsesII)
+
+    def initialize_recurrent_synapses_4bundles_separate(self):
+
+        # from E to E
+        self.p['nIncomingAvgEE'] = int(np.round(self.p['nExc'] * self.p['pEE']))
+        print(self.p['qEE'], self.p['nIncomingAvgEE'])
+        synapsesEE = Synapses(
+            source=self.unitsExc,
+            target=self.unitsExc,
+            on_pre='ge_post += ' + str(self.p['qEE'] / uS) + ' * uS / ' + str(self.p['nIncomingAvgEE']),
+        )
+        if self.p['pEE'] == 1:
+            synapsesEE.connect('i!=j', p=self.p['pEE'])
+        else:
+            preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['pEE'],
+                                                                  allowAutapses=False)
+            synapsesEE.connect(i=preInds, j=postInds)
+
+        # from E to I
+        self.p['nIncomingAvgIE'] = int(np.round(self.p['nExc'] * self.p['pIE']))
+        print(self.p['qIE'], self.p['nIncomingAvgIE'])
+        synapsesIE = Synapses(
+            source=self.unitsExc,
+            target=self.unitsInh,
+            on_pre='ge_post += ' + str(self.p['qIE'] / uS) + ' * uS / ' + str(self.p['nIncomingAvgIE']),
+        )
+        if self.p['pIE'] == 1:
+            synapsesIE.connect('i!=j', p=self.p['pIE'])
+        else:
+            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['pIE'])
+            synapsesIE.connect(i=preInds, j=postInds)
+
+        # from I to E
+        self.p['nIncomingAvgEI'] = int(np.round(self.p['nInh'] * self.p['pEI']))
+        print(self.p['qEI'], self.p['nIncomingAvgEI'])
+        synapsesEI = Synapses(
+            source=self.unitsInh,
+            target=self.unitsExc,
+            on_pre='gi_post += ' + str(self.p['qEI'] / uS) + ' * uS / ' + str(self.p['nIncomingAvgEI']),
+        )
+        if self.p['pEI'] == 1:
+            synapsesEI.connect('i!=j', p=self.p['pEI'])
+        else:
+            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['pEI'])
+            synapsesEI.connect(i=preInds, j=postInds)
+
+        # from I to I
+        self.p['nIncomingAvgII'] = int(np.round(self.p['nInh'] * self.p['pII']))
+        print(self.p['qII'], self.p['nIncomingAvgII'])
+        synapsesII = Synapses(
+            source=self.unitsInh,
+            target=self.unitsInh,
+            on_pre='gi_post += ' + str(self.p['qII'] / uS) + ' * uS / ' + str(self.p['nIncomingAvgII']),
+        )
+        if self.p['pII'] == 1:
+            synapsesII.connect('i!=j', p=self.p['pII'])
+        else:
+            preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['pII'],
+                                                                  allowAutapses=False)
+            synapsesII.connect(i=preInds, j=postInds)
+
+        self.synapsesEE = synapsesEE
+        self.synapsesIE = synapsesIE
+        self.synapsesEI = synapsesEI
+        self.synapsesII = synapsesII
+        self.N.add(synapsesEE, synapsesIE, synapsesEI, synapsesII)
+
+    def initialize_recurrent_synapses_4bundles_separate2(self):
+
+        # from E to E
+        synapsesEE = Synapses(
+            model='q : siemens',
+            source=self.unitsExc,
+            target=self.unitsExc,
+            on_pre='ge_post += q',
+        )
+        if self.p['pEE'] == 1:
+            synapsesEE.connect('i!=j', p=self.p['pEE'])
+        else:
+            preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['pEE'],
+                                                                  allowAutapses=False)
+            synapsesEE.connect(i=preInds, j=postInds)
+        self.p['nIncomingAvgEE'] = int(np.round(self.p['nExc'] * self.p['pEE']))
+        print(self.p['qEE'], self.p['nIncomingAvgEE'])
+        synapsesEE.q = str(self.p['qEE'] / uS) + ' * uS / ' + str(self.p['nIncomingAvgEE'])
+        print(synapsesEE.q[0])
+
+        # from E to I
+        synapsesIE = Synapses(
+            model='q : siemens',
+            source=self.unitsExc,
+            target=self.unitsInh,
+            on_pre='ge_post += q',
+        )
+        if self.p['pIE'] == 1:
+            synapsesIE.connect('i!=j', p=self.p['pIE'])
+        else:
+            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['pIE'])
+            synapsesIE.connect(i=preInds, j=postInds)
+        self.p['nIncomingAvgIE'] = int(np.round(self.p['nExc'] * self.p['pIE']))
+        print(self.p['qIE'], self.p['nIncomingAvgIE'])
+        synapsesIE.q = str(self.p['qIE'] / uS) + ' * uS / ' + str(self.p['nIncomingAvgIE'])
+        print(synapsesIE.q[0])
+
+        # from I to E
+        synapsesEI = Synapses(
+            model='q : siemens',
+            source=self.unitsInh,
+            target=self.unitsExc,
+            on_pre='ge_post += q',
+        )
+        if self.p['pEI'] == 1:
+            synapsesEI.connect('i!=j', p=self.p['pEI'])
+        else:
+            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['pEI'])
+            synapsesEI.connect(i=preInds, j=postInds)
+        self.p['nIncomingAvgEI'] = int(np.round(self.p['nInh'] * self.p['pEI']))
+        print(self.p['qEI'], self.p['nIncomingAvgEI'])
+        synapsesEI.q = str(self.p['qEI'] / uS) + ' * uS / ' + str(self.p['nIncomingAvgEI'])
+        print(synapsesEI.q[0])
+
+        # from I to I
+        synapsesII = Synapses(
+            model='q : siemens',
+            source=self.unitsInh,
+            target=self.unitsInh,
+            on_pre='ge_post += q',
+        )
+        if self.p['pII'] == 1:
+            synapsesII.connect('i!=j', p=self.p['pII'])
+        else:
+            preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['pII'],
+                                                                  allowAutapses=False)
+            synapsesII.connect(i=preInds, j=postInds)
+        self.p['nIncomingAvgII'] = int(np.round(self.p['nInh'] * self.p['pII']))
+        print(self.p['qII'], self.p['nIncomingAvgII'])
+        synapsesII.q = str(self.p['qII'] / uS) + ' * uS / ' + str(self.p['nIncomingAvgII'])
+        print(synapsesII.q[0])
 
         self.synapsesEE = synapsesEE
         self.synapsesIE = synapsesIE
@@ -1333,7 +1572,8 @@ class DestexheNetwork(object):
             target=self.unitsExc,
             on_pre='ge_post += wSyn * ' + str(useQExc / nS) + ' * nS',
         )
-        preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'], allowAutapses=False)
+        preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
+                                                              allowAutapses=False)
         synapsesEE.connect(i=preInds, j=postInds)
         weights = normal_positive_weights(preInds.size, normalMean, normalSD)
         synapsesEE.wSyn = weights
@@ -1451,18 +1691,19 @@ class DestexheNetwork(object):
         useQExcFeedforward = self.p['qExcFeedforward'] / nFeedforwardSynapsesPerUnit
 
         # set up the external input
-        tNumpy = arange(int(self.p['duration'] / defaultclock.dt)) * float(defaultclock.dt)
+        tNumpy = np.arange(int(self.p['duration'] / defaultclock.dt)) * float(defaultclock.dt)
         tRecorded = tNumpy * second
-        vExtNumpy = zeros(tRecorded.shape)
+        vExtNumpy = np.zeros(tRecorded.shape)
         useExternalRate = float(self.p['poissonInputRate'])
 
         if self.p['poissonDriveType'] is 'ramp':
-            vExtNumpy[:int(100 * ms / defaultclock.dt)] = linspace(0, useExternalRate, int(100 * ms / defaultclock.dt))
+            vExtNumpy[:int(100 * ms / defaultclock.dt)] = np.linspace(0, useExternalRate,
+                                                                      int(100 * ms / defaultclock.dt))
             vExtNumpy[int(100 * ms / defaultclock.dt):] = useExternalRate
         elif self.p['poissonDriveType'] is 'constant':
             vExtNumpy[:] = useExternalRate
         elif self.p['poissonDriveType'] is 'fullRamp':
-            vExtNumpy = linspace(0, useExternalRate, tNumpy.size)
+            vExtNumpy = np.linspace(0, useExternalRate, tNumpy.size)
 
         vExtRecorded = TimedArray(vExtNumpy * Hz, dt=defaultclock.dt)
 
@@ -1579,7 +1820,7 @@ class DestexheNetwork(object):
             indices.extend(list(range(nSpikedUnits)))
             times.extend([float(kickTime), ] * nSpikedUnits)
 
-        Spikers = SpikeGeneratorGroup(nSpikedUnits, array(indices), array(times) * second)
+        Spikers = SpikeGeneratorGroup(nSpikedUnits, np.array(indices), np.array(times) * second)
 
         if onlySpikeExc:
             feedforwardUpExc = Synapses(
@@ -1692,8 +1933,8 @@ class DestexheNetwork(object):
         # these are big arrays so we'll be careful about how we save them
         if hasattr(self, 'weightsDistributed'):
             saveUInt16 = ['preInds_EE', 'preInds_IE', 'preInds_EI', 'preInds_II',
-                          'postInds_EE', 'postInds_IE', 'postInds_EI', 'postInds_II',]
-            saveFloat32 = ['weights_EE', 'weights_IE', 'weights_EI', 'weights_II',]
+                          'postInds_EE', 'postInds_IE', 'postInds_EI', 'postInds_II', ]
+            saveFloat32 = ['weights_EE', 'weights_IE', 'weights_EI', 'weights_II', ]
             for sA in saveUInt16:
                 saveDict[sA] = getattr(self, sA).astype(np.uint16)
             for sA in saveFloat32:
@@ -1741,7 +1982,7 @@ class DestexheNetwork(object):
             times.extend([float(timeSpacing) * dummyInd, ] * (unitInd))
 
         # create the spike generator and the synapses from it to the 2 units, connect them
-        Fanners = SpikeGeneratorGroup(maxUnits, array(indices), array(times) * second)
+        Fanners = SpikeGeneratorGroup(maxUnits, np.array(indices), np.array(times) * second)
         feedforwardFanExc = Synapses(
             source=Fanners,
             target=self.unitsExc,
@@ -1757,7 +1998,7 @@ class DestexheNetwork(object):
 
         # add them to the network, set the run duration, create a bogus kick current
         self.N.add(Fanners, feedforwardFanExc, feedforwardFanInh)
-        self.p['duration'] = (array(times).max() * second + timeSpacing)
+        self.p['duration'] = (np.array(times).max() * second + timeSpacing)
 
         # this must be defined...
         # if this breaks, comment this out+
@@ -1819,7 +2060,7 @@ class DestexheNetwork(object):
             times.extend([float(timeSpacing) * dummyInd, ] * (unitInd))
 
         # create the spike generator and the synapses from it to the 2 units, connect them
-        Fanners = SpikeGeneratorGroup(maxUnits, array(indices), array(times) * second)
+        Fanners = SpikeGeneratorGroup(maxUnits, np.array(indices), np.array(times) * second)
         feedforwardFanExc = Synapses(
             source=Fanners,
             target=self.unitsExc,
@@ -1839,7 +2080,7 @@ class DestexheNetwork(object):
 
         # add them to the network, set the run duration, create a bogus kick current
         self.N.add(Fanners, feedforwardFanExc, feedforwardFanInh)
-        self.p['duration'] = (array(times).max() * second + timeSpacing)
+        self.p['duration'] = (np.array(times).max() * second + timeSpacing)
 
         # this must be defined...
         iExtRecorded = fixed_current_series(1, self.p['duration'], self.p['dt'])
@@ -1864,7 +2105,7 @@ class DestexheNetwork(object):
             indices.extend(list(range(unitInd)))
             times.extend([float(startTime) + float(timeSpacing) * dummyInd, ] * (unitInd))
 
-        Uppers = SpikeGeneratorGroup(maxUnits, array(indices), array(times) * second)
+        Uppers = SpikeGeneratorGroup(maxUnits, np.array(indices), np.array(times) * second)
 
         feedforwardUpExc = Synapses(
             source=Uppers,
@@ -1875,7 +2116,7 @@ class DestexheNetwork(object):
 
         self.N.add(Uppers, feedforwardUpExc)
 
-        self.p['duration'] = (array(times).max() * second + timeSpacing)
+        self.p['duration'] = (np.array(times).max() * second + timeSpacing)
 
 
 # THE BELOW ARE STRIPPED-DOWN VERSIONS OF THE ORIGINAL NETWORKS THAT ARE DESIGNED FOR TESTING EPHYS CHARACTERISTICS

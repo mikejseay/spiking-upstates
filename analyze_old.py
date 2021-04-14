@@ -81,29 +81,27 @@ if len(R.ups) > 0:
     R.calculate_FR_in_upstates()
     print('average FR in upstate for Exc: {:.2f}, Inh: {:.2f} '.format(R.upstateFRExc.mean(), R.upstateFRInh.mean()))
 
-fig1, ax1 = plt.subplots(4, 1, num=1, figsize=(10, 9), gridspec_kw={'height_ratios': [4, 1, 1, 1]},
+fig1, ax1 = plt.subplots(2, 1, num=1, figsize=(10, 9), gridspec_kw={'height_ratios': [3, 1]},
                          sharex=True)
 R.plot_spike_raster(ax1[0])
 R.plot_firing_rate(ax1[1])
 
 if R.stateMonExcV.shape[0] > 1:
-    R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=0)
-    R.plot_updur_lines(ax1[2])
-    R.plot_voltage_detail(ax1[3], unitType='Exc', useStateInd=1)
-    R.plot_updur_lines(ax1[3])
-    # R.plot_voltage_detail(ax2[2], unitType='Inh', useStateInd=0)
+    fig2, ax2 = plt.subplots(3, 1, num=2, figsize=(10, 9), sharex=True)
+    R.plot_voltage_detail(ax2[0], unitType='Exc', useStateInd=0)
+    R.plot_updur_lines(ax2[0])
+    R.plot_voltage_detail(ax2[1], unitType='Exc', useStateInd=1)
+    R.plot_updur_lines(ax2[1])
+    R.plot_voltage_detail(ax2[2], unitType='Inh', useStateInd=0)
 else:
-    R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=0)
-    R.plot_updur_lines(ax1[2])
-    R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=0)
-    R.plot_updur_lines(ax1[3])
+    fig2, ax2 = plt.subplots(2, 1, num=2, figsize=(10, 9), sharex=True)
+    R.plot_voltage_detail(ax2[0], unitType='Exc', useStateInd=0)
+    R.plot_updur_lines(ax2[0])
+    R.plot_voltage_detail(ax2[1], unitType='Inh', useStateInd=0)
+    R.plot_updur_lines(ax2[1])
 
-ax1[3].set(xlabel='Time (s)')
-
-# fig2b, ax2b = plt.subplots(1, 1, num=21, figsize=(4, 3))
-# R.plot_voltage_histogram(ax2b, yScaleLog=True)
-R.plot_voltage_histogram_sideways(ax1[2], 'Exc', yScaleLog=True)
-R.plot_voltage_histogram_sideways(ax1[3], 'Inh', yScaleLog=True)
+fig2b, ax2b = plt.subplots(1, 1, num=21, figsize=(4, 3))
+R.plot_voltage_histogram(ax2b, yScaleLog=True)
 
 if MAKE_UP_PLOTS:
     fig3, ax3 = plt.subplots(num=3, figsize=(4, 3))

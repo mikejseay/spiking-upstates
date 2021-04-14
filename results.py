@@ -69,20 +69,23 @@ class Results(object):
 
     # inputs should be able to be gained only from params and results objects (arrays)
 
-    def __init__(self, resultsIdentifier, loadFolder):
+    def __init__(self):
+        pass
+
+    def init_from_file(self, resultsIdentifier, loadFolder):
         self.rID = resultsIdentifier
         self.loadFolder = loadFolder
-        self.load_params()
-        self.load_results()
+        self.load_params_from_file()
+        self.load_results_from_file()
         self.timeArray = np.arange(0, float(self.p['duration']), float(self.p['dt']))
 
-    def load_params(self):
+    def load_params_from_file(self):
         loadPath = os.path.join(self.loadFolder, self.rID + '_params.pkl')
         with open(loadPath, 'rb') as f:
             params = dill.load(f)
         self.p = params
 
-    def load_results(self):
+    def load_results_from_file(self):
         loadPath = os.path.join(self.loadFolder, self.rID + '_results.npz')
         npzObject = np.load(loadPath)
         self.npzObject = npzObject
@@ -91,8 +94,24 @@ class Results(object):
         for savedObjectName in npzObject.files:
             setattr(self, savedObjectName, npzObject[savedObjectName])
 
+    def init_from_network_object(self, network_object):
+        self.rID = network_object.saveName
+        self.p = network_object.p
+
+        # load results from network object
+        useDType = np.single
+
+        self.spikeMonExcT = np.array(network_object.spikeMonExc.t, dtype=useDType)
+        self.spikeMonExcI = np.array(network_object.spikeMonExc.i, dtype=useDType)
+        self.spikeMonInhT = np.array(network_object.spikeMonInh.t, dtype=useDType)
+        self.spikeMonInhI = np.array(network_object.spikeMonInh.i, dtype=useDType)
+        self.stateMonExcV = np.array(network_object.stateMonExc.v / mV, dtype=useDType)
+        self.stateMonInhV = np.array(network_object.stateMonInh.v / mV, dtype=useDType)
+
+        self.timeArray = np.arange(0, float(self.p['duration']), float(self.p['dt']))
+
     def calculate_spike_rate(self):
-        dtHist = float(5 * ms)
+        dtHist = float(10 * ms)
         histBins = arange(0, float(self.p['duration']), dtHist)
         histCenters = arange(0 + dtHist / 2, float(self.p['duration']) - dtHist / 2, dtHist)
 
@@ -142,7 +161,8 @@ class Results(object):
         # these settings seem to work well...
 
         ups, downs = find_upstates(self.FRInh, self.dtHistFR,
-                                   v_thresh=.2, dur_thresh=.1, extension_thresh=.1)
+                                   v_thresh=.2, dur_thresh=.1, extension_thresh=.1,
+                                   last_up_must_end=False)
 
         # since we used the FR histogram to calculate the up/down durations, we must convert back by multiplying
         upDurs = (downs - ups) * self.dtHistFR
@@ -285,6 +305,35 @@ class Results(object):
         self.upstateFRExc = upstateFRExc
         self.upstateFRInh = upstateFRInh
 
+    def calculate_FR_in_upstates_simply(self):
+
+        # here we calculate by simply counting the spikes in the Up state
+        # and dividing by the duration
+
+        ups = self.ups
+        downs = self.downs
+
+        nUpstates = len(self.ups)
+
+        if nUpstates == 0:
+            print('there were no detectable up states')
+            return
+
+        upstateFRExc = []
+        upstateFRInh = []
+
+        for upstateInd in range(nUpstates):
+            inRangeBoolExc = (self.spikeMonExcT > ups[upstateInd]) & (
+                        self.spikeMonExcT < downs[upstateInd])
+            upstateFRExc.append(inRangeBoolExc.sum() / self.p['nExc'] / self.upDurs[upstateInd])
+
+            inRangeBoolInh = (self.spikeMonInhT > ups[upstateInd]) & (
+                        self.spikeMonInhT < downs[upstateInd])
+            upstateFRInh.append(inRangeBoolInh.sum() / self.p['nInh'] / self.upDurs[upstateInd])
+
+        self.upstateFRExc = np.array(upstateFRExc)
+        self.upstateFRInh = np.array(upstateFRInh)
+
     def plot_consecutive_state_correlation(self, ax):
         # ax should have 2 elements
 
@@ -348,8 +397,8 @@ class Results(object):
     def plot_firing_rate(self, ax):
         ax.plot(self.histCenters[:self.FRExc.size], self.FRExc, label='Exc', color='green', alpha=0.5)
         ax.plot(self.histCenters[:self.FRInh.size], self.FRInh, label='Inh', color='red', alpha=0.5)
-        ax.legend()
-        ax.set(xlabel='Time (s)', ylabel='Firing Rate (Hz)')
+        # ax.legend()
+        ax.set(ylabel='Firing Rate (Hz)')
 
     def plot_voltage_histogram(self, ax, yScaleLog=False):
         ax.plot(self.voltageHistCenters, self.voltageHistExc, color='green', alpha=0.5)
@@ -360,6 +409,38 @@ class Results(object):
 
         if yScaleLog:
             plt.yscale('log')
+
+    def plot_voltage_histogram_sideways(self, ax, unitType='Exc', yScaleLog=False, moveHalfwayUp=True):
+
+        # find out what the x axis is... the far right-hand 10% will act as our "y axis"
+        xMin, xMax = ax.get_xlim()
+        yMin = xMin + (xMax - xMin) * .9
+        yMax = xMax
+
+        if moveHalfwayUp:
+            xVals = self.voltageHistCenters + 40
+        else:
+            xVals = self.voltageHistCenters
+
+        if unitType == 'Exc':
+            yVals = self.voltageHistExc
+            useColor = 'green'
+            useELeak = self.p['eLeakExc'] / mV
+        elif unitType == 'Inh':
+            yVals = self.voltageHistInh
+            useColor = 'red'
+            useELeak = self.p['eLeakInh'] / mV
+        else:
+            print('the unit type request doesnt exist')
+            return
+
+        # rescale the yVals to work with the min and max we found
+        yValsRescaled = yMin + yVals / yVals.max() * (yMax - yMin)
+
+        # if you want the y to be log-scaled, take the log base 10 of the y values
+        ax.plot(yValsRescaled, xVals, color=useColor, alpha=0.5)
+        # ax.hlines(useELeak, 0, yVals.max() / 2, color=useColor, ls='--', alpha=0.5)
+
 
     def plot_voltage_detail(self, ax, unitType='Exc', useStateInd=0, plotKicks=False, **kwargs):
         # reconstruct the time vector
@@ -472,19 +553,22 @@ class ResultsEphys(object):
 
     # inputs should be able to be gained only from params and results objects (arrays)
 
-    def __init__(self, resultsIdentifier, loadFolder):
+    def __init__(self):
+        pass
+
+    def init_from_file(self, resultsIdentifier, loadFolder):
         self.rID = resultsIdentifier
         self.loadFolder = loadFolder
-        self.load_params()
-        self.load_results()
+        self.load_params_from_file()
+        self.load_results_from_file()
 
-    def load_params(self):
+    def load_params_from_file(self):
         loadPath = os.path.join(self.loadFolder, self.rID + '_params.pkl')
         with open(loadPath, 'rb') as f:
             params = dill.load(f)
         self.p = params
 
-    def load_results(self):
+    def load_results_from_file(self):
         loadPath = os.path.join(self.loadFolder, self.rID + '_results.npz')
         npzObject = np.load(loadPath, allow_pickle=True)
         self.npzObject = npzObject
@@ -499,6 +583,24 @@ class ResultsEphys(object):
         self.stateMonInhV = npzObject['stateMonInhV']
         self.spikeTrainsExc = npzObject['spikeTrainsExc'][()]
         self.spikeTrainsInh = npzObject['spikeTrainsInh'][()]
+
+    def init_from_network_object(self, network_object):
+        self.rID = network_object.saveName
+        self.p = network_object.p
+
+        # load results from network object
+        useDType = np.single
+
+        self.spikeMonExcT = np.array(network_object.spikeMonExc.t, dtype=useDType)
+        self.spikeMonExcI = np.array(network_object.spikeMonExc.i, dtype=useDType)
+        self.spikeMonExcC = np.array(network_object.spikeMonExc.count, dtype=useDType)
+        self.spikeMonInhT = np.array(network_object.spikeMonInh.t, dtype=useDType)
+        self.spikeMonInhI = np.array(network_object.spikeMonInh.i, dtype=useDType)
+        self.spikeMonInhC = np.array(network_object.spikeMonInh.count, dtype=useDType)
+        self.stateMonExcV = np.array(network_object.stateMonExc.v / mV, dtype=useDType)
+        self.stateMonInhV = np.array(network_object.stateMonInh.v / mV, dtype=useDType)
+        self.spikeTrainsExc = np.array(network_object.spikeMonExc.spike_trains(), dtype=object)
+        self.spikeTrainsInh = np.array(network_object.spikeMonInh.spike_trains(), dtype=object)
 
     def calculate_and_plot(self, f, ax):
         I_ext_range = self.p['iExtRange']
@@ -542,3 +644,29 @@ class ResultsEphys(object):
 
         f.tight_layout()
         f.subplots_adjust(top=.9)
+
+    def calculate_thresh_and_gain(self):
+        I_ext_range = self.p['iExtRange']
+        ExcData = self.spikeMonExcC / self.p['duration']
+        InhData = self.spikeMonInhC / self.p['duration']
+
+        firstSpikeIndExc = np.where(ExcData)[0][0]
+        firstSpikeIndInh = np.where(InhData)[0][0]
+
+        threshExc = I_ext_range[firstSpikeIndExc]
+        threshInh = I_ext_range[firstSpikeIndInh]
+
+        # gain: rise over run
+        gainRiseExc = ExcData[-1] - ExcData[firstSpikeIndExc - 1]
+        gainRiseInh = InhData[-1] - InhData[firstSpikeIndInh - 1]
+
+        gainRunExc = I_ext_range[-1] - I_ext_range[firstSpikeIndExc - 1]
+        gainRunInh = I_ext_range[-1] - I_ext_range[firstSpikeIndInh - 1]
+
+        gainExc = gainRiseExc / gainRunExc
+        gainInh = gainRiseInh / gainRunInh
+
+        self.threshExc = threshExc
+        self.threshInh = threshInh
+        self.gainExc = gainExc
+        self.gainInh = gainInh

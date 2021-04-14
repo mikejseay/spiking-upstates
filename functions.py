@@ -5,7 +5,7 @@ general functions that can't be categorized easily
 import numpy as np
 
 
-def find_upstates(v, dt, v_thresh, dur_thresh=None, extension_thresh=None):
+def find_upstates(v, dt, v_thresh, dur_thresh=None, extension_thresh=None, last_up_must_end=True):
     # given 1d signal, returns indices of on-sets and off-sets of "upstates"
 
     # input arguments:
@@ -25,13 +25,20 @@ def find_upstates(v, dt, v_thresh, dur_thresh=None, extension_thresh=None):
 
     # define logical vectors indicating points of upward / downward crossings
     upward_crossings = below_bool[:-1] & above_bool[1:]
-    np.insert(upward_crossings, 0, False)
+    upward_crossings = np.insert(upward_crossings, 0, False)
     downward_crossings = above_bool[:-1] & below_bool[1:]
-    np.insert(downward_crossings, 0, False)
+    downward_crossings = np.insert(downward_crossings, 0, False)
 
     # find crossing locations: these are the putative up and down transitions
     ups = np.where(upward_crossings)[0]
     downs = np.where(downward_crossings)[0]
+
+    # check if there is one more up than downs. if above_bool until end, call the end a down, if not last_up_must_end
+    if ups.size - downs.size == 1:
+        if last_up_must_end:
+            ups = ups[:-1]
+        else:
+            downs = np.insert(downs, len(downs), len(v))
 
     # no upstates? return empty vectors
     if ups.size == 0 or downs.size == 0:
@@ -45,7 +52,7 @@ def find_upstates(v, dt, v_thresh, dur_thresh=None, extension_thresh=None):
     # we choose the convention that the first putative event should be an up transition
     # and all up transitions should be paired with a subsequent down transition
     if downs[0] < ups[0]:
-        downs = np.delete(downs, 0)
+        downs = downs[1:]
 
     # check once more if we have no true upstates
     if ups.size == 0 or downs.size == 0:
@@ -53,8 +60,12 @@ def find_upstates(v, dt, v_thresh, dur_thresh=None, extension_thresh=None):
         downs = np.array([])
         return ups, downs
 
+    # check if the final up transition has no down transition
     if ups[-1] > downs[-1]:
-        ups = np.delete(ups, -1)
+        if last_up_must_end:
+            ups = ups[:-1]
+        else:
+            downs = np.insert(downs, len(downs), len(v))
 
     # check once more if we have no true upstates
     if ups.size == 0 or downs.size == 0:

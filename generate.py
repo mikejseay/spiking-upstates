@@ -6,7 +6,7 @@ or convert something related to that
 
 import numpy as np
 from tqdm import tqdm
-from brian2 import ms, second, TimedArray
+from brian2 import ms, second, TimedArray, exp
 
 
 def generate_poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_iki):
@@ -72,7 +72,7 @@ def convert_kicks_to_current_series(kickDur, kickTau, kickTimes, kickSizes, dura
 
     tRecorded = np.arange(int(duration / dt)) * dt
     iKickNumpy = np.zeros(tRecorded.shape)
-    kickShape = (1 - np.exp(-np.arange(0, kickDur, dt) / kickTau))
+    kickShape = (1 - exp(-np.arange(0, kickDur, dt) / kickTau))
     kickDurInd = kickShape.size
     for tKick, sKick in zip(kickTimes, kickSizes):
         startInd = int(tKick / dt)
