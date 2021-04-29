@@ -14,7 +14,7 @@ can ALSO set up certain classic types of experiments for characterizing a networ
 """
 
 from brian2 import start_scope, NeuronGroup, Synapses, SpikeMonitor, StateMonitor, Network, defaultclock, mV, ms, volt, \
-    PoissonGroup, SpikeGeneratorGroup, Mohm, second, nS, uS, TimedArray, Hz
+    PoissonGroup, SpikeGeneratorGroup, Mohm, second, nS, uS, TimedArray, Hz, nA
 import dill
 from datetime import datetime
 import os
@@ -206,10 +206,13 @@ class JercogNetwork(object):
         vTauExc = self.p['membraneCapacitanceExc'] / self.p['gLeakExc']
         vTauInh = self.p['membraneCapacitanceInh'] / self.p['gLeakInh']
 
-        unitsExc.jE = vTauExc * self.p['jEE'] / self.p['nIncExc'] / ms
-        unitsExc.jI = vTauExc * self.p['jEI'] / self.p['nIncInh'] / ms
-        unitsInh.jE = vTauInh * self.p['jIE'] / self.p['nIncExc'] / ms  # 50 nA * ~4 Hz = 200 nA / 100 = 2 nA
-        unitsInh.jI = vTauInh * self.p['jII'] / self.p['nIncInh'] / ms  # 10 nA * ~8 Hz = 80 nA / 100 = 0.8 A
+        # p['nIncInh'] = int(p['propConnect'] * p['propInh'] * p['nUnits'])
+        # p['nIncExc'] = int(p['propConnect'] * (1 - p['propInh']) * p['nUnits'])
+
+        unitsExc.jE = vTauExc * self.p['jEE'] / self.p['nIncExc'] / ms  # jEE
+        unitsExc.jI = vTauExc * self.p['jEI'] / self.p['nIncInh'] / ms  # jEI
+        unitsInh.jE = vTauInh * self.p['jIE'] / self.p['nIncExc'] / ms  # jIE
+        unitsInh.jI = vTauInh * self.p['jII'] / self.p['nIncInh'] / ms  # jII
 
         unitsExc.v = self.p['eLeakExc']
         unitsExc.vReset = self.p['vResetExc']
@@ -264,8 +267,20 @@ class JercogNetwork(object):
 
         threshCode = 'v >= vThresh'
 
-        units = NeuronGroup(
-            N=self.p['nUnits'],
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = int(self.p['nUnits'] - self.p['nInh'])
+
+        unitsExc = NeuronGroup(
+            N=self.p['nExc'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriod'],
+            clock=defaultclock,
+        )
+        unitsInh = NeuronGroup(
+            N=self.p['nInh'],
             model=unitModel,
             method=self.p['updateMethod'],
             threshold=threshCode,
@@ -274,13 +289,8 @@ class JercogNetwork(object):
             clock=defaultclock,
         )
 
-        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
-        self.p['nExc'] = int(self.p['nUnits'] - self.p['nInh'])
         self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
         self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
-
-        unitsExc = units[:self.p['nExc']]
-        unitsInh = units[self.p['nExc']:]
 
         vTauExc = self.p['membraneCapacitanceExc'] / self.p['gLeakExc']
         vTauInh = self.p['membraneCapacitanceInh'] / self.p['gLeakInh']
@@ -306,10 +316,196 @@ class JercogNetwork(object):
         unitsInh.Cm = self.p['membraneCapacitanceInh']
         unitsInh.gl = self.p['gLeakInh']
 
-        self.units = units
         self.unitsExc = unitsExc
         self.unitsInh = unitsInh
-        self.N.add(units)
+        self.N.add(unitsExc)
+        self.N.add(unitsInh)
+
+    def initialize_units_twice_kickable(self):
+        unitModel = '''
+                dv/dt = (gl * (eLeak - v) - iAdapt +
+                         jE * sE - jI * sI + jExt * sExt +
+                         kKick * iKick) / Cm +
+                         noiseSigma * (Cm / gl)**-0.5 * xi: volt
+                diAdapt/dt = -iAdapt / tauAdapt : amp
+
+                dsE/dt = (-sE + uE) / tauFallE : 1
+                duE/dt = -uE / tauRiseE : 1
+                dsI/dt = (-sI + uI) / tauFallI : 1
+                duI/dt = -uI / tauRiseI : 1
+                dsExt/dt = (-sExt + uExt) / tauFallE : 1
+                duExt/dt = -uExt / tauRiseE : 1
+
+                eLeak : volt
+                jE : amp
+                jI : amp
+                jExt : amp
+                kKick : amp
+                iKick = iKickRecorded(t) : 1
+                vReset : volt
+                vThresh : volt
+                betaAdapt : amp * second
+                gl : siemens
+                Cm : farad
+                '''
+
+        resetCode = '''
+        v = vReset
+        iAdapt += betaAdapt / tauAdapt 
+        '''
+
+        threshCode = 'v >= vThresh'
+
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = int(self.p['nUnits'] - self.p['nInh'])
+
+        unitsExc = NeuronGroup(
+            N=self.p['nExc'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriod'],
+            clock=defaultclock,
+        )
+        unitsInh = NeuronGroup(
+            N=self.p['nInh'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriod'],
+            clock=defaultclock,
+        )
+
+        self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
+        self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
+
+        vTauExc = self.p['membraneCapacitanceExc'] / self.p['gLeakExc']
+        vTauInh = self.p['membraneCapacitanceInh'] / self.p['gLeakInh']
+
+        unitsExc.jExt = vTauExc * self.p['jEE'] / self.p['nIncExc'] / ms
+        unitsInh.jExt = vTauInh * self.p['jIE'] / self.p['nIncExc'] / ms  # 50 nA * ~4 Hz = 200 nA / 100 = 2 nA
+
+        weightScales = np.array([1 / self.p['nIncExc'] * vTauExc / ms,
+                                 1 / self.p['nIncExc'] * vTauInh / ms,
+                                 1 / self.p['nIncInh'] * vTauExc / ms,
+                                 1 / self.p['nIncInh'] * vTauInh / ms])
+        weightScales /= weightScales.max()
+
+        self.p['wEEScale'] = weightScales[0]
+        self.p['wIEScale'] = weightScales[1]
+        self.p['wEIScale'] = weightScales[2]
+        self.p['wIIScale'] = weightScales[3]
+
+        # self.p['wEEScale'] = 1 / self.p['nIncExc'] * vTauExc / ms
+        # self.p['wEIScale'] = 1 / self.p['nIncInh'] * vTauExc / ms
+        # self.p['wIEScale'] = 1 / self.p['nIncExc'] * vTauInh / ms
+        # self.p['wIIScale'] = 1 / self.p['nIncInh'] * vTauInh / ms
+
+        unitsExc.jE = self.p['jEE'] / self.p['nIncExc'] * vTauExc / ms  # jEE
+        unitsInh.jE = self.p['jIE'] / self.p['nIncExc'] * vTauInh / ms  # jIE # 50 nA * ~4 Hz = 200 nA / 100 = 2 nA
+        unitsExc.jI = self.p['jEI'] / self.p['nIncInh'] * vTauExc / ms  # jEI
+        unitsInh.jI = self.p['jII'] / self.p['nIncInh'] * vTauInh / ms  # jII # 10 nA * ~8 Hz = 80 nA / 100 = 0.8 A
+
+        unitsExc.v = self.p['eLeakExc']
+        unitsExc.vReset = self.p['vResetExc']
+        unitsExc.vThresh = self.p['vThreshExc']
+        unitsExc.betaAdapt = self.p['betaAdaptExc']
+        unitsExc.eLeak = self.p['eLeakExc']
+        unitsExc.Cm = self.p['membraneCapacitanceExc']
+        unitsExc.gl = self.p['gLeakExc']
+
+        unitsInh.v = self.p['eLeakInh']
+        unitsInh.vReset = self.p['vResetInh']
+        unitsInh.vThresh = self.p['vThreshInh']
+        unitsInh.betaAdapt = self.p['betaAdaptInh']
+        unitsInh.eLeak = self.p['eLeakInh']
+        unitsInh.Cm = self.p['membraneCapacitanceInh']
+        unitsInh.gl = self.p['gLeakInh']
+
+        self.unitsExc = unitsExc
+        self.unitsInh = unitsInh
+        self.N.add(unitsExc)
+        self.N.add(unitsInh)
+
+    def initialize_units_twice_kickable2(self):
+        unitModel = '''
+                dv/dt = (gl * (eLeak - v) - iAdapt +
+                         sE - sI + sExt +
+                         kKick * iKick) / Cm +
+                         noiseSigma * (Cm / gl)**-0.5 * xi: volt (unless refractory)
+                diAdapt/dt = -iAdapt / tauAdapt : amp
+
+                dsE/dt = (-sE + uE) / tauFallE : amp
+                duE/dt = -uE / tauRiseE : amp
+                dsI/dt = (-sI + uI) / tauFallI : amp
+                duI/dt = -uI / tauRiseI : amp
+                dsExt/dt = (-sExt + uExt) / tauFallE : amp
+                duExt/dt = -uExt / tauRiseE : amp
+
+                eLeak : volt
+                kKick : amp
+                iKick = iKickRecorded(t) : 1
+                vReset : volt
+                vThresh : volt
+                betaAdapt : amp * second
+                gl : siemens
+                Cm : farad
+                '''
+
+        resetCode = '''
+        v = vReset
+        iAdapt += betaAdapt / tauAdapt 
+        '''
+
+        threshCode = 'v >= vThresh'
+
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = int(self.p['nUnits'] - self.p['nInh'])
+
+        unitsExc = NeuronGroup(
+            N=self.p['nExc'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriodExc'],
+            clock=defaultclock,
+        )
+        unitsInh = NeuronGroup(
+            N=self.p['nInh'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriodInh'],
+            clock=defaultclock,
+        )
+
+        self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
+        self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
+
+        unitsExc.v = self.p['eLeakExc']
+        unitsExc.vReset = self.p['vResetExc']
+        unitsExc.vThresh = self.p['vThreshExc']
+        unitsExc.betaAdapt = self.p['betaAdaptExc']
+        unitsExc.eLeak = self.p['eLeakExc']
+        unitsExc.Cm = self.p['membraneCapacitanceExc']
+        unitsExc.gl = self.p['gLeakExc']
+
+        unitsInh.v = self.p['eLeakInh']
+        unitsInh.vReset = self.p['vResetInh']
+        unitsInh.vThresh = self.p['vThreshInh']
+        unitsInh.betaAdapt = self.p['betaAdaptInh']
+        unitsInh.eLeak = self.p['eLeakInh']
+        unitsInh.Cm = self.p['membraneCapacitanceInh']
+        unitsInh.gl = self.p['gLeakInh']
+
+        self.unitsExc = unitsExc
+        self.unitsInh = unitsInh
+        self.N.add(unitsExc)
+        self.N.add(unitsInh)
 
     def initialize_units_NMDA(self):
         unitModel = '''
@@ -644,17 +840,17 @@ class JercogNetwork(object):
             on_pre='uE_post += ' + str(1 / self.p['tauRiseExc'] * ms),
             # delay=self.p['delayExc'] / 2,
         )
-        synapsesEI = Synapses(
-            source=self.unitsInh,
-            target=self.unitsExc,
-            on_pre='uI_post += ' + str(1 / self.p['tauRiseInh'] * ms),
-            # delay=self.p['delayInh'] / 2,
-        )
         synapsesIE = Synapses(
             source=self.unitsExc,
             target=self.unitsInh,
             on_pre='uE_post += ' + str(1 / self.p['tauRiseExc'] * ms),
             # delay=self.p['delayExc'] / 2,
+        )
+        synapsesEI = Synapses(
+            source=self.unitsInh,
+            target=self.unitsExc,
+            on_pre='uI_post += ' + str(1 / self.p['tauRiseInh'] * ms),
+            # delay=self.p['delayInh'] / 2,
         )
         synapsesII = Synapses(
             source=self.unitsInh,
@@ -662,10 +858,10 @@ class JercogNetwork(object):
             on_pre='uI_post += ' + str(1 / self.p['tauRiseInh'] * ms),
             # delay=self.p['delayInh'] / 2,
         )
-        synapsesEE.connect(p=self.p['propConnect'])
-        synapsesEI.connect(p=self.p['propConnect'])
-        synapsesIE.connect(p=self.p['propConnect'])
-        synapsesII.connect(p=self.p['propConnect'])
+        synapsesEE.connect('i!=j', p=self.p['propConnect'])
+        synapsesEI.connect('i!=j', p=self.p['propConnect'])
+        synapsesIE.connect('i!=j', p=self.p['propConnect'])
+        synapsesII.connect('i!=j', p=self.p['propConnect'])
 
         TESTING_GENN = False
 
@@ -698,6 +894,143 @@ class JercogNetwork(object):
         self.synapsesIE = synapsesIE
         self.synapsesII = synapsesII
         self.N.add(synapsesEE, synapsesEI, synapsesIE, synapsesII)
+
+    def initialize_recurrent_synapses_4bundles_modifiable(self):
+
+        # nRecurrentExcitatorySynapsesPerUnit = int(self.p['nExc'] * self.p['propConnect'])
+        # nRecurrentInhibitorySynapsesPerUnit = int(self.p['nInh'] * self.p['propConnect'])
+
+        vTauExc = self.p['membraneCapacitanceExc'] / self.p['gLeakExc']
+        vTauInh = self.p['membraneCapacitanceInh'] / self.p['gLeakInh']
+
+        # useJEE = self.p['jEE'] / nRecurrentExcitatorySynapsesPerUnit * vTauExc / ms
+        # usejEE = self.p['jEE'] / self.p['nIncExc'] * vTauExc / ms
+        # usejIE = self.p['jIE'] / self.p['nIncExc'] * vTauInh / ms
+        # usejEI = self.p['jEI'] / self.p['nIncInh'] * vTauExc / ms
+        # usejII = self.p['jII'] / self.p['nIncInh'] * vTauInh / ms
+        usejEE = self.p['jEE'] / self.p['nIncExc']
+        usejIE = self.p['jIE'] / self.p['nIncExc']
+        usejEI = self.p['jEI'] / self.p['nIncInh']
+        usejII = self.p['jII'] / self.p['nIncInh']
+
+        # weightScales = np.array([1 / self.p['nIncExc'] * vTauExc / ms,
+        #                          1 / self.p['nIncExc'] * vTauInh / ms,
+        #                          1 / self.p['nIncInh'] * vTauExc / ms,
+        #                          1 / self.p['nIncInh'] * vTauInh / ms])
+        weightScales = np.array([1 / self.p['nIncExc'],
+                                 1 / self.p['nIncExc'],
+                                 1 / self.p['nIncInh'],
+                                 1 / self.p['nIncInh']])
+        weightScales /= weightScales.max()
+
+        self.p['wEEScale'] = weightScales[0]
+        self.p['wIEScale'] = weightScales[1]
+        self.p['wEIScale'] = weightScales[2]
+        self.p['wIIScale'] = weightScales[3]
+
+        # from E to E
+        synapsesEE = Synapses(
+            model='jEE: amp',
+            source=self.unitsExc,
+            target=self.unitsExc,
+            # on_pre='uE_post += jEE / tauRiseEOverMS',
+            on_pre='uE_post += jEE * vTauExcOverMS / tauRiseEOverMS',
+        )
+        if self.p['propConnect'] == 1:
+            synapsesEE.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
+                                                                  allowAutapses=False)
+            synapsesEE.connect(i=preInds, j=postInds)
+            self.preEE = preInds
+            self.posEE = postInds
+        synapsesEE.jEE = usejEE
+
+        # from E to I
+        synapsesIE = Synapses(
+            model='jIE: amp',
+            source=self.unitsExc,
+            target=self.unitsInh,
+            # on_pre='uE_post += jIE / tauRiseEOverMS',
+            on_pre='uE_post += jIE * vTauInhOverMS / tauRiseEOverMS',
+        )
+        if self.p['propConnect'] == 1:
+            synapsesIE.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'],
+                                                                   self.p['propConnect'])
+            synapsesIE.connect(i=preInds, j=postInds)
+            self.preIE = preInds
+            self.posIE = postInds
+        synapsesIE.jIE = usejIE
+
+        # from I to E
+        synapsesEI = Synapses(
+            model='jEI: amp',
+            source=self.unitsInh,
+            target=self.unitsExc,
+            # on_pre='uI_post += jEI / tauRiseIOverMS',
+            on_pre='uI_post += jEI * vTauExcOverMS / tauRiseIOverMS',
+        )
+        if self.p['propConnect'] == 1:
+            synapsesEI.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'],
+                                                                   self.p['propConnect'])
+            synapsesEI.connect(i=preInds, j=postInds)
+            self.preEI = preInds
+            self.posEI = postInds
+        synapsesEI.jEI = usejEI
+
+        # from I to I
+        synapsesII = Synapses(
+            model='jII: amp',
+            source=self.unitsInh,
+            target=self.unitsInh,
+            # on_pre='uI_post += jII / tauRiseIOverMS',
+            on_pre='uI_post += jII * vTauInhOverMS / tauRiseIOverMS',
+        )
+        if self.p['propConnect'] == 1:
+            synapsesII.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
+                                                                  allowAutapses=False)
+            synapsesII.connect(i=preInds, j=postInds)
+            self.preII = preInds
+            self.posII = postInds
+        synapsesII.jII = usejII
+
+        TESTING_GENN = False
+
+        if TESTING_GENN:
+            nEESynapses = np.round(self.p['nExc'] * self.p['nExc'] * self.p['propConnect'])
+            nEISynapses = np.round(self.p['nInh'] * self.p['nExc'] * self.p['propConnect'])
+            nIESynapses = np.round(self.p['nExc'] * self.p['nInh'] * self.p['propConnect'])
+            nIISynapses = np.round(self.p['nInh'] * self.p['nInh'] * self.p['propConnect'])
+
+            synapsesEE.delay = ((np.random.rand(nEESynapses) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesEI.delay = ((np.random.rand(nEISynapses) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesIE.delay = ((np.random.rand(nIESynapses) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesII.delay = ((np.random.rand(nIISynapses) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+        else:
+            synapsesEE.delay = ((np.random.rand(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesIE.delay = ((np.random.rand(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesEI.delay = ((np.random.rand(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesII.delay = ((np.random.rand(synapsesII.delay.shape[0]) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+
+        self.synapsesEE = synapsesEE
+        self.synapsesIE = synapsesIE
+        self.synapsesEI = synapsesEI
+        self.synapsesII = synapsesII
+        self.N.add(synapsesEE, synapsesIE, synapsesEI, synapsesII)
 
     def initialize_recurrent_synapses3(self):
 
@@ -800,13 +1133,17 @@ class JercogNetwork(object):
 
     def run(self):
 
-        # iKickRecorded = self.p['iKickRecorded']  # disabling this to test brian2genn
+        iKickRecorded = self.p['iKickRecorded']  # disabling this to test brian2genn
         noiseSigma = self.p['noiseSigma']
         tauRiseE = self.p['tauRiseExc']
         tauFallE = self.p['tauFallExc']
         tauRiseI = self.p['tauRiseInh']
         tauFallI = self.p['tauFallInh']
         tauAdapt = self.p['adaptTau']
+        tauRiseEOverMS = self.p['tauRiseExc'] / ms
+        tauRiseIOverMS = self.p['tauRiseInh'] / ms
+        vTauExcOverMS = self.p['membraneCapacitanceExc'] / self.p['gLeakExc'] / ms
+        vTauInhOverMS = self.p['membraneCapacitanceInh'] / self.p['gLeakInh'] / ms
 
         self.N.run(self.p['duration'],
                    report=self.p['reportType'],
@@ -1043,7 +1380,41 @@ class JercogNetwork(object):
         feedforwardUpExc = Synapses(
             source=Uppers,
             target=self.unitsExc,
-            on_pre='uE_post += ' + str(multExc / tauRiseE * ms),
+            on_pre='uExt_post += ' + str(multExc / tauRiseE * ms),
+        )
+        feedforwardUpExc.connect('i==j')
+
+        self.N.add(Uppers, feedforwardUpExc)
+
+        self.p['duration'] = (np.array(times).max() * second + timeSpacing)
+        self.p['iKickRecorded'] = fixed_current_series(0, self.p['duration'], self.p['dt'])
+
+    def prepare_upCrit_experiment2(self, minUnits=170, maxUnits=180, unitSpacing=5, timeSpacing=3000 * ms,
+                                   startTime=100 * ms, currentAmp=0.98 * nA):
+
+        tauRiseE = self.p['tauRiseExc']
+
+        # multExc = critExc / self.unitsExc.jE[0]
+        # multInh = critInh / self.unitsInh.jE[0]
+
+        indices = []
+        times = []
+        dummyInd = -1
+        useRange = range(minUnits, maxUnits + 1, unitSpacing)
+        for unitInd in useRange:
+            dummyInd += 1
+            indices.extend(list(range(unitInd)))
+            times.extend([float(startTime) + float(timeSpacing) * dummyInd, ] * (unitInd))
+
+        Uppers = SpikeGeneratorGroup(maxUnits, np.array(indices), np.array(times) * second)
+
+        # TODO: CHECK IF THIS WORKS WITH uE_post += 0.98 * nA
+        feedforwardUpExc = Synapses(
+            source=Uppers,
+            target=self.unitsExc,
+            # on_pre='uExt_post += 0.98 * nA'
+            on_pre='uE_post += ' + str(currentAmp / nA) + ' * nA'
+            #  + str(critExc / (100 * Mohm) / tauRiseE * ms),
         )
         feedforwardUpExc.connect('i==j')
 
@@ -1084,6 +1455,71 @@ class DestexheNetwork(object):
         b : amp
         vThresh : volt
         '''
+
+        resetCode = '''
+        v = El
+        w += b
+        '''
+
+        threshCode = 'v > vThresh + 5 * delta'
+        self.p['vThreshExc'] = self.p['vThresh'] + 5 * self.p['deltaVExc']
+        self.p['vThreshInh'] = self.p['vThresh'] + 5 * self.p['deltaVInh']
+
+        # threshCode = 'v > vThresh'
+        # self.p['vThreshExc'] = self.p['vThresh']
+        # self.p['vThreshInh'] = self.p['vThresh']
+
+        units = NeuronGroup(
+            N=self.p['nUnits'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriod'],
+            clock=defaultclock,
+        )
+
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = int(self.p['nUnits'] - self.p['nInh'])
+        self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
+        self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
+
+        unitsExc = units[:self.p['nExc']]
+        unitsInh = units[self.p['nExc']:]
+
+        unitsExc.v = self.p['eLeakExc']
+        unitsExc.El = self.p['eLeakExc']
+        unitsExc.delta = self.p['deltaVExc']
+        unitsExc.a = self.p['aExc']
+        unitsExc.b = self.p['bExc']
+        unitsExc.vThresh = self.p['vThresh']
+
+        unitsInh.v = self.p['eLeakInh']
+        unitsInh.El = self.p['eLeakInh']
+        unitsInh.delta = self.p['deltaVInh']
+        unitsInh.a = self.p['aInh']
+        unitsInh.b = self.p['bInh']
+        unitsInh.vThresh = self.p['vThresh']
+
+        self.units = units
+        self.unitsExc = unitsExc
+        self.unitsInh = unitsInh
+        self.N.add(units)
+
+    def initialize_units_kickable(self):
+        unitModel = '''
+            dv/dt = (gl * (El - v) + gl * delta * exp((v - vThresh) / delta) - w +
+                     gext * (Ee - v) + ge * (Ee - v) +  gi * (Ei - v)) / Cm: volt (unless refractory)
+            dw/dt = (a * (v - El) - w) / tau_w : amp
+            dge/dt = -ge / tau_e : siemens
+            dgi/dt = -gi / tau_i : siemens
+            dgext/dt = -gext / tau_e : siemens
+            El : volt
+            delta: volt
+            a : siemens
+            b : amp
+            vThresh : volt
+            '''
 
         resetCode = '''
         v = El
@@ -1404,6 +1840,94 @@ class DestexheNetwork(object):
             preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
                                                                   allowAutapses=False)
             synapsesII.connect(i=preInds, j=postInds)
+
+        self.synapsesEE = synapsesEE
+        self.synapsesIE = synapsesIE
+        self.synapsesEI = synapsesEI
+        self.synapsesII = synapsesII
+        self.N.add(synapsesEE, synapsesIE, synapsesEI, synapsesII)
+
+    def initialize_recurrent_synapses_4bundles_modifiable(self):
+
+        nRecurrentExcitatorySynapsesPerUnit = int(self.p['nExc'] * self.p['propConnect'])
+        nRecurrentInhibitorySynapsesPerUnit = int(self.p['nInh'] * self.p['propConnect'])
+
+        useQExc = self.p['qExc'] / nRecurrentExcitatorySynapsesPerUnit
+        useQInh = self.p['qInh'] / nRecurrentInhibitorySynapsesPerUnit
+
+        print(self.p['qExc'], nRecurrentExcitatorySynapsesPerUnit, useQExc)
+        print(self.p['qInh'], nRecurrentInhibitorySynapsesPerUnit, useQInh)
+
+        weightScales = np.array([1 / nRecurrentExcitatorySynapsesPerUnit,
+                                 1 / nRecurrentExcitatorySynapsesPerUnit,
+                                 1 / nRecurrentInhibitorySynapsesPerUnit,
+                                 1 / nRecurrentInhibitorySynapsesPerUnit])
+        weightScales /= weightScales.max()
+
+        self.p['wEEScale'] = weightScales[0]
+        self.p['wIEScale'] = weightScales[1]
+        self.p['wEIScale'] = weightScales[2]
+        self.p['wIIScale'] = weightScales[3]
+
+        # from E to E
+        synapsesEE = Synapses(
+            model='qEE: siemens',
+            source=self.unitsExc,
+            target=self.unitsExc,
+            on_pre='ge_post += qEE',
+        )
+        if self.p['propConnect'] == 1:
+            synapsesEE.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
+                                                                  allowAutapses=False)
+            synapsesEE.connect(i=preInds, j=postInds)
+        synapsesEE.qEE = useQExc
+
+        # from E to I
+        synapsesIE = Synapses(
+            model='qIE: siemens',
+            source=self.unitsExc,
+            target=self.unitsInh,
+            on_pre='ge_post += qIE',
+        )
+        if self.p['propConnect'] == 1:
+            synapsesIE.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'],
+                                                                   self.p['propConnect'])
+            synapsesIE.connect(i=preInds, j=postInds)
+        synapsesIE.qIE = useQExc
+
+        # from I to E
+        synapsesEI = Synapses(
+            model='qEI: siemens',
+            source=self.unitsInh,
+            target=self.unitsExc,
+            on_pre='gi_post += qEI',
+        )
+        if self.p['propConnect'] == 1:
+            synapsesEI.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'],
+                                                                   self.p['propConnect'])
+            synapsesEI.connect(i=preInds, j=postInds)
+        synapsesEI.qEI = useQInh
+
+        # from I to I
+        synapsesII = Synapses(
+            model='qII: siemens',
+            source=self.unitsInh,
+            target=self.unitsInh,
+            on_pre='gi_post += qII',
+        )
+        if self.p['propConnect'] == 1:
+            synapsesII.connect('i!=j', p=self.p['propConnect'])
+        else:
+            preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
+                                                                  allowAutapses=False)
+            synapsesII.connect(i=preInds, j=postInds)
+        synapsesII.qII = useQInh
 
         self.synapsesEE = synapsesEE
         self.synapsesIE = synapsesIE
@@ -2110,7 +2634,7 @@ class DestexheNetwork(object):
         feedforwardUpExc = Synapses(
             source=Uppers,
             target=self.unitsExc,
-            on_pre='ge_post += 18.5 * nS',
+            on_pre='gext_post += 18.5 * nS',
         )
         feedforwardUpExc.connect('i==j')
 
@@ -2138,7 +2662,7 @@ class JercogEphysNetwork(object):
 
     def initialize_units(self):
         unitModel = '''
-        dv/dt = (gl * (eLeak - v) - iAdapt + iExt) / Cm: volt
+        dv/dt = (gl * (eLeak - v) - iAdapt + iExt) / Cm: volt (unless refractory)
         diAdapt/dt = -iAdapt / tauAdapt : amp
         
         eLeak : volt
@@ -2159,23 +2683,29 @@ class JercogEphysNetwork(object):
 
         numIValues = len(self.p['iExtRange'])
 
-        units = NeuronGroup(
-            N=numIValues * 2,
+        unitsExc = NeuronGroup(
+            N=numIValues,
             model=unitModel,
             method=self.p['updateMethod'],
             threshold=threshCode,
             reset=resetCode,
-            # refractory=self.p['refractoryPeriod'],
-            dt=self.p['dt']
+            refractory=self.p['refractoryPeriodExc'],
+            clock=defaultclock,
+        )
+        unitsInh = NeuronGroup(
+            N=numIValues,
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriodInh'],
+            clock=defaultclock,
         )
 
         self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
         self.p['nExc'] = self.p['nUnits'] - self.p['nInh']
         self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
         self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
-
-        unitsExc = units[:numIValues]
-        unitsInh = units[numIValues:]
 
         # just gonna comment this because it doesn't get used here but will be useful
 
@@ -2205,10 +2735,9 @@ class JercogEphysNetwork(object):
         unitsInh.gl = self.p['gLeakInh']
         unitsInh.iExt = self.p['iExtRange']
 
-        self.units = units
         self.unitsExc = unitsExc
         self.unitsInh = unitsInh
-        self.N.add(units)
+        self.N.add(unitsExc, unitsInh)
 
     def create_monitors(self):
         spikeMonExc = SpikeMonitor(self.unitsExc)

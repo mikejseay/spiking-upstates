@@ -13,11 +13,11 @@ paramsJercog = {
     'saveWithDate': True,
 
     # global sim params
-    'dt': 0.05 * ms,
+    'dt': 0.1 * ms,
     'duration': 10 * second,
     'updateMethod': 'euler',
     'reportType': 'stdout',
-    'reportPeriod': 1 * second,
+    'reportPeriod': 10 * second,
     'doProfile': False,
 
     # recording parameters
@@ -57,24 +57,27 @@ paramsJercog = {
     'adaptTau': 500 * ms,
     'adaptStrengthExc': 15 * mV,
     'adaptStrengthInh': 0 * mV,
-    'refractoryPeriod': 0 * ms,
+    'refractoryPeriodExc': 2.5 * ms,
+    'refractoryPeriodInh': 1 * ms,
+    'refractoryPeriod': 1 * ms,  # overridden by the above but necessary
     'membraneCapacitanceExc': 200 * pF,
     'membraneCapacitanceInh': 100 * pF,
     'gLeakExc': 10 * nS,
     'gLeakInh': 10 * nS,
     # 'betaAdaptExc': 3 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea!
-    'betaAdaptExc': 4 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea!
+    'betaAdaptExc': 3 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea!
     'betaAdaptInh': 0 * nA * ms,  # 'adaptStrengthInh': 0 * mV,
+    # i think it's supposed to be 15 mV * 10 nS * 20 (membrane tau) = 3 nA...
 
     # synaptic params
     # 'jEE': 280 * mV,
     # 'jEI': 70 * mV,
     # 'jIE': 500 * mV,
     # 'jII': 100 * mV,
-    'jEE': 2.8 * nA,
-    'jEI': 0.7 * nA,
-    'jIE': 5 * nA,
-    'jII': 1 * nA,
+    'jEE': 2.8 * nA,  # 280 mV * 10 nS
+    'jEI': 0.7 * nA,  # 70 mV * 10 nS
+    'jIE': 5 * nA,  # 500 mV * 10 nS
+    'jII': 1 * nA,  # 100 mV * 10 nS
     'tauRiseExc': 8 * ms,
     'tauFallExc': 23 * ms,
     'tauRiseInh': 1 * ms,
@@ -97,11 +100,11 @@ paramsJercogEphysOrig = {
     'saveWithDate': True,
 
     # global sim params
-    'dt': 0.05 * ms,
+    'dt': 0.1 * ms,
     'duration': 250 * ms,
     # 'updateMethod': 'exact',
     'reportType': 'stdout',
-    'reportPeriod': 1 * second,
+    'reportPeriod': 10 * second,
     'doProfile': False,
 
     # recording parameters
@@ -122,7 +125,7 @@ paramsJercogEphysOrig = {
     'vThreshExc': -46.5 * mV,  # 'vThreshExc': 20 * mV,
     'vThreshInh': -46.5 * mV,  # 'vThreshInh': 20 * mV,
     'adaptTau': 500 * ms,  # 'adaptTau': 500 * ms,
-    'betaAdaptExc': 4 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea! 3 or 4?
+    'betaAdaptExc': 3 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea! 3 or 4?
     'betaAdaptInh': 0 * nA * ms,  # 'adaptStrengthInh': 0 * mV,
     'refractoryPeriod': 0 * ms,  # 'refractoryPeriod': 0 * ms,
     'membraneCapacitanceExc': 200 * pF,
@@ -156,11 +159,11 @@ paramsJercogEphysBuono = {
     'saveWithDate': True,
 
     # global sim params
-    'dt': 0.05 * ms,
+    'dt': 0.1 * ms,
     'duration': 250 * ms,
     # 'updateMethod': 'exact',
     'reportType': 'stdout',
-    'reportPeriod': 1 * second,
+    'reportPeriod': 10 * second,
     'doProfile': False,
 
     # recording parameters
@@ -183,11 +186,13 @@ paramsJercogEphysBuono = {
     'adaptTau': 500 * ms,
     'betaAdaptExc': 10 * nA * ms,
     'betaAdaptInh': 0 * nA * ms,
-    'refractoryPeriod': 0 * ms,
-    'membraneCapacitanceExc': 200 * pF,
-    'membraneCapacitanceInh': 100 * pF,
-    'gLeakExc': 10 * nS,
-    'gLeakInh': 10 * nS,
+    'refractoryPeriodExc': 2.5 * ms,
+    'refractoryPeriodInh': 1 * ms,
+    'refractoryPeriod': 1 * ms,  # overridden by the above but necessary
+    'membraneCapacitanceExc': 200 * pF,  # dictated by surface area
+    'membraneCapacitanceInh': 100 * pF,  # so it's smaller for inhibitory neurons
+    'gLeakExc': 10 * nS,  # in theory dictated by density of Na+/K+ pump, etc
+    'gLeakInh': 10 * nS,  # so it's the same between the two
 
     # ephys params
     'iExtRange': linspace(0, .3, 31) * nA,
@@ -219,11 +224,11 @@ paramsDestexhe = {
     'saveWithDate': True,
 
     # global sim params
-    'dt': 0.05 * ms,
+    'dt': 0.1 * ms,
     'duration': 10 * second,
     'updateMethod': 'euler',
     'reportType': 'stdout',
-    'reportPeriod': 1 * second,
+    'reportPeriod': 10 * second,
     'doProfile': False,
 
     # recording parameters
@@ -289,11 +294,11 @@ paramsDestexheEphysOrig = {
     'saveWithDate': True,
 
     # global sim params
-    'dt': 0.05 * ms,
+    'dt': 0.1 * ms,
     'duration': 250 * ms,
     'updateMethod': 'euler',
     'reportType': 'stdout',
-    'reportPeriod': 1 * second,
+    'reportPeriod': 10 * second,
     'doProfile': False,
 
     # recording parameters
@@ -348,11 +353,11 @@ paramsDestexheEphysBuono = {
     'saveWithDate': True,
 
     # global sim params
-    'dt': 0.05 * ms,
+    'dt': 0.1 * ms,
     'duration': 250 * ms,
     'updateMethod': 'euler',
     'reportType': 'stdout',
-    'reportPeriod': 1 * second,
+    'reportPeriod': 10 * second,
     'doProfile': False,
 
     # recording parameters
@@ -392,7 +397,7 @@ paramsDestexheEphysBuono = {
 
     # synaptic params
     'qExtExc': 0.6 * uS,
-    'qExc': 0.6 * uS,  # *** # 1.5 * nS * 1e4 * (1 - .2) * 0.05,
+    'qExc': 0.6 * uS,  # *** # 1.5 * nS * 1e4 * (1 - .2) * 1,
     'qInh': 0.5 * uS,  # *** # 5 * nS * 1e4 * .2 * 0.05,
     'tauSynExc': 5 * ms,
     'tauSynInh': 5 * ms,

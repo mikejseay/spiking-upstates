@@ -73,21 +73,54 @@ class Results(object):
         pass
 
     def init_from_file(self, resultsIdentifier, loadFolder):
-        self.rID = resultsIdentifier
+
         self.loadFolder = loadFolder
+        self.interpret_rID(resultsIdentifier)
         self.load_params_from_file()
         self.load_results_from_file()
         self.timeArray = np.arange(0, float(self.p['duration']), float(self.p['dt']))
 
+    def interpret_rID(self, resultsIdentifier):
+
+        fileParts = resultsIdentifier.split('.')
+
+        if len(fileParts) == 1:  # indicates only results id, not a file
+            fileNameParts = fileParts[0].split('_')
+
+            if fileNameParts[-1] == 'results':
+                self.rID = '_'.join(fileNameParts[:-1])
+                self.resultsFileName = resultsIdentifier + '.npz'
+                self.paramsFileName = self.rID + '_params.pkl'
+            elif fileNameParts[-1] == 'params':
+                self.rID = '_'.join(fileNameParts[:-1])
+                self.resultsFileName = self.rID + '_results.npz'
+                self.paramsFileName = resultsIdentifier + '.pkl'
+            else:
+                self.rID = resultsIdentifier
+                self.resultsFileName = resultsIdentifier + '_results.npz'
+                self.paramsFileName = resultsIdentifier + '_params.pkl'
+
+        elif len(fileParts) == 2:  # indicates a file, either pkl or npz
+
+            fileNameParts = fileParts[0].split('_')
+
+            self.rID = fileNameParts[0] + fileNameParts[1]
+            if fileParts[1] == 'npz':
+                self.resultsFileName = resultsIdentifier
+                self.paramsFileName = self.rID + '_params.pkl'
+            elif fileParts[1] == 'pkl':
+                self.resultsFileName = self.rID + '_results.npz'
+                self.paramsFileName = resultsIdentifier
+
     def load_params_from_file(self):
-        loadPath = os.path.join(self.loadFolder, self.rID + '_params.pkl')
+        loadPath = os.path.join(self.loadFolder, self.paramsFileName)
         with open(loadPath, 'rb') as f:
             params = dill.load(f)
         self.p = params
 
     def load_results_from_file(self):
-        loadPath = os.path.join(self.loadFolder, self.rID + '_results.npz')
-        npzObject = np.load(loadPath)
+        loadPath = os.path.join(self.loadFolder, self.resultsFileName)
+        npzObject = np.load(loadPath, allow_pickle=True)
         self.npzObject = npzObject
 
         # simply assign each object name to an attribute of the results object
@@ -302,8 +335,8 @@ class Results(object):
         self.upOnsetRelativeSpikeIndicesExcArray = upOnsetRelativeSpikeIndicesExcArray
         self.upOnsetRelativeSpikeIndicesInhArray = upOnsetRelativeSpikeIndicesInhArray
         self.histCentersUpstateFR = histCenters
-        self.upstateFRExc = upstateFRExc
-        self.upstateFRInh = upstateFRInh
+        self.upstateFRExcHist = upstateFRExc
+        self.upstateFRInhHist = upstateFRInh
 
     def calculate_FR_in_upstates_simply(self):
 
@@ -333,6 +366,45 @@ class Results(object):
 
         self.upstateFRExc = np.array(upstateFRExc)
         self.upstateFRInh = np.array(upstateFRInh)
+
+    def calculate_FR_in_upstates_units(self):
+
+        # here we calculate by simply counting the spikes in the Up state
+        # and dividing by the duration
+
+        ups = self.ups
+        downs = self.downs
+
+        nUpstates = len(self.ups)
+
+        if nUpstates == 0:
+            print('there were no detectable up states')
+            return
+
+        upstateFRExc = []
+        upstateFRInh = []
+        upstateFRExcUnits = np.empty((nUpstates, self.p['nExc']))
+        upstateFRInhUnits = np.empty((nUpstates, self.p['nInh']))
+
+        for upstateInd in range(nUpstates):
+            inRangeBoolExc = (self.spikeMonExcT > ups[upstateInd]) & (
+                        self.spikeMonExcT < downs[upstateInd])
+            upstateFRExc.append(inRangeBoolExc.sum() / self.p['nExc'] / self.upDurs[upstateInd])
+            indicesInRangeExc = self.spikeMonExcI[inRangeBoolExc].astype(int)
+            spikesPerUnitExc = np.bincount(indicesInRangeExc, minlength=self.p['nExc'])
+            upstateFRExcUnits[upstateInd, :] = spikesPerUnitExc / self.upDurs[upstateInd]
+
+            inRangeBoolInh = (self.spikeMonInhT > ups[upstateInd]) & (
+                        self.spikeMonInhT < downs[upstateInd])
+            upstateFRInh.append(inRangeBoolInh.sum() / self.p['nInh'] / self.upDurs[upstateInd])
+            indicesInRangeInh = self.spikeMonInhI[inRangeBoolInh].astype(int)
+            spikesPerUnitInh = np.bincount(indicesInRangeInh, minlength=self.p['nInh'])
+            upstateFRInhUnits[upstateInd, :] = spikesPerUnitInh / self.upDurs[upstateInd]
+
+        self.upstateFRExc = np.array(upstateFRExc)
+        self.upstateFRInh = np.array(upstateFRInh)
+        self.upstateFRExcUnits = upstateFRExcUnits
+        self.upstateFRInhUnits = upstateFRInhUnits
 
     def plot_consecutive_state_correlation(self, ax):
         # ax should have 2 elements
@@ -441,8 +513,8 @@ class Results(object):
         ax.plot(yValsRescaled, xVals, color=useColor, alpha=0.5)
         # ax.hlines(useELeak, 0, yVals.max() / 2, color=useColor, ls='--', alpha=0.5)
 
-
     def plot_voltage_detail(self, ax, unitType='Exc', useStateInd=0, plotKicks=False, **kwargs):
+
         # reconstruct the time vector
         stateMonT = np.arange(0, float(self.p['duration']), float(self.p['dt']))
         yLims = (self.p['eLeakExc'] / mV - 15, self.p['eLeakExc'] / mV + 70)
@@ -460,6 +532,9 @@ class Results(object):
         else:
             print('you messed up')
             return
+
+        if len(stateMonT) > len(voltageSeries):
+            stateMonT = stateMonT[1:]
 
         useThresh = self.p['vThresh' + unitType] / mV
         # ax.axhline(useThresh, color=useColor, linestyle=':')  # Threshold

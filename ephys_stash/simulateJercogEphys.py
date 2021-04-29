@@ -5,20 +5,32 @@ import matplotlib.pyplot as plt
 import numpy as np
 from brian2 import nA, ms
 
+USE_NEW_EPHYS_PARAMS = True
+
 useParams = paramsJercog.copy()
 
-if 'iExtRange' not in useParams:
-    useParams['propInh'] = 0.5
-    useParams['duration'] = 250 * ms
-    useParams['iExtRange'] = np.linspace(0, .3, 31) * nA
+# remove protected keys from the dict whose params are being imported
+# ephysParams = paramsJercogEphysOrig.copy()
+ephysParams = paramsJercogEphysBuono.copy()
+protectedKeys = ('nUnits', 'propInh', 'duration')
+for pK in protectedKeys:
+    del ephysParams[pK]
 
-DEN = JercogEphysNetwork(useParams)
-DEN.build_classic()
-DEN.run()
-DEN.save_results()
-DEN.save_params()
+if USE_NEW_EPHYS_PARAMS:
+    useParams.update(ephysParams)
 
-R = ResultsEphys(DEN.saveName, DEN.p['saveFolder'])
+useParams['propInh'] = 0.5
+useParams['duration'] = 250 * ms
+useParams['iExtRange'] = np.linspace(0, .3, 31) * nA
+
+JEN = JercogEphysNetwork(useParams)
+JEN.build_classic()
+JEN.run()
+JEN.save_results()
+JEN.save_params()
+
+R = ResultsEphys()
+R.init_from_file(JEN.saveName, JEN.p['saveFolder'])
 R.calculate_thresh_and_gain()
 
 fig1, ax1 = plt.subplots(2, 2, num=1)

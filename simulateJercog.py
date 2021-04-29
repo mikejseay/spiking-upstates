@@ -11,9 +11,9 @@ MAKE_UP_PLOTS = False
 USE_NEW_EPHYS_PARAMS = False
 KICKS_POISSON = True
 APPLY_UNCORRELATED_INPUTS = True
-APPLY_KICKS = False
+APPLY_KICKS = True
 p['onlyKickExc'] = True
-KICK_TYPE = 'spike'  # kick or spike
+KICK_TYPE = 'kick'  # kick or spike
 
 # p['propKicked'] = 0.04
 

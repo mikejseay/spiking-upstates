@@ -6,7 +6,7 @@ or convert something related to that
 
 import numpy as np
 from tqdm import tqdm
-from brian2 import ms, second, TimedArray, exp
+from brian2 import *
 
 
 def generate_poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_iki):
@@ -161,6 +161,23 @@ def normal_positive_weights(nConnections, mean, sd):
     return weights
 
 
+def adjacency_matrix_from_flat_inds(nUnitsPre, nUnitsPost, preInds, postInds):
+    """ given the total number of pre- and post-synaptic units,
+    and 3 flat arrays:
+        the indices of the presynaptic units
+        the indices of the postsynaptic units
+        the weights
+    generate a weight matrix that represents the synaptic weights
+    """
+
+    # these can be quite big so let's be careful about data type...
+    shape = (nUnitsPre, nUnitsPost)
+    a = np.zeros(shape, dtype=int)
+    a[preInds, postInds] = 1
+
+    return a
+
+
 def weight_matrix_from_flat_inds_weights(nUnitsPre, nUnitsPost, preInds, postInds, weights):
     """ given the total number of pre- and post-synaptic units,
     and 3 flat arrays:
@@ -172,7 +189,8 @@ def weight_matrix_from_flat_inds_weights(nUnitsPre, nUnitsPost, preInds, postInd
 
     # these can be quite big so let's be careful about data type...
     shape = (nUnitsPre, nUnitsPost)
-    w = np.zeros(shape, dtype=np.float32)
+    # w = np.zeros(shape, dtype=np.float32)
+    w = np.full(shape, np.nan, dtype=np.float32)
     w[preInds, postInds] = weights
 
     return w

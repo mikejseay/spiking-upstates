@@ -130,4 +130,4 @@ if hasattr(R, 'weights_EE'):
     wFull = np.block([[wEE, wIE], [-wEI, -wII]])
 
     fig7, ax7 = plt.subplots(num=7, figsize=(10, 9))
-    weight_matrix(ax7, wFull, xlabel='Post Index', ylabel='Pre Index', clabel='Normalized Weight',)
+    weight_matrix(ax7, wFull, xlabel='Pre Index', ylabel='Post Index', clabel='Normalized Weight',)

@@ -6,14 +6,16 @@ from results import Results
 from brian2.units.fundamentalunits import DimensionMismatchError
 
 loadFolder1 = 'C:/Users/mikejseay/Documents/BrianResults/'
-targetSim1 = 'jercogUpCritFullConn500Units_2020-10-26-17-07'
+targetSim1 = 'classicJercogEphysOrig_2021-04-29-08-34_results'
 
-R1 = Results(targetSim1, loadFolder1)
+R1 = Results()
+R1.init_from_file(targetSim1, loadFolder1)
 
 loadFolder2 = 'C:/Users/mikejseay/Documents/BrianResults/'
-targetSim2 = 'jercogUpCritFullConn500Units_2021-04-09-11-30'
+targetSim2 = 'classicJercogEphysBuono_2021-04-29-08-35_results'
 
-R2 = Results(targetSim2, loadFolder2)
+R2 = Results()
+R2.init_from_file(targetSim2, loadFolder2)
 
 for k1, v1, in R1.p.items():
     try:

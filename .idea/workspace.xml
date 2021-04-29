@@ -2,24 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c50fe96e-73b6-429f-aab6-173e82858304" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/analyze_old.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/simulateJercogUpLearn.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/simulateDestexheUpLearn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCrit.py" beforeDir="false" afterPath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCrit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCrit2.py" beforeDir="false" afterPath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCrit2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCritCellNotSyn.py" beforeDir="false" afterPath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCritCellNotSyn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/analyze.py" beforeDir="false" afterPath="$PROJECT_DIR$/analyze.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/analyze_old.py" beforeDir="false" afterPath="$PROJECT_DIR$/analyze_old.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/compare_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/compare_results.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ephys_stash/simulateJercogEphys.py" beforeDir="false" afterPath="$PROJECT_DIR$/ephys_stash/simulateJercogEphys.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/functions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/generate.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/old_stash/simulateJercogOld.py" beforeDir="false" afterPath="$PROJECT_DIR$/old_stash/simulateJercogOld.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/params.py" beforeDir="false" afterPath="$PROJECT_DIR$/params.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/results.py" beforeDir="false" afterPath="$PROJECT_DIR$/results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateDestexheUpCrit.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateDestexheUpCrit.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulateJercog.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogFanIn.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogFanIn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulateJercogUpCrit.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpCrit.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateJercogUpLearn.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpLearn.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +46,13 @@
     <property name="ignore.virus.scanning.warn.message" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="reference.idesettings.debugger.python" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings>
+        <option name="useSoftWraps" value="true" />
+      </console-settings>
+    </option>
   </component>
   <component name="PyDebuggerOptionsProvider">
     <option name="myAttachToSubprocess" value="false" />
@@ -101,6 +104,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="network" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="spiking-upstates" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/network.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="simulateDestexhe" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="spiking-upstates" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -119,16 +143,16 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="simulateDestexheEphys" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="simulateDestexheUpLearn" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="spiking-upstates" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ephys_stash" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ephys_stash/simulateDestexheEphys.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulateDestexheUpLearn.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -162,9 +186,6 @@
       <module name="spiking-upstates" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/ephys_stash" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -183,9 +204,6 @@
       <module name="spiking-upstates" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -193,7 +211,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulateJercogUpCrit.py" />
       <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -222,19 +240,20 @@
       <item itemvalue="Python.compare_results" />
       <item itemvalue="Python.analyze" />
       <item itemvalue="Python.simulateDestexhe" />
-      <item itemvalue="Python.simulateDestexheEphys" />
       <item itemvalue="Python.simulateJercogUpLearn" />
       <item itemvalue="Python.simulateJercogUpCrit" />
       <item itemvalue="Python.simulateJercog" />
       <item itemvalue="Python.simulateJercogEphys" />
+      <item itemvalue="Python.simulateDestexheUpLearn" />
+      <item itemvalue="Python.network" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.simulateJercogUpLearn" />
-        <item itemvalue="Python.analyze" />
-        <item itemvalue="Python.simulateJercog" />
         <item itemvalue="Python.simulateJercogUpCrit" />
-        <item itemvalue="Python.simulateDestexheEphys" />
+        <item itemvalue="Python.analyze" />
+        <item itemvalue="Python.network" />
+        <item itemvalue="Python.simulateJercog" />
       </list>
     </recent_temporary>
   </component>
@@ -256,6 +275,10 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="414" y="175" key="#com.intellij.execution.impl.EditConfigurationsDialog/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618332480875" />
+    <state x="2599" y="146" key="#compare_results" timestamp="1619711300483">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state x="2599" y="146" key="#compare_results/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619711300483" />
     <state x="679" y="146" key="#simulateDestexhe" timestamp="1617225849852">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -268,93 +291,149 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="679" y="146" key="#simulateDestexheEphys/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617924014756" />
+    <state x="679" y="146" key="#simulateDestexheUpLearn" timestamp="1618893668434">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="679" y="146" key="#simulateDestexheUpLearn/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618893668434" />
     <state x="679" y="146" key="#simulateDestexhe_(1)" timestamp="1617220145610">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="679" y="146" key="#simulateDestexhe_(1)/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617220145610" />
-    <state x="679" y="146" key="#simulateJercogEphys" timestamp="1618332488016">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state x="2599" y="146" key="#simulateJercogEphys" timestamp="1619710117658">
+      <screen x="1920" y="0" width="1920" height="1040" />
     </state>
     <state x="679" y="146" key="#simulateJercogEphys/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618332488016" />
+    <state x="2599" y="146" key="#simulateJercogEphys/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619710117658" />
     <state x="679" y="146" key="#simulateJercogEphys_(1)" timestamp="1618331945876">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="679" y="146" key="#simulateJercogEphys_(1)/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618331945876" />
-    <state x="679" y="146" key="#simulateJercogUpCrit" timestamp="1617035721946">
-      <screen x="0" y="0" width="1920" height="1040" />
+    <state x="2599" y="146" key="#simulateJercogUpCrit" timestamp="1618815053792">
+      <screen x="1920" y="0" width="1920" height="1040" />
     </state>
     <state x="679" y="146" key="#simulateJercogUpCrit/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617035721946" />
+    <state x="2599" y="146" key="#simulateJercogUpCrit/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1618815053792" />
     <state x="679" y="146" key="#simulateJercogUpLearn" timestamp="1618330137457">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="679" y="146" key="#simulateJercogUpLearn/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618330137457" />
-    <state x="546" y="83" key="#xdebugger.evaluate" timestamp="1618434667299">
+    <state x="833" y="168" width="960" height="628" key="#xdebugger.evaluate" timestamp="1619641765275">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="546" y="83" key="#xdebugger.evaluate/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618434667299" />
+    <state x="1357" y="170" width="960" height="628" key="#xdebugger.evaluate/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1619552639067" />
+    <state x="833" y="168" key="#xdebugger.evaluate/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619641765275" />
+    <state width="1514" height="466" key="DebuggerActiveHint" timestamp="1619556577006">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1514" height="466" key="DebuggerActiveHint/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1619130062120" />
+    <state width="1514" height="466" key="DebuggerActiveHint/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619556577006" />
     <state x="740" y="275" key="FileChooserDialogImpl" timestamp="1617219241736">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="740" y="275" key="FileChooserDialogImpl/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617219241736" />
-    <state width="1899" height="284" key="GridCell.Tab.0.bottom" timestamp="1618442851808">
+    <state width="1899" height="283" key="GridCell.Tab.0.bottom" timestamp="1619653197991">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="283" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1619388459163" />
+    <state width="1899" height="283" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619653197991" />
+    <state width="1899" height="283" key="GridCell.Tab.0.center" timestamp="1619653197991">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="283" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1619388459163" />
+    <state width="1899" height="283" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619653197991" />
+    <state width="1899" height="283" key="GridCell.Tab.0.left" timestamp="1619653197991">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="283" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1619388459163" />
+    <state width="1899" height="283" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619653197991" />
+    <state width="1899" height="283" key="GridCell.Tab.0.right" timestamp="1619653197991">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="283" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1619388459163" />
+    <state width="1899" height="283" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619653197991" />
+    <state width="1899" height="283" key="GridCell.Tab.1.bottom" timestamp="1619628438794">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="283" key="GridCell.Tab.1.bottom/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619628438794" />
+    <state width="1899" height="283" key="GridCell.Tab.1.center" timestamp="1619628438794">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="283" key="GridCell.Tab.1.center/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619628438794" />
+    <state width="1899" height="283" key="GridCell.Tab.1.left" timestamp="1619628438793">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="283" key="GridCell.Tab.1.left/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619628438793" />
+    <state width="1899" height="283" key="GridCell.Tab.1.right" timestamp="1619628438794">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1899" height="283" key="GridCell.Tab.1.right/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619628438794" />
+    <state width="1091" height="847" key="GridCell.Tab.2.bottom" timestamp="1619569055463">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1091" height="847" key="GridCell.Tab.2.bottom/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619569055463" />
+    <state width="1091" height="847" key="GridCell.Tab.2.center" timestamp="1619569055462">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1091" height="847" key="GridCell.Tab.2.center/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619569055462" />
+    <state width="1091" height="847" key="GridCell.Tab.2.left" timestamp="1619569055462">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1091" height="847" key="GridCell.Tab.2.left/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619569055462" />
+    <state width="1091" height="847" key="GridCell.Tab.2.right" timestamp="1619569055463">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1091" height="847" key="GridCell.Tab.2.right/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619569055463" />
+    <state width="498" height="446" key="SwitcherDM" timestamp="1618794242970">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="498" height="446" key="SwitcherDM/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1618794242970" />
+    <state width="968" height="528" key="XDebugger.FullValuePopup" timestamp="1619569159425">
+      <screen x="1920" y="0" width="1920" height="1040" />
+    </state>
+    <state width="968" height="528" key="XDebugger.FullValuePopup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1619388437091" />
+    <state width="968" height="528" key="XDebugger.FullValuePopup/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619569159425" />
+    <state x="769" y="437" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1618892668102">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="284" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618442851808" />
-    <state width="1899" height="284" key="GridCell.Tab.0.center" timestamp="1618442851808">
+    <state x="769" y="437" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618892668102" />
+    <state x="531" y="256" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1619221244494">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="284" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618442851808" />
-    <state width="1899" height="284" key="GridCell.Tab.0.left" timestamp="1618442851808">
+    <state x="531" y="256" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1619221244494" />
+    <state x="728" y="56" width="1107" height="914" key="dock-window-1" timestamp="1619569059047">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="284" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618442851808" />
-    <state width="1899" height="284" key="GridCell.Tab.0.right" timestamp="1618442851808">
+    <state x="728" y="56" width="1107" height="914" key="dock-window-1/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619569059047" />
+    <state x="52" y="73" width="1107" height="914" key="dock-window-2" timestamp="1619569490242">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1899" height="284" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618442851808" />
-    <state width="968" height="528" key="XDebugger.FullValuePopup" timestamp="1617914235706">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state width="968" height="528" key="XDebugger.FullValuePopup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617914235706" />
-    <state x="769" y="437" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1618433386327">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="769" y="437" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618433386327" />
-    <state x="531" y="256" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1617918102234">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="531" y="256" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617918102234" />
+    <state x="52" y="73" width="1107" height="914" key="dock-window-2/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619569490242" />
     <state x="656" y="252" width="607" height="536" key="find.popup" timestamp="1618327625785">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="656" y="252" width="607" height="536" key="find.popup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1618327625785" />
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1617224690072">
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1619047820743">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1617224690072" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1619047820743" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/results.py</url>
-          <line>526</line>
+          <line>601</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>914</line>
+          <line>1251</line>
           <option name="timeStamp" value="32" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>733</line>
+          <line>1066</line>
           <option name="timeStamp" value="44" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/network.py</url>
-          <line>489</line>
-          <option name="timeStamp" value="68" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$USER_HOME$/anaconda3/Lib/site-packages/brian2genn/device.py</url>
@@ -363,43 +442,68 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>1938</line>
+          <line>2462</line>
           <option name="timeStamp" value="122" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>1473</line>
+          <line>1997</line>
           <option name="timeStamp" value="144" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>1423</line>
+          <line>1947</line>
           <option name="timeStamp" value="146" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>1405</line>
+          <line>1841</line>
           <option name="timeStamp" value="150" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/results.py</url>
-          <line>645</line>
+          <line>720</line>
           <option name="timeStamp" value="175" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/results.py</url>
-          <line>74</line>
-          <option name="timeStamp" value="188" />
+          <url>file://$PROJECT_DIR$/analyze.py</url>
+          <line>68</line>
+          <option name="timeStamp" value="208" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/results.py</url>
-          <line>87</line>
-          <option name="timeStamp" value="189" />
+          <url>file://$PROJECT_DIR$/simulateDestexheUpLearn.py</url>
+          <line>291</line>
+          <option name="timeStamp" value="224" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/generate.py</url>
-          <line>74</line>
-          <option name="timeStamp" value="191" />
+          <url>file://$PROJECT_DIR$/network.py</url>
+          <line>576</line>
+          <option name="timeStamp" value="229" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/network.py</url>
+          <line>410</line>
+          <option name="timeStamp" value="238" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/network.py</url>
+          <line>897</line>
+          <option name="timeStamp" value="252" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/simulateDestexheUpLearn.py</url>
+          <line>163</line>
+          <option name="timeStamp" value="286" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ephys_stash/analyze_ephys.py</url>
+          <line>4</line>
+          <option name="timeStamp" value="290" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/network.py</url>
+          <line>237</line>
+          <option name="timeStamp" value="292" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -407,6 +511,8 @@
       <configuration name="PythonConfigurationType">
         <watch expression="p" />
         <watch expression="self.p" />
+        <watch expression="R.upstateFRExc" />
+        <watch expression="sumInhInputToExc" />
       </configuration>
     </watches-manager>
   </component>

@@ -46,7 +46,8 @@ loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/'
 # targetSim = 'destexheNMDAUpCrit_2020-11-11-16-38'
 # targetSim = 'jercogUpCritFullConn500Units_2021-04-09-11-30'
 # targetSim = 'jercog500UpLearn_2021-04-09-11-50'
-targetSim = 'jercogUpLearn_2021-04-12-21-29'
+# targetSim = 'jercogUpLearn_2021-04-12-21-29_results'
+targetSim = 'jercogUpCritFullConn1e3Units_2021-04-22-14-23_results'
 
 # loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/long_files/'
 
@@ -79,7 +80,7 @@ R.calculate_upstates()
 if len(R.ups) > 0:
     R.reshape_upstates()
     R.calculate_FR_in_upstates()
-    print('average FR in upstate for Exc: {:.2f}, Inh: {:.2f} '.format(R.upstateFRExc.mean(), R.upstateFRInh.mean()))
+    print('average FR in upstate for Exc: {:.2f}, Inh: {:.2f} '.format(R.upstateFRExcHist.mean(), R.upstateFRInhHist.mean()))
 
 fig1, ax1 = plt.subplots(4, 1, num=1, figsize=(10, 9), gridspec_kw={'height_ratios': [4, 1, 1, 1]},
                          sharex=True)
@@ -132,4 +133,4 @@ if hasattr(R, 'weights_EE'):
     wFull = np.block([[wEE, wIE], [-wEI, -wII]])
 
     fig7, ax7 = plt.subplots(num=7, figsize=(10, 9))
-    weight_matrix(ax7, wFull, xlabel='Post Index', ylabel='Pre Index', clabel='Normalized Weight',)
+    weight_matrix(ax7, wFull, xlabel='Pre Index', ylabel='Post Index', clabel='Normalized Weight',)
