@@ -2,30 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c50fe96e-73b6-429f-aab6-173e82858304" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/simulateJercogUpLearn2.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/trainer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateDestexheNMDAUpCrit.py" beforeDir="false" afterPath="$PROJECT_DIR$/NMDA_stash/simulateDestexheNMDAUpCrit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateDestexheNMDAUpCrit2.py" beforeDir="false" afterPath="$PROJECT_DIR$/NMDA_stash/simulateDestexheNMDAUpCrit2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCrit.py" beforeDir="false" afterPath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCrit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCrit2.py" beforeDir="false" afterPath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCrit2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCritCellNotSyn.py" beforeDir="false" afterPath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCritCellNotSyn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analyze.py" beforeDir="false" afterPath="$PROJECT_DIR$/analyze.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analyze_old.py" beforeDir="false" afterPath="$PROJECT_DIR$/analyze_old.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/generate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/params.py" beforeDir="false" afterPath="$PROJECT_DIR$/params.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/plot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/results.py" beforeDir="false" afterPath="$PROJECT_DIR$/results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateDestexhe.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateDestexhe.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateDestexheUpLearn.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateDestexheUpLearn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercog.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercog.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpCrit.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpCrit.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpLearn.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpLearn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stats.py" beforeDir="false" afterPath="$PROJECT_DIR$/stats.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateJercogUpLearn2.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpLearn2.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -421,9 +399,10 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="52" y="73" width="1107" height="914" key="dock-window-2/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619569490242" />
-    <state x="943" y="130" width="607" height="804" key="find.popup" timestamp="1628012512311">
+    <state x="943" y="130" width="607" height="804" key="find.popup" timestamp="1628016156705">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
+    <state x="943" y="130" width="607" height="804" key="find.popup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628016156705" />
     <state x="943" y="130" width="607" height="804" key="find.popup/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1628012512311" />
   </component>
   <component name="XDebuggerManager">
@@ -561,7 +540,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/simulateJercogUpLearn2.py</url>
-          <line>136</line>
+          <line>137</line>
           <option name="timeStamp" value="412" />
         </line-breakpoint>
       </breakpoints>

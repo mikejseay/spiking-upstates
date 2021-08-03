@@ -20,7 +20,6 @@ from datetime import datetime
 import os
 from generate import set_spikes_from_time_varying_rate, fixed_current_series, \
     generate_adjacency_indices_within, generate_adjacency_indices_between, normal_positive_weights
-import winsound
 from results import Results
 from functions import find_upstates
 from results import bins_to_centers
@@ -2389,13 +2388,13 @@ class DestexheNetwork(object):
         vExtNumpy = np.zeros(tRecorded.shape)
         useExternalRate = float(self.p['poissonInputRate'])
 
-        if self.p['poissonDriveType'] is 'ramp':
+        if self.p['poissonDriveType'] == 'ramp':
             vExtNumpy[:int(100 * ms / defaultclock.dt)] = np.linspace(0, useExternalRate,
                                                                       int(100 * ms / defaultclock.dt))
             vExtNumpy[int(100 * ms / defaultclock.dt):] = useExternalRate
-        elif self.p['poissonDriveType'] is 'constant':
+        elif self.p['poissonDriveType'] == 'constant':
             vExtNumpy[:] = useExternalRate
-        elif self.p['poissonDriveType'] is 'fullRamp':
+        elif self.p['poissonDriveType'] == 'fullRamp':
             vExtNumpy = np.linspace(0, useExternalRate, tNumpy.size)
 
         vExtRecorded = TimedArray(vExtNumpy * Hz, dt=defaultclock.dt)
@@ -2642,9 +2641,9 @@ class DestexheNetwork(object):
         with open(savePath, 'wb') as f:
             dill.dump(self.p, f)
 
-        duration = 1000  # milliseconds
-        freq = 440  # Hz
-        winsound.Beep(freq, duration)
+        # duration = 1000  # milliseconds
+        # freq = 440  # Hz
+        # winsound.Beep(freq, duration)
 
     def determine_fan_in(self, minUnits=21, maxUnits=40, unitSpacing=1, timeSpacing=250 * ms):
 

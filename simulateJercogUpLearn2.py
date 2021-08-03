@@ -10,7 +10,8 @@ rngSeed = 4
 
 defaultclock.dt = p['dt']
 
-p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
+# p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
+p['saveFolder'] = '~/BrianResults/'
 p['nameSuffix'] = 'testSeed'
 p['saveWithDate'] = True
 p['useOldWeightMagnitude'] = True
@@ -53,7 +54,7 @@ p['jIIScaleRatio'] = None
 p['maxAllowedFRExc'] = 2 * p['setUpFRExc'] / Hz
 p['maxAllowedFRInh'] = 2 * p['setUpFRInh'] / Hz
 
-p['nTrials'] = 89  # 6765
+p['nTrials'] = 144  # 6765
 # p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597]  # 1-indexed
 # p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181]  # 1-indexed
 p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765]  # 1-indexed
