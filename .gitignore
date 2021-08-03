@@ -1,3 +1,8 @@
+# created movies
+*.mp4
+*.gif
+*.png
+
 # GeNN things
 /GeNNworkspace/
 

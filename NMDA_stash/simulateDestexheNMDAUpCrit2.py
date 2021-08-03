@@ -70,7 +70,7 @@ DN.save_params()
 
 R = Results(DN.saveName, DN.p['saveFolder'])
 
-R.calculate_spike_rate()
+R.calculate_PSTH()
 R.calculate_voltage_histogram(removeMode=True)
 R.calculate_upstates()
 if len(R.ups) > 0:

@@ -47,7 +47,8 @@ loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/'
 # targetSim = 'jercogUpCritFullConn500Units_2021-04-09-11-30'
 # targetSim = 'jercog500UpLearn_2021-04-09-11-50'
 # targetSim = 'jercogUpLearn_2021-04-12-21-29_results'
-targetSim = 'jercogUpCritFullConn1e3Units_2021-04-22-14-23_results'
+# targetSim = 'jercogUpCritFullConn1e3Units_2021-04-22-14-23_results'
+targetSim = 'classicJercog_2021-05-04-21-41_results'
 
 # loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/long_files/'
 
@@ -74,7 +75,7 @@ for printParam in printParameters:
     if printParam in R.p:
         print(printParam, ':', R.p[printParam])
 
-R.calculate_spike_rate()
+R.calculate_PSTH()
 R.calculate_voltage_histogram(removeMode=True)
 R.calculate_upstates()
 if len(R.ups) > 0:
@@ -82,7 +83,7 @@ if len(R.ups) > 0:
     R.calculate_FR_in_upstates()
     print('average FR in upstate for Exc: {:.2f}, Inh: {:.2f} '.format(R.upstateFRExcHist.mean(), R.upstateFRInhHist.mean()))
 
-fig1, ax1 = plt.subplots(4, 1, num=1, figsize=(10, 9), gridspec_kw={'height_ratios': [4, 1, 1, 1]},
+fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(10, 9), gridspec_kw={'height_ratios': [4, 1, 1, 1, 1]},
                          sharex=True)
 R.plot_spike_raster(ax1[0])
 R.plot_firing_rate(ax1[1])
@@ -92,7 +93,8 @@ if R.stateMonExcV.shape[0] > 1:
     R.plot_updur_lines(ax1[2])
     R.plot_voltage_detail(ax1[3], unitType='Exc', useStateInd=1)
     R.plot_updur_lines(ax1[3])
-    # R.plot_voltage_detail(ax2[2], unitType='Inh', useStateInd=0)
+    R.plot_voltage_detail(ax1[4], unitType='Inh', useStateInd=0)
+    R.plot_updur_lines(ax1[4])
 else:
     R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=0)
     R.plot_updur_lines(ax1[2])
@@ -101,10 +103,11 @@ else:
 
 ax1[3].set(xlabel='Time (s)')
 
-# fig2b, ax2b = plt.subplots(1, 1, num=21, figsize=(4, 3))
-# R.plot_voltage_histogram(ax2b, yScaleLog=True)
+fig2b, ax2b = plt.subplots(1, 1, num=21, figsize=(4, 3))
+R.plot_voltage_histogram(ax2b, yScaleLog=True)
+
 R.plot_voltage_histogram_sideways(ax1[2], 'Exc', yScaleLog=True)
-R.plot_voltage_histogram_sideways(ax1[3], 'Inh', yScaleLog=True)
+R.plot_voltage_histogram_sideways(ax1[4], 'Inh', yScaleLog=True)
 
 if MAKE_UP_PLOTS:
     fig3, ax3 = plt.subplots(num=3, figsize=(4, 3))

@@ -14,7 +14,7 @@ can ALSO set up certain classic types of experiments for characterizing a networ
 """
 
 from brian2 import start_scope, NeuronGroup, Synapses, SpikeMonitor, StateMonitor, Network, defaultclock, mV, ms, volt, \
-    PoissonGroup, SpikeGeneratorGroup, Mohm, second, nS, uS, TimedArray, Hz, nA
+    PoissonGroup, SpikeGeneratorGroup, Mohm, second, nS, uS, TimedArray, Hz, nA, pA
 import dill
 from datetime import datetime
 import os
@@ -760,9 +760,9 @@ class JercogNetwork(object):
         synapsesExc.connect(p=self.p['propConnect'])
         synapsesInh.connect(p=self.p['propConnect'])
 
-        synapsesExc.delay = ((np.random.rand(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
+        synapsesExc.delay = ((self.p['rng'].random(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
                               defaultclock.dt).astype(int) + 1) * defaultclock.dt
-        synapsesInh.delay = ((np.random.rand(synapsesInh.delay.shape[0]) * self.p['delayInh'] /
+        synapsesInh.delay = ((self.p['rng'].random(synapsesInh.delay.shape[0]) * self.p['delayInh'] /
                               defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesExc = synapsesExc
@@ -795,7 +795,7 @@ class JercogNetwork(object):
         synapsesExc.connect('i!=j', p=self.p['propConnect'])
         synapsesExc.w_NMDA[:] = 1
 
-        synapsesExc.delay = ((np.random.rand(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
+        synapsesExc.delay = ((self.p['rng'].random(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
                               defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesExc = synapsesExc
@@ -811,7 +811,7 @@ class JercogNetwork(object):
         )
         synapsesExc.connect('i!=j', p=self.p['propConnect'])
 
-        synapsesExc.delay = ((np.random.rand(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
+        synapsesExc.delay = ((self.p['rng'].random(synapsesExc.delay.shape[0]) * self.p['delayExc'] /
                               defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesExc = synapsesExc
@@ -825,7 +825,7 @@ class JercogNetwork(object):
             on_pre='uI_post += ' + str(1 / self.p['tauRiseInh'] * ms),
         )
         synapsesInh.connect(p=self.p['propConnect'])
-        synapsesInh.delay = ((np.random.rand(synapsesInh.delay.shape[0]) * self.p['delayInh'] /
+        synapsesInh.delay = ((self.p['rng'].random(synapsesInh.delay.shape[0]) * self.p['delayInh'] /
                               defaultclock.dt).astype(int) + 1) * defaultclock.dt
         self.synapsesInh = synapsesInh
         self.N.add(synapsesInh)
@@ -871,22 +871,22 @@ class JercogNetwork(object):
             nIESynapses = np.round(self.p['nExc'] * self.p['nInh'] * self.p['propConnect'])
             nIISynapses = np.round(self.p['nInh'] * self.p['nInh'] * self.p['propConnect'])
 
-            synapsesEE.delay = ((np.random.rand(nEESynapses) * self.p['delayExc'] /
+            synapsesEE.delay = ((self.p['rng'].random(nEESynapses) * self.p['delayExc'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesEI.delay = ((np.random.rand(nEISynapses) * self.p['delayInh'] /
+            synapsesEI.delay = ((self.p['rng'].random(nEISynapses) * self.p['delayInh'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesIE.delay = ((np.random.rand(nIESynapses) * self.p['delayExc'] /
+            synapsesIE.delay = ((self.p['rng'].random(nIESynapses) * self.p['delayExc'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesII.delay = ((np.random.rand(nIISynapses) * self.p['delayInh'] /
+            synapsesII.delay = ((self.p['rng'].random(nIISynapses) * self.p['delayInh'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
         else:
-            synapsesEE.delay = ((np.random.rand(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
+            synapsesEE.delay = ((self.p['rng'].random(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesIE.delay = ((np.random.rand(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
+            synapsesIE.delay = ((self.p['rng'].random(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesEI.delay = ((np.random.rand(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
+            synapsesEI.delay = ((self.p['rng'].random(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesII.delay = ((np.random.rand(synapsesII.delay.shape[0]) * self.p['delayInh'] /
+            synapsesII.delay = ((self.p['rng'].random(synapsesII.delay.shape[0]) * self.p['delayInh'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesEE = synapsesEE
@@ -899,30 +899,49 @@ class JercogNetwork(object):
 
         # nRecurrentExcitatorySynapsesPerUnit = int(self.p['nExc'] * self.p['propConnect'])
         # nRecurrentInhibitorySynapsesPerUnit = int(self.p['nInh'] * self.p['propConnect'])
+        tauRiseEOverMS = self.p['tauRiseExc'] / ms
+        tauRiseIOverMS = self.p['tauRiseInh'] / ms
+        vTauExcOverMS = self.p['membraneCapacitanceExc'] / self.p['gLeakExc'] / ms
+        vTauInhOverMS = self.p['membraneCapacitanceInh'] / self.p['gLeakInh'] / ms
 
-        vTauExc = self.p['membraneCapacitanceExc'] / self.p['gLeakExc']
-        vTauInh = self.p['membraneCapacitanceInh'] / self.p['gLeakInh']
+        if self.p['useOldWeightMagnitude']:
+            usejEE = self.p['jEE'] / self.p['nIncExc'] * vTauExcOverMS
+            usejIE = self.p['jIE'] / self.p['nIncExc'] * vTauInhOverMS
+            usejEI = self.p['jEI'] / self.p['nIncInh'] * vTauExcOverMS
+            usejII = self.p['jII'] / self.p['nIncInh'] * vTauInhOverMS
+            onPreStrings = ('uE_post += jEE / tauRiseEOverMS',
+                            'uE_post += jIE / tauRiseEOverMS',
+                            'uI_post += jEI / tauRiseIOverMS',
+                            'uI_post += jII / tauRiseIOverMS',)
+        else:
+            usejEE = self.p['jEE'] / self.p['nIncExc']
+            usejIE = self.p['jIE'] / self.p['nIncExc']
+            usejEI = self.p['jEI'] / self.p['nIncInh']
+            usejII = self.p['jII'] / self.p['nIncInh']
+            onPreStrings = ('uE_post += jEE * vTauExcOverMS / tauRiseEOverMS',
+                            'uE_post += jIE * vTauInhOverMS / tauRiseEOverMS',
+                            'uI_post += jEI * vTauExcOverMS / tauRiseIOverMS',
+                            'uI_post += jII * vTauInhOverMS / tauRiseIOverMS',)
 
-        # useJEE = self.p['jEE'] / nRecurrentExcitatorySynapsesPerUnit * vTauExc / ms
-        # usejEE = self.p['jEE'] / self.p['nIncExc'] * vTauExc / ms
-        # usejIE = self.p['jIE'] / self.p['nIncExc'] * vTauInh / ms
-        # usejEI = self.p['jEI'] / self.p['nIncInh'] * vTauExc / ms
-        # usejII = self.p['jII'] / self.p['nIncInh'] * vTauInh / ms
-        usejEE = self.p['jEE'] / self.p['nIncExc']
-        usejIE = self.p['jIE'] / self.p['nIncExc']
-        usejEI = self.p['jEI'] / self.p['nIncInh']
-        usejII = self.p['jII'] / self.p['nIncInh']
+        # v1
+        'uE_post += 1 / tauRiseEOverMS'
 
-        # weightScales = np.array([1 / self.p['nIncExc'] * vTauExc / ms,
-        #                          1 / self.p['nIncExc'] * vTauInh / ms,
-        #                          1 / self.p['nIncInh'] * vTauExc / ms,
-        #                          1 / self.p['nIncInh'] * vTauInh / ms])
-        weightScales = np.array([1 / self.p['nIncExc'],
-                                 1 / self.p['nIncExc'],
-                                 1 / self.p['nIncInh'],
-                                 1 / self.p['nIncInh']])
+        # v2
+        #
+        # weightScales = np.array([1 / self.p['nIncExc'],
+        #                          1 / self.p['nIncExc'],
+        #                          1 / self.p['nIncInh'],
+        #                          1 / self.p['nIncInh']])
+        weightScales = np.array([1 / self.p['nIncExc'] * vTauExcOverMS,
+                                 1 / self.p['nIncExc'] * vTauInhOverMS,
+                                 1 / self.p['nIncInh'] * vTauExcOverMS,
+                                 1 / self.p['nIncInh'] * vTauInhOverMS])
+        # weightScales = np.array([1 / self.p['nIncExc'] * vTauExcOverMS / tauRiseEOverMS,
+        #                          1 / self.p['nIncExc'] * vTauInhOverMS / tauRiseEOverMS,
+        #                          1 / self.p['nIncInh'] * vTauExcOverMS / tauRiseIOverMS,
+        #                          1 / self.p['nIncInh'] * vTauInhOverMS / tauRiseIOverMS])
+
         weightScales /= weightScales.max()
-
         self.p['wEEScale'] = weightScales[0]
         self.p['wIEScale'] = weightScales[1]
         self.p['wEIScale'] = weightScales[2]
@@ -933,17 +952,16 @@ class JercogNetwork(object):
             model='jEE: amp',
             source=self.unitsExc,
             target=self.unitsExc,
-            # on_pre='uE_post += jEE / tauRiseEOverMS',
-            on_pre='uE_post += jEE * vTauExcOverMS / tauRiseEOverMS',
+            on_pre=onPreStrings[0],  # 'uE_post += 1 / tauRiseEOverMS'
         )
-        if self.p['propConnect'] == 1:
-            synapsesEE.connect('i!=j', p=self.p['propConnect'])
-        else:
-            preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
-                                                                  allowAutapses=False)
-            synapsesEE.connect(i=preInds, j=postInds)
-            self.preEE = preInds
-            self.posEE = postInds
+        # if self.p['propConnect'] == 1:
+        #     synapsesEE.connect('i!=j', p=self.p['propConnect'])
+        # else:
+        preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
+                                                              allowAutapses=False, rng=self.p['rng'])
+        synapsesEE.connect(i=preInds, j=postInds)
+        self.preEE = preInds
+        self.posEE = postInds
         synapsesEE.jEE = usejEE
 
         # from E to I
@@ -951,17 +969,16 @@ class JercogNetwork(object):
             model='jIE: amp',
             source=self.unitsExc,
             target=self.unitsInh,
-            # on_pre='uE_post += jIE / tauRiseEOverMS',
-            on_pre='uE_post += jIE * vTauInhOverMS / tauRiseEOverMS',
+            on_pre=onPreStrings[1],
         )
-        if self.p['propConnect'] == 1:
-            synapsesIE.connect('i!=j', p=self.p['propConnect'])
-        else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'],
-                                                                   self.p['propConnect'])
-            synapsesIE.connect(i=preInds, j=postInds)
-            self.preIE = preInds
-            self.posIE = postInds
+        # if self.p['propConnect'] == 1:
+        #     synapsesIE.connect('i!=j', p=self.p['propConnect'])
+        # else:
+        preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'],
+                                                               self.p['propConnect'], rng=self.p['rng'])
+        synapsesIE.connect(i=preInds, j=postInds)
+        self.preIE = preInds
+        self.posIE = postInds
         synapsesIE.jIE = usejIE
 
         # from I to E
@@ -969,17 +986,16 @@ class JercogNetwork(object):
             model='jEI: amp',
             source=self.unitsInh,
             target=self.unitsExc,
-            # on_pre='uI_post += jEI / tauRiseIOverMS',
-            on_pre='uI_post += jEI * vTauExcOverMS / tauRiseIOverMS',
+            on_pre=onPreStrings[2],
         )
-        if self.p['propConnect'] == 1:
-            synapsesEI.connect('i!=j', p=self.p['propConnect'])
-        else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'],
-                                                                   self.p['propConnect'])
-            synapsesEI.connect(i=preInds, j=postInds)
-            self.preEI = preInds
-            self.posEI = postInds
+        # if self.p['propConnect'] == 1:
+        #     synapsesEI.connect('i!=j', p=self.p['propConnect'])
+        # else:
+        preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'],
+                                                               self.p['propConnect'], rng=self.p['rng'])
+        synapsesEI.connect(i=preInds, j=postInds)
+        self.preEI = preInds
+        self.posEI = postInds
         synapsesEI.jEI = usejEI
 
         # from I to I
@@ -987,17 +1003,16 @@ class JercogNetwork(object):
             model='jII: amp',
             source=self.unitsInh,
             target=self.unitsInh,
-            # on_pre='uI_post += jII / tauRiseIOverMS',
-            on_pre='uI_post += jII * vTauInhOverMS / tauRiseIOverMS',
+            on_pre=onPreStrings[3],
         )
-        if self.p['propConnect'] == 1:
-            synapsesII.connect('i!=j', p=self.p['propConnect'])
-        else:
-            preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
-                                                                  allowAutapses=False)
-            synapsesII.connect(i=preInds, j=postInds)
-            self.preII = preInds
-            self.posII = postInds
+        # if self.p['propConnect'] == 1:
+        #     synapsesII.connect('i!=j', p=self.p['propConnect'])
+        # else:
+        preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
+                                                              allowAutapses=False, rng=self.p['rng'])
+        synapsesII.connect(i=preInds, j=postInds)
+        self.preII = preInds
+        self.posII = postInds
         synapsesII.jII = usejII
 
         TESTING_GENN = False
@@ -1008,22 +1023,165 @@ class JercogNetwork(object):
             nIESynapses = np.round(self.p['nExc'] * self.p['nInh'] * self.p['propConnect'])
             nIISynapses = np.round(self.p['nInh'] * self.p['nInh'] * self.p['propConnect'])
 
-            synapsesEE.delay = ((np.random.rand(nEESynapses) * self.p['delayExc'] /
+            synapsesEE.delay = ((self.p['rng'].random(nEESynapses) * self.p['delayExc'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesEI.delay = ((np.random.rand(nEISynapses) * self.p['delayInh'] /
+            synapsesEI.delay = ((self.p['rng'].random(nEISynapses) * self.p['delayInh'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesIE.delay = ((np.random.rand(nIESynapses) * self.p['delayExc'] /
+            synapsesIE.delay = ((self.p['rng'].random(nIESynapses) * self.p['delayExc'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesII.delay = ((np.random.rand(nIISynapses) * self.p['delayInh'] /
+            synapsesII.delay = ((self.p['rng'].random(nIISynapses) * self.p['delayInh'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
         else:
-            synapsesEE.delay = ((np.random.rand(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
+            synapsesEE.delay = ((self.p['rng'].random(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesIE.delay = ((np.random.rand(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
+            synapsesIE.delay = ((self.p['rng'].random(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesEI.delay = ((np.random.rand(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
+            synapsesEI.delay = ((self.p['rng'].random(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
-            synapsesII.delay = ((np.random.rand(synapsesII.delay.shape[0]) * self.p['delayInh'] /
+            synapsesII.delay = ((self.p['rng'].random(synapsesII.delay.shape[0]) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+
+        self.synapsesEE = synapsesEE
+        self.synapsesIE = synapsesIE
+        self.synapsesEI = synapsesEI
+        self.synapsesII = synapsesII
+        self.N.add(synapsesEE, synapsesIE, synapsesEI, synapsesII)
+
+    def initialize_recurrent_synapses_4bundles_results(self, R):
+
+        # nRecurrentExcitatorySynapsesPerUnit = int(self.p['nExc'] * self.p['propConnect'])
+        # nRecurrentInhibitorySynapsesPerUnit = int(self.p['nInh'] * self.p['propConnect'])
+        tauRiseEOverMS = R.p['tauRiseExc'] / ms
+        tauRiseIOverMS = R.p['tauRiseInh'] / ms
+        vTauExcOverMS = R.p['membraneCapacitanceExc'] / R.p['gLeakExc'] / ms
+        vTauInhOverMS = R.p['membraneCapacitanceInh'] / R.p['gLeakInh'] / ms
+
+        if R.p['useOldWeightMagnitude']:
+            usejEE = R.p['jEE'] / R.p['nIncExc'] * vTauExcOverMS
+            usejIE = R.p['jIE'] / R.p['nIncExc'] * vTauInhOverMS
+            usejEI = R.p['jEI'] / R.p['nIncInh'] * vTauExcOverMS
+            usejII = R.p['jII'] / R.p['nIncInh'] * vTauInhOverMS
+            onPreStrings = ('uE_post += jEE / tauRiseEOverMS',
+                            'uE_post += jIE / tauRiseEOverMS',
+                            'uI_post += jEI / tauRiseIOverMS',
+                            'uI_post += jII / tauRiseIOverMS',)
+        else:
+            usejEE = R.p['jEE'] / R.p['nIncExc']
+            usejIE = R.p['jIE'] / R.p['nIncExc']
+            usejEI = R.p['jEI'] / R.p['nIncInh']
+            usejII = R.p['jII'] / R.p['nIncInh']
+            onPreStrings = ('uE_post += jEE * vTauExcOverMS / tauRiseEOverMS',
+                            'uE_post += jIE * vTauInhOverMS / tauRiseEOverMS',
+                            'uI_post += jEI * vTauExcOverMS / tauRiseIOverMS',
+                            'uI_post += jII * vTauInhOverMS / tauRiseIOverMS',)
+
+        # weightScales = np.array([1 / R.p['nIncExc'],
+        #                          1 / R.p['nIncExc'],
+        #                          1 / R.p['nIncInh'],
+        #                          1 / R.p['nIncInh']])
+        weightScales = np.array([1 / R.p['nIncExc'] * vTauExcOverMS,
+                                 1 / R.p['nIncExc'] * vTauInhOverMS,
+                                 1 / R.p['nIncInh'] * vTauExcOverMS,
+                                 1 / R.p['nIncInh'] * vTauInhOverMS])
+        # weightScales = np.array([1 / R.p['nIncExc'] * vTauExcOverMS / tauRiseEOverMS,
+        #                          1 / R.p['nIncExc'] * vTauInhOverMS / tauRiseEOverMS,
+        #                          1 / R.p['nIncInh'] * vTauExcOverMS / tauRiseIOverMS,
+        #                          1 / R.p['nIncInh'] * vTauInhOverMS / tauRiseIOverMS])
+
+        weightScales /= weightScales.max()
+        self.p['wEEScale'] = weightScales[0]
+        self.p['wIEScale'] = weightScales[1]
+        self.p['wEIScale'] = weightScales[2]
+        self.p['wIIScale'] = weightScales[3]
+
+        # from E to E
+        synapsesEE = Synapses(
+            model='jEE: amp',
+            source=self.unitsExc,
+            target=self.unitsExc,
+            on_pre=onPreStrings[0],
+        )
+        if R.p['propConnect'] == 1:
+            synapsesEE.connect('i!=j', p=R.p['propConnect'])
+        else:
+            preInds, postInds = R.preEE, R.posEE
+            synapsesEE.connect(i=preInds, j=postInds)
+            self.preEE = preInds
+            self.posEE = postInds
+        synapsesEE.jEE = R.wEE_final * pA
+
+        # from E to I
+        synapsesIE = Synapses(
+            model='jIE: amp',
+            source=self.unitsExc,
+            target=self.unitsInh,
+            on_pre=onPreStrings[1],
+        )
+        if R.p['propConnect'] == 1:
+            synapsesIE.connect('i!=j', p=R.p['propConnect'])
+        else:
+            preInds, postInds = R.preIE, R.posIE
+            synapsesIE.connect(i=preInds, j=postInds)
+            self.preIE = preInds
+            self.posIE = postInds
+        synapsesIE.jIE = R.wIE_final * pA
+
+        # from I to E
+        synapsesEI = Synapses(
+            model='jEI: amp',
+            source=self.unitsInh,
+            target=self.unitsExc,
+            on_pre=onPreStrings[2],
+        )
+        if R.p['propConnect'] == 1:
+            synapsesEI.connect('i!=j', p=R.p['propConnect'])
+        else:
+            preInds, postInds = R.preEI, R.posEI
+            synapsesEI.connect(i=preInds, j=postInds)
+            self.preEI = preInds
+            self.posEI = postInds
+        synapsesEI.jEI = R.wEI_final * pA
+
+        # from I to I
+        synapsesII = Synapses(
+            model='jII: amp',
+            source=self.unitsInh,
+            target=self.unitsInh,
+            on_pre=onPreStrings[3],
+        )
+        if R.p['propConnect'] == 1:
+            synapsesII.connect('i!=j', p=R.p['propConnect'])
+        else:
+            preInds, postInds = R.preII, R.posII
+            synapsesII.connect(i=preInds, j=postInds)
+            self.preII = preInds
+            self.posII = postInds
+        synapsesII.jII = R.wII_final * pA
+
+        TESTING_GENN = False
+
+        if TESTING_GENN:
+            nEESynapses = np.round(self.p['nExc'] * self.p['nExc'] * self.p['propConnect'])
+            nEISynapses = np.round(self.p['nInh'] * self.p['nExc'] * self.p['propConnect'])
+            nIESynapses = np.round(self.p['nExc'] * self.p['nInh'] * self.p['propConnect'])
+            nIISynapses = np.round(self.p['nInh'] * self.p['nInh'] * self.p['propConnect'])
+
+            synapsesEE.delay = ((self.p['rng'].random(nEESynapses) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesEI.delay = ((self.p['rng'].random(nEISynapses) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesIE.delay = ((self.p['rng'].random(nIESynapses) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesII.delay = ((self.p['rng'].random(nIISynapses) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+        else:
+            synapsesEE.delay = ((self.p['rng'].random(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesIE.delay = ((self.p['rng'].random(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesEI.delay = ((self.p['rng'].random(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
+                                 defaultclock.dt).astype(int) + 1) * defaultclock.dt
+            synapsesII.delay = ((self.p['rng'].random(synapsesII.delay.shape[0]) * self.p['delayInh'] /
                                  defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesEE = synapsesEE
@@ -1090,13 +1248,13 @@ class JercogNetwork(object):
                 jArray = np.concatenate(jList).astype(int)
                 synapseBundle.connect(i=iArray, j=jArray)
 
-        synapsesEE.delay = ((np.random.rand(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
+        synapsesEE.delay = ((self.p['rng'].random(synapsesEE.delay.shape[0]) * self.p['delayExc'] /
                              defaultclock.dt).astype(int) + 1) * defaultclock.dt
-        synapsesIE.delay = ((np.random.rand(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
+        synapsesIE.delay = ((self.p['rng'].random(synapsesIE.delay.shape[0]) * self.p['delayExc'] /
                              defaultclock.dt).astype(int) + 1) * defaultclock.dt
-        synapsesEI.delay = ((np.random.rand(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
+        synapsesEI.delay = ((self.p['rng'].random(synapsesEI.delay.shape[0]) * self.p['delayInh'] /
                              defaultclock.dt).astype(int) + 1) * defaultclock.dt
-        synapsesII.delay = ((np.random.rand(synapsesII.delay.shape[0]) * self.p['delayInh'] /
+        synapsesII.delay = ((self.p['rng'].random(synapsesII.delay.shape[0]) * self.p['delayInh'] /
                              defaultclock.dt).astype(int) + 1) * defaultclock.dt
 
         self.synapsesEE = synapsesEE
@@ -1224,9 +1382,9 @@ class JercogNetwork(object):
 
         # print('\a')
 
-        duration = 1000  # milliseconds
-        freq = 440  # Hz
-        winsound.Beep(freq, duration)
+        # duration = 1000  # milliseconds
+        # freq = 440  # Hz
+        # winsound.Beep(freq, duration)
 
         # win32api.MessageBox(0, 'hello', 'title')
 
@@ -1400,20 +1558,25 @@ class JercogNetwork(object):
         indices = []
         times = []
         dummyInd = -1
-        useRange = range(minUnits, maxUnits + 1, unitSpacing)
+        if minUnits <= maxUnits:
+            useRange = range(minUnits, maxUnits + 1, unitSpacing)
+            nUnits = maxUnits
+        else:
+            useRange = range(minUnits, maxUnits - 1, unitSpacing)
+            nUnits = minUnits
         for unitInd in useRange:
             dummyInd += 1
             indices.extend(list(range(unitInd)))
             times.extend([float(startTime) + float(timeSpacing) * dummyInd, ] * (unitInd))
 
-        Uppers = SpikeGeneratorGroup(maxUnits, np.array(indices), np.array(times) * second)
+        Uppers = SpikeGeneratorGroup(nUnits, np.array(indices), np.array(times) * second)
 
         # TODO: CHECK IF THIS WORKS WITH uE_post += 0.98 * nA
         feedforwardUpExc = Synapses(
             source=Uppers,
             target=self.unitsExc,
-            # on_pre='uExt_post += 0.98 * nA'
-            on_pre='uE_post += ' + str(currentAmp / nA) + ' * nA'
+            on_pre='uExt_post += 0.98 * nA'
+            # on_pre='uE_post += ' + str(currentAmp / nA) + ' * nA'
             #  + str(critExc / (100 * Mohm) / tauRiseE * ms),
         )
         feedforwardUpExc.connect('i==j')
@@ -1799,7 +1962,7 @@ class DestexheNetwork(object):
             synapsesEE.connect('i!=j', p=self.p['propConnect'])
         else:
             preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
-                                                                  allowAutapses=False)
+                                                                  allowAutapses=False, rng=self.p['rng'])
             synapsesEE.connect(i=preInds, j=postInds)
 
         # from E to I
@@ -1812,7 +1975,7 @@ class DestexheNetwork(object):
             synapsesIE.connect('i!=j', p=self.p['propConnect'])
         else:
             preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'],
-                                                                   self.p['propConnect'])
+                                                                   self.p['propConnect'], rng=self.p['rng'])
             synapsesIE.connect(i=preInds, j=postInds)
 
         # from I to E
@@ -1825,7 +1988,7 @@ class DestexheNetwork(object):
             synapsesEI.connect('i!=j', p=self.p['propConnect'])
         else:
             preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'],
-                                                                   self.p['propConnect'])
+                                                                   self.p['propConnect'], rng=self.p['rng'])
             synapsesEI.connect(i=preInds, j=postInds)
 
         # from I to I
@@ -1838,7 +2001,7 @@ class DestexheNetwork(object):
             synapsesII.connect('i!=j', p=self.p['propConnect'])
         else:
             preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
-                                                                  allowAutapses=False)
+                                                                  allowAutapses=False, rng=self.p['rng'])
             synapsesII.connect(i=preInds, j=postInds)
 
         self.synapsesEE = synapsesEE
@@ -1880,7 +2043,7 @@ class DestexheNetwork(object):
             synapsesEE.connect('i!=j', p=self.p['propConnect'])
         else:
             preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
-                                                                  allowAutapses=False)
+                                                                  allowAutapses=False, rng=self.p['rng'])
             synapsesEE.connect(i=preInds, j=postInds)
         synapsesEE.qEE = useQExc
 
@@ -1895,7 +2058,7 @@ class DestexheNetwork(object):
             synapsesIE.connect('i!=j', p=self.p['propConnect'])
         else:
             preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'],
-                                                                   self.p['propConnect'])
+                                                                   self.p['propConnect'], rng=self.p['rng'])
             synapsesIE.connect(i=preInds, j=postInds)
         synapsesIE.qIE = useQExc
 
@@ -1910,7 +2073,7 @@ class DestexheNetwork(object):
             synapsesEI.connect('i!=j', p=self.p['propConnect'])
         else:
             preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'],
-                                                                   self.p['propConnect'])
+                                                                   self.p['propConnect'], rng=self.p['rng'])
             synapsesEI.connect(i=preInds, j=postInds)
         synapsesEI.qEI = useQInh
 
@@ -1925,7 +2088,7 @@ class DestexheNetwork(object):
             synapsesII.connect('i!=j', p=self.p['propConnect'])
         else:
             preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
-                                                                  allowAutapses=False)
+                                                                  allowAutapses=False, rng=self.p['rng'])
             synapsesII.connect(i=preInds, j=postInds)
         synapsesII.qII = useQInh
 
@@ -1949,7 +2112,7 @@ class DestexheNetwork(object):
             synapsesEE.connect('i!=j', p=self.p['pEE'])
         else:
             preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['pEE'],
-                                                                  allowAutapses=False)
+                                                                  allowAutapses=False, rng=self.p['rng'])
             synapsesEE.connect(i=preInds, j=postInds)
 
         # from E to I
@@ -1963,7 +2126,8 @@ class DestexheNetwork(object):
         if self.p['pIE'] == 1:
             synapsesIE.connect('i!=j', p=self.p['pIE'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['pIE'])
+            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['pIE'],
+                                                                   rng=self.p['rng'])
             synapsesIE.connect(i=preInds, j=postInds)
 
         # from I to E
@@ -1977,7 +2141,8 @@ class DestexheNetwork(object):
         if self.p['pEI'] == 1:
             synapsesEI.connect('i!=j', p=self.p['pEI'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['pEI'])
+            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['pEI'],
+                                                                   rng=self.p['rng'])
             synapsesEI.connect(i=preInds, j=postInds)
 
         # from I to I
@@ -1992,7 +2157,7 @@ class DestexheNetwork(object):
             synapsesII.connect('i!=j', p=self.p['pII'])
         else:
             preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['pII'],
-                                                                  allowAutapses=False)
+                                                                  allowAutapses=False, rng=self.p['rng'])
             synapsesII.connect(i=preInds, j=postInds)
 
         self.synapsesEE = synapsesEE
@@ -2014,7 +2179,7 @@ class DestexheNetwork(object):
             synapsesEE.connect('i!=j', p=self.p['pEE'])
         else:
             preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['pEE'],
-                                                                  allowAutapses=False)
+                                                                  allowAutapses=False, rng=self.p['rng'])
             synapsesEE.connect(i=preInds, j=postInds)
         self.p['nIncomingAvgEE'] = int(np.round(self.p['nExc'] * self.p['pEE']))
         print(self.p['qEE'], self.p['nIncomingAvgEE'])
@@ -2031,7 +2196,8 @@ class DestexheNetwork(object):
         if self.p['pIE'] == 1:
             synapsesIE.connect('i!=j', p=self.p['pIE'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['pIE'])
+            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['pIE'],
+                                                                   rng=self.p['rng'])
             synapsesIE.connect(i=preInds, j=postInds)
         self.p['nIncomingAvgIE'] = int(np.round(self.p['nExc'] * self.p['pIE']))
         print(self.p['qIE'], self.p['nIncomingAvgIE'])
@@ -2048,7 +2214,8 @@ class DestexheNetwork(object):
         if self.p['pEI'] == 1:
             synapsesEI.connect('i!=j', p=self.p['pEI'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['pEI'])
+            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['pEI'],
+                                                                   rng=self.p['rng'])
             synapsesEI.connect(i=preInds, j=postInds)
         self.p['nIncomingAvgEI'] = int(np.round(self.p['nInh'] * self.p['pEI']))
         print(self.p['qEI'], self.p['nIncomingAvgEI'])
@@ -2066,7 +2233,7 @@ class DestexheNetwork(object):
             synapsesII.connect('i!=j', p=self.p['pII'])
         else:
             preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['pII'],
-                                                                  allowAutapses=False)
+                                                                  allowAutapses=False, rng=self.p['rng'])
             synapsesII.connect(i=preInds, j=postInds)
         self.p['nIncomingAvgII'] = int(np.round(self.p['nInh'] * self.p['pII']))
         print(self.p['qII'], self.p['nIncomingAvgII'])
@@ -2097,9 +2264,9 @@ class DestexheNetwork(object):
             on_pre='ge_post += wSyn * ' + str(useQExc / nS) + ' * nS',
         )
         preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
-                                                              allowAutapses=False)
+                                                              allowAutapses=False, rng=self.p['rng'])
         synapsesEE.connect(i=preInds, j=postInds)
-        weights = normal_positive_weights(preInds.size, normalMean, normalSD)
+        weights = normal_positive_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesEE.wSyn = weights
         self.preInds_EE = preInds
         self.postInds_EE = postInds
@@ -2112,9 +2279,10 @@ class DestexheNetwork(object):
             target=self.unitsInh,
             on_pre='ge_post += wSyn * ' + str(useQExc / nS) + ' * nS',
         )
-        preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'])
+        preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'],
+                                                               rng=self.p['rng'])
         synapsesIE.connect(i=preInds, j=postInds)
-        weights = normal_positive_weights(preInds.size, normalMean, normalSD)
+        weights = normal_positive_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesIE.wSyn = weights
         self.preInds_IE = preInds
         self.postInds_IE = postInds
@@ -2127,9 +2295,10 @@ class DestexheNetwork(object):
             target=self.unitsExc,
             on_pre='gi_post += wSyn * ' + str(useQInh / nS) + ' * nS',
         )
-        preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'])
+        preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'],
+                                                               rng=self.p['rng'])
         synapsesEI.connect(i=preInds, j=postInds)
-        weights = normal_positive_weights(preInds.size, normalMean, normalSD)
+        weights = normal_positive_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesEI.wSyn = weights
         self.preInds_EI = preInds
         self.postInds_EI = postInds
@@ -2143,9 +2312,9 @@ class DestexheNetwork(object):
             on_pre='gi_post += wSyn * ' + str(useQInh / nS) + ' * nS',
         )
         preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
-                                                              allowAutapses=False)
+                                                              allowAutapses=False, rng=self.p['rng'])
         synapsesII.connect(i=preInds, j=postInds)
-        weights = normal_positive_weights(preInds.size, normalMean, normalSD)
+        weights = normal_positive_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesII.wSyn = weights
         self.preInds_II = preInds
         self.postInds_II = postInds
@@ -2241,7 +2410,8 @@ class DestexheNetwork(object):
         # TAKES A LONG TIME TO RUN BECAUSE IT GENERATES ALL THE POISSON DISTRIBUTED SPIKES FOR INPUT UNITS
         indices, times = set_spikes_from_time_varying_rate(time_array=tNumpy * 1e3,
                                                            rate_array=useRateArray,
-                                                           nPoissonInputUnits=int(self.p['nPoissonInputUnits']))
+                                                           nPoissonInputUnits=int(self.p['nPoissonInputUnits']),
+                                                           rng=self.p['rng'])
 
         # weak possibly correlated input
         inputGroupWeak = SpikeGeneratorGroup(int(self.p['nPoissonInputUnits']), indices, times)
@@ -2670,6 +2840,87 @@ class JercogEphysNetwork(object):
         vThresh : volt
         betaAdapt : amp * second
         iExt : amp
+        gl : siemens
+        Cm : farad
+        '''
+
+        resetCode = '''
+        v = vReset
+        iAdapt += betaAdapt / tauAdapt 
+        '''
+
+        threshCode = 'v >= vThresh'
+
+        numIValues = len(self.p['iExtRange'])
+
+        unitsExc = NeuronGroup(
+            N=numIValues,
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriodExc'],
+            clock=defaultclock,
+        )
+        unitsInh = NeuronGroup(
+            N=numIValues,
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriodInh'],
+            clock=defaultclock,
+        )
+
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = self.p['nUnits'] - self.p['nInh']
+        self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
+        self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
+
+        # just gonna comment this because it doesn't get used here but will be useful
+
+        # vTauExc = self.p['membraneCapacitanceExc'] / self.p['gLeakExc']
+        # vTauInh = self.p['membraneCapacitanceInh'] / self.p['gLeakInh']
+
+        # unitsExc.jE = vTauExc * self.p['jEE'] / self.p['nIncExc'] / ms
+        # unitsExc.jI = vTauExc * self.p['jEI'] / self.p['nIncInh'] / ms
+        # unitsInh.jE = vTauInh * self.p['jIE'] / self.p['nIncExc'] / ms
+        # unitsInh.jI = vTauInh * self.p['jII'] / self.p['nIncInh'] / ms
+
+        unitsExc.v = self.p['eLeakExc']
+        unitsExc.vReset = self.p['vResetExc']
+        unitsExc.vThresh = self.p['vThreshExc']
+        unitsExc.betaAdapt = self.p['betaAdaptExc']
+        unitsExc.eLeak = self.p['eLeakExc']
+        unitsExc.Cm = self.p['membraneCapacitanceExc']
+        unitsExc.gl = self.p['gLeakExc']
+        unitsExc.iExt = self.p['iExtRange']
+
+        unitsInh.v = self.p['eLeakInh']
+        unitsInh.vReset = self.p['vResetInh']
+        unitsInh.vThresh = self.p['vThreshInh']
+        unitsInh.betaAdapt = self.p['betaAdaptInh']
+        unitsInh.eLeak = self.p['eLeakInh']
+        unitsInh.Cm = self.p['membraneCapacitanceInh']
+        unitsInh.gl = self.p['gLeakInh']
+        unitsInh.iExt = self.p['iExtRange']
+
+        self.unitsExc = unitsExc
+        self.unitsInh = unitsInh
+        self.N.add(unitsExc, unitsInh)
+
+    def initialize_units_synaptic(self):
+        unitModel = '''
+        dv/dt = (gl * (eLeak - v) - iAdapt + sE) / Cm: volt (unless refractory)
+        diAdapt/dt = -iAdapt / tauAdapt : amp
+        
+        dsE/dt = (-sE + uE) / tauFallE : amp
+        duE/dt = -uE / tauRiseE : amp
+
+        eLeak : volt
+        vReset : volt
+        vThresh : volt
+        betaAdapt : amp * second
         gl : siemens
         Cm : farad
         '''

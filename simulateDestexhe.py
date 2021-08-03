@@ -160,7 +160,7 @@ if USE_BRIAN2GENN:
     print('took:', t1 - t0)
 
 R = Results(DN.saveName, DN.p['saveFolder'])
-R.calculate_spike_rate()
+R.calculate_PSTH()
 R.calculate_voltage_histogram(removeMode=True)
 R.calculate_upstates()
 if len(R.ups) > 0:

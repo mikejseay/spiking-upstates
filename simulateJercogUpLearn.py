@@ -13,30 +13,16 @@ import os
 from matplotlib.backends.backend_pdf import PdfPages
 from generate import adjacency_matrix_from_flat_inds, weight_matrix_from_flat_inds_weights, normal_positive_weights
 
-# for using Brian2GENN
-# USE_BRIAN2GENN = False
-# if USE_BRIAN2GENN:
-#     import brian2genn
-#     set_device('genn', debug=False)
-
 defaultclock.dt = p['dt']
 
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
-
-USE_NEW_EPHYS_PARAMS = True
-DISABLE_WEIGHT_SCALING = True
-
-if USE_NEW_EPHYS_PARAMS:
-    # remove protected keys from the dict whose params are being imported
-    ephysParams = paramsJercogEphysBuono.copy()
-    protectedKeys = ('nUnits', 'propInh', 'duration')
-    for pK in protectedKeys:
-        del ephysParams[pK]
-    p.update(ephysParams)
+p['disableWeightScaling'] = False
+p['useNewEphysParams'] = False
+ephysParams = paramsJercogEphysBuono.copy()
 
 # simulation params
-p['simName'] = 'jercogDefault_1e3_P05_eqwts_buono_noscale'
+p['simName'] = 'jercogDefault_1e3_P05_eqwts_jercog_scale3_smallwts'
 p['nUnits'] = 1e3
 p['propConnect'] = 0.5
 
@@ -101,10 +87,21 @@ iKickRecorded = convert_kicks_to_current_series(p['kickDur'], p['kickTau'],
                                                 p['kickTimes'], p['kickSizes'], p['duration'], p['dt'])
 p['iKickRecorded'] = iKickRecorded
 
+# boring params
 p['nIncInh'] = int(p['propConnect'] * p['propInh'] * p['nUnits'])
 p['nIncExc'] = int(p['propConnect'] * (1 - p['propInh']) * p['nUnits'])
 indUnkickedExc = int(p['nUnits'] - (p['propInh'] * p['nUnits']) - 1)
 p['indsRecordStateExc'].append(indUnkickedExc)
+p['saveTrials'] = np.array(p['saveTrials']) - 1
+
+if p['useNewEphysParams']:
+    # remove protected keys from the dict whose params are being imported
+    protectedKeys = ('nUnits', 'propInh', 'duration')
+    for pK in protectedKeys:
+        del ephysParams[pK]
+    p.update(ephysParams)
+
+# END OF PARAMS
 
 # first quickly run an EPhys experiment with the given params to calculate the thresh and gain
 pForEphys = p.copy()
@@ -115,7 +112,6 @@ if 'iExtRange' not in pForEphys:
 JEN = JercogEphysNetwork(pForEphys)
 JEN.build_classic()
 JEN.run()
-
 RE = ResultsEphys()
 RE.init_from_network_object(JEN)
 RE.calculate_thresh_and_gain()
@@ -124,17 +120,15 @@ p['threshExc'] = RE.threshExc
 p['threshInh'] = RE.threshInh
 p['gainExc'] = RE.gainExc
 p['gainInh'] = RE.gainInh
-p['saveTrials'] = np.array(p['saveTrials']) - 1
 
 # set up network, experiment, and start recording
 JN = JercogNetwork(p)
 JN.initialize_network()
+JN.initialize_units_twice_kickable2()
 
 if p['kickType'] == 'kick':
-    JN.initialize_units_twice_kickable2()
     JN.set_kicked_units(onlyKickExc=p['onlyKickExc'])
 elif p['kickType'] == 'spike':
-    JN.initialize_units_twice_kickable2()
     JN.prepare_upCrit_experiment2(minUnits=p['nUnitsToSpike'], maxUnits=p['nUnitsToSpike'],
                                   unitSpacing=5,  # unitSpacing is a useless input in this context
                                   timeSpacing=p['timeAfterSpiked'], startTime=p['timeToSpike'],
@@ -150,7 +144,7 @@ JN.create_monitors()
 # each post-synaptic unit
 
 # let's turn off the scaling to see what happens...
-if DISABLE_WEIGHT_SCALING:
+if p['disableWeightScaling']:
     JN.p['wEEScale'] = 1
     JN.p['wIEScale'] = 1
     JN.p['wEIScale'] = 1
@@ -187,12 +181,7 @@ else:
     trialdwIEUnits = None
     trialdwIIUnits = None
 
-# initalize variables to represent the rolling average firing rates of the Exc and Inh units
-# we start at None because this is undefined, and we will initialize at the exact value of the first UpFR
-movAvgUpFRExc = None
-movAvgUpFRInh = None
-movAvgUpFRExcUnits = None
-movAvgUpFRInhUnits = None
+# initialize the weight matrices
 
 # 'monolithic'
 # wEE_init = JN.unitsExc.jE[0]
@@ -206,23 +195,12 @@ wIE_init = JN.synapsesIE.jIE[:]
 wEI_init = JN.synapsesEI.jEI[:]
 wII_init = JN.synapsesII.jII[:]
 
-# 'default' and 'normal' with SD 0.2 of mean
-# wEE_init = JN.synapsesEE.jEE[:] * normal_positive_weights(JN.synapsesEE.jEE[:].size, 1, 0.2)
-# wIE_init = JN.synapsesIE.jIE[:] * normal_positive_weights(JN.synapsesIE.jIE[:].size, 1, 0.2)
-# wEI_init = JN.synapsesEI.jEI[:] * normal_positive_weights(JN.synapsesEI.jEI[:].size, 1, 0.2)
-# wII_init = JN.synapsesII.jII[:] * normal_positive_weights(JN.synapsesII.jII[:].size, 1, 0.2)
-
-# 'default' and 'uniform'
-# wEE_init = np.random.rand(JN.synapsesEE.jEE[:].size) * 2 * JN.synapsesEE.jEE[0]
-# wIE_init = np.random.rand(JN.synapsesIE.jIE[:].size) * 2 * JN.synapsesIE.jIE[0]
-# wEI_init = np.random.rand(JN.synapsesEI.jEI[:].size) * 2 * JN.synapsesEI.jEI[0]
-# wII_init = np.random.rand(JN.synapsesII.jII[:].size) * 2 * JN.synapsesII.jII[0]
-
-# 'random' and 'random'
-# wEE_init = np.random.rand() * 20 * pA
-# wIE_init = np.random.rand() * 20 * pA
-# wEI_init = np.random.rand() * 20 * pA
-# wII_init = np.random.rand() * 20 * pA
+# initalize variables to represent the rolling average firing rates of the Exc and Inh units
+# we start at None because this is undefined, and we will initialize at the exact value of the first UpFR
+movAvgUpFRExc = None
+movAvgUpFRInh = None
+movAvgUpFRExcUnits = None
+movAvgUpFRInhUnits = None
 
 wEE = wEE_init.copy()
 wEI = wEI_init.copy()
@@ -248,6 +226,9 @@ pdfObject = PdfPages(p['saveFolder'] + JN.saveName + '_' + p['useRule'] + '_tria
 # define message formatters
 meanWeightMsgFormatter = ('upstateFRExc: {:.2f} Hz, upstateFRInh: {:.2f}'
                           ' Hz, wEE: {:.2f} pA, wEI: {:.2f} pA, wIE: {:.2f} pA, wII: {:.2f} pA')
+sumWeightMsgFormatter = ('movAvgUpFRExc: {:.2f} Hz, movAvgUpFRInh: {:.2f} Hz, '
+                         'dwEE: {:.2f} pA, dwEI: {:.2f} pA, dwIE: {:.2f} pA, dwII: {:.2f} pA')
+meanWeightChangeMsgFormatter = 'mean dwEE: {:.2f} pA, dwIE: {:.2f} pA, dwEI: {:.2f} pA, dwII: {:.2f} pA'
 
 figCounter = 1
 for trialInd in range(p['nTrials']):
@@ -285,11 +266,11 @@ for trialInd in range(p['nTrials']):
     # calculate and record the average FR in the up state
     R = Results()
     R.init_from_network_object(JN)
-    R.calculate_spike_rate()
+    R.calculate_PSTH()
     R.calculate_upstates()
 
     # R.calculate_FR_in_upstates_simply()
-    R.calculate_FR_in_upstates_units()  # (separately for each unit)
+    R.calculate_upFR_units()  # (separately for each unit)
     print('finished calculating FR in upstates per unit...')
 
     # save numerical results and/or plots!!!
@@ -353,21 +334,19 @@ for trialInd in range(p['nTrials']):
                                         trialwEI[trialInd], trialwIE[trialInd], trialwII[trialInd]))
 
     # calculate the moving average of the up FRs
-    if movAvgUpFRExcUnits is None:
-
-        # movAvgUpFRExc = trialUpFRExc[trialInd] * Hz  # initialize at the first measured
-        # movAvgUpFRInh = trialUpFRInh[trialInd] * Hz
-
-        movAvgUpFRExcUnits = trialUpFRExcUnits[trialInd, :] * Hz  # initialize at the first measured
-        movAvgUpFRInhUnits = trialUpFRInhUnits[trialInd, :] * Hz
-
-    else:  # this only gets run the first trial (when they are None)
-
-        # movAvgUpFRExc += (-movAvgUpFRExc + trialUpFRExc[trialInd] * Hz) / p['tauUpFRTrials']
-        # movAvgUpFRInh += (-movAvgUpFRInh + trialUpFRInh[trialInd] * Hz) / p['tauUpFRTrials']
+    if movAvgUpFRExc:
+        movAvgUpFRExc += (-movAvgUpFRExc + trialUpFRExc[trialInd] * Hz) / p['tauUpFRTrials']
+        movAvgUpFRInh += (-movAvgUpFRInh + trialUpFRInh[trialInd] * Hz) / p['tauUpFRTrials']
 
         movAvgUpFRExcUnits += (-movAvgUpFRExcUnits + trialUpFRExcUnits[trialInd, :] * Hz) / p['tauUpFRTrials']
         movAvgUpFRInhUnits += (-movAvgUpFRInhUnits + trialUpFRInhUnits[trialInd, :] * Hz) / p['tauUpFRTrials']
+
+    else:  # this only gets run the first trial (when they are None)
+        movAvgUpFRExc = trialUpFRExc[trialInd] * Hz  # initialize at the first measured
+        movAvgUpFRInh = trialUpFRInh[trialInd] * Hz
+
+        movAvgUpFRExcUnits = trialUpFRExcUnits[trialInd, :] * Hz  # initialize at the first measured
+        movAvgUpFRInhUnits = trialUpFRInhUnits[trialInd, :] * Hz
 
     if p['useRule'] == 'cross-homeo':
 
@@ -579,41 +558,23 @@ for trialInd in range(p['nTrials']):
     if wIITooSmall.any():
         wII[wIITooSmall] = p['minAllowedWII']
 
-    # print(
-    #     'movAvgUpFRExc: {:.2f} Hz, movAvgUpFRInh: {:.2f} Hz, dwEE: {:.2f} pA, dwEI: {:.2f} pA, dwIE: {:.2f} pA, dwII: {:.2f} pA'.format(
-    #         movAvgUpFRExc, movAvgUpFRInh, dwEE * JN.p['wEEScale'] / pA, dwEI * JN.p['wEIScale'] / pA,
-    #         dwIE * JN.p['wIEScale'] / pA, dwII * JN.p['wIIScale'] / pA))
-
-    # separately by unit
-    # print(
-    #     'movAvgUpFRExc: {:.2f} Hz, movAvgUpFRInh: {:.2f} Hz, dwEE: {:.2f} pA, dwEI: {:.2f} pA, dwIE: {:.2f} pA, dwII: {:.2f} pA'.format(
-    #         movAvgUpFRExc, movAvgUpFRInh, dwEEMat.mean() * JN.p['wEEScale'] / pA, dwEIMat.mean() * JN.p['wEIScale'] / pA,
-    #                                       dwIEMat.mean() * JN.p['wIEScale'] / pA, dwIIMat.mean() * JN.p['wIIScale'] / pA))
-
     if p['useRule'] == 'cross-homeo':
-        print(
-            'movAvgUpFRExc: {:.2f} Hz, movAvgUpFRInh: {:.2f} Hz, dwEE: {:.2f} pA, dwEI: {:.2f} pA, dwIE: {:.2f} pA, dwII: {:.2f} pA'.format(
-                movAvgUpFRExc, movAvgUpFRInh, dwEE.sum() * JN.p['wEEScale'] / pA, dwEI.sum() * JN.p['wEIScale'] / pA,
-                                              dwIE.sum() * JN.p['wIEScale'] / pA, dwII.sum() * JN.p['wIIScale'] / pA))
-        print(
-            'mean dwEE: {:.2f} pA, dwIE: {:.2f} pA, dwEI: {:.2f} pA, dwII: {:.2f} pA'.format(
-                dwEE.mean() * JN.p['wEEScale'] / pA,
-                dwIE.mean() * JN.p['wIEScale'] / pA,
-                dwEI.mean() * JN.p['wEIScale'] / pA,
-                dwII.mean() * JN.p['wIIScale'] / pA))
+        print(sumWeightMsgFormatter.format(movAvgUpFRExc, movAvgUpFRInh, dwEE.sum() * JN.p['wEEScale'] / pA,
+                                           dwEI.sum() * JN.p['wEIScale'] / pA, dwIE.sum() * JN.p['wIEScale'] / pA,
+                                           dwII.sum() * JN.p['wIIScale'] / pA))
+        print(meanWeightChangeMsgFormatter.format(dwEE.mean() * JN.p['wEEScale'] / pA,
+                                                  dwIE.mean() * JN.p['wIEScale'] / pA,
+                                                  dwEI.mean() * JN.p['wEIScale'] / pA,
+                                                  dwII.mean() * JN.p['wIIScale'] / pA))
     elif p['useRule'] == 'balance':
-        print(
-            'movAvgUpFRExc: {:.2f} Hz, movAvgUpFRInh: {:.2f} Hz, dwEE: {:.2f} pA, dwIE: {:.2f} pA, dwEI: {:.2f} pA, dwII: {:.2f} pA'.format(
-                movAvgUpFRExc, movAvgUpFRInh, np.nansum(dwEEMat) * JN.p['wEEScale'] / pA,
-                                              np.nansum(dwIEMat) * JN.p['wIEScale'] / pA,
-                                              np.nansum(dwEIMat) * JN.p['wEIScale'] / pA,
-                                              np.nansum(dwIIMat) * JN.p['wIIScale'] / pA))
-        print(
-            'mean dwEE: {:.2f} pA, dwIE: {:.2f} pA, dwEI: {:.2f} pA, dwII: {:.2f} pA'.format(
-                np.nanmean(dwEEMat) * JN.p['wEEScale'] / pA,
-                np.nanmean(dwIEMat) * JN.p['wIEScale'] / pA,
-                np.nanmean(dwEIMat) * JN.p['wEIScale'] / pA,
-                np.nanmean(dwIIMat) * JN.p['wIIScale'] / pA))
+        print(sumWeightMsgFormatter.format(movAvgUpFRExc, movAvgUpFRInh, np.nansum(dwEEMat) * JN.p['wEEScale'] / pA,
+                                           np.nansum(dwIEMat) * JN.p['wIEScale'] / pA,
+                                           np.nansum(dwEIMat) * JN.p['wEIScale'] / pA,
+                                           np.nansum(dwIIMat) * JN.p['wIIScale'] / pA))
+        print(meanWeightChangeMsgFormatter.format(np.nanmean(dwEEMat) * JN.p['wEEScale'] / pA,
+                                                  np.nanmean(dwIEMat) * JN.p['wIEScale'] / pA,
+                                                  np.nanmean(dwEIMat) * JN.p['wEIScale'] / pA,
+                                                  np.nanmean(dwIIMat) * JN.p['wIIScale'] / pA))
 
 # close pdf
 pdfObject.close()
@@ -635,3 +596,14 @@ np.savez(savePath, trialUpFRExc=trialUpFRExc, trialUpFRInh=trialUpFRInh, trialUp
          wEE_final=wEE, wIE_final=wIE, wEI_final=wEI, wII_final=wII,
          aEE=aEE, aIE=aIE, aEI=aEI, aII=aII,
          )
+
+# print(
+#     'movAvgUpFRExc: {:.2f} Hz, movAvgUpFRInh: {:.2f} Hz, dwEE: {:.2f} pA, dwEI: {:.2f} pA, dwIE: {:.2f} pA, dwII: {:.2f} pA'.format(
+#         movAvgUpFRExc, movAvgUpFRInh, dwEE * JN.p['wEEScale'] / pA, dwEI * JN.p['wEIScale'] / pA,
+#         dwIE * JN.p['wIEScale'] / pA, dwII * JN.p['wIIScale'] / pA))
+
+# separately by unit
+# print(
+#     'movAvgUpFRExc: {:.2f} Hz, movAvgUpFRInh: {:.2f} Hz, dwEE: {:.2f} pA, dwEI: {:.2f} pA, dwIE: {:.2f} pA, dwII: {:.2f} pA'.format(
+#         movAvgUpFRExc, movAvgUpFRInh, dwEEMat.mean() * JN.p['wEEScale'] / pA, dwEIMat.mean() * JN.p['wEIScale'] / pA,
+#                                       dwIEMat.mean() * JN.p['wIEScale'] / pA, dwIIMat.mean() * JN.p['wIIScale'] / pA))

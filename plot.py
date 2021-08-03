@@ -2,7 +2,7 @@
 dedicated plotting functionality that does not belong to a specific class
 """
 
-from brian2 import ms, mV
+from brian2 import ms, mV, second
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
@@ -83,7 +83,8 @@ def voltage_detail(params, stateMonExcT, stateMonInhT, stateMonExcV, stateMonInh
 
 def weight_matrix(ax, values,
                   useCmap='RdBu_r', limsMethod='absmax',
-                  xlabel='', ylabel='', clabel=''):
+                  xlabel='', ylabel='', clabel='',
+                  vlims=None):
     """ given an axis handle, an array of values, and some optional params,
         visualize a weight matrix in a heat map using imshow
     """
@@ -95,10 +96,12 @@ def weight_matrix(ax, values,
     ax.set(xlabel=xlabel, ylabel=ylabel)
 
     if limsMethod == 'absmax':
-        vmax = np.max(np.fabs(values))
+        vmax = np.nanmax(np.fabs(values))
         vmin = -vmax
     elif limsMethod == 'minmax':
-        vmax, vmin = np.max(values), np.min(values)
+        vmax, vmin = np.nanmax(values), np.nanmin(values)
+    elif limsMethod == 'custom':
+        vmin, vmax = vlims
 
     if vmin != -vmax:
         norm = MidpointNormalize(vmin, vmax, 0)
@@ -112,3 +115,116 @@ def weight_matrix(ax, values,
     cb = plt.colorbar(i, ax=ax)
     cb.ax.set_ylabel(clabel, rotation=270)
 
+
+def remove_axes_less(axs):
+    rows, cols = axs.shape
+    for ri in range(rows - 2):
+        for ci in range(cols):
+            axs[ri][ci].axis('off')
+
+
+def prune_figure_less(axs):
+    """ prune unnecessary labels """
+    rows, cols = axs.shape
+    # prune unnecessary xlabels and ylabels
+    for ri in range(rows - 2):
+        for ci in range(cols):
+            # axs[ri][ci].set_xlabel('')
+            axs[ri][ci].get_xaxis().set_label_text('')
+            axs[ri][ci].get_xaxis().set_ticks([])
+    for ri in range(rows):
+        for ci in range(1, cols):
+            axs[ri][ci].get_yaxis().set_label_text('')
+            axs[ri][ci].get_yaxis().set_ticks([])
+
+
+def prune_figure(axs, pruneYTicks=True):
+    """ prune unnecessary labels """
+    rows, cols = axs.shape
+    # prune unnecessary xlabels and ylabels
+    for ri in range(rows - 1):
+        for ci in range(cols):
+            # axs[ri][ci].set_xlabel('')
+            axs[ri][ci].get_xaxis().set_label_text('')
+            axs[ri][ci].get_xaxis().set_ticks([])
+    for ri in range(rows):
+        for ci in range(1, cols):
+            axs[ri][ci].get_yaxis().set_label_text('')
+            if pruneYTicks:
+                axs[ri][ci].get_yaxis().set_ticks([])
+
+
+def prune_figure_more(axs, pruneYTicks=True):
+    """ prune unnecessary labels """
+    shape = axs.shape
+    if len(shape) == 2:
+        rows, cols = shape
+        # prune unnecessary xlabels and ylabels
+        for ri in range(rows):
+            for ci in range(cols):
+                # axs[ri][ci].set_xlabel('')
+                axs[ri][ci].get_xaxis().set_label_text('')
+                axs[ri][ci].get_xaxis().set_ticks([])
+                axs[ri][ci].get_yaxis().set_label_text('')
+                if pruneYTicks:
+                    axs[ri][ci].get_yaxis().set_ticks([])
+    elif len(shape) == 1:
+        for ax in axs:
+            ax.get_xaxis().set_label_text('')
+            ax.get_xaxis().set_ticks([])
+            ax.get_yaxis().set_label_text('')
+            if pruneYTicks:
+                ax.get_yaxis().set_ticks([])
+
+
+def plot_spike_raster(ax, p, spikeMonExcI, spikeMonInhI, spikeMonExcT, spikeMonInhT, downSampleUnits=True, rng=None):
+
+    if not rng:
+        rng = np.random.default_rng(None)  # random seed
+
+    if downSampleUnits:
+        targetDisplayedExcUnits = 100
+        targetDisplayedInhUnits = 100
+        downSampleE = rng.choice(p['nExc'], size=targetDisplayedExcUnits, replace=False)
+        downSampleI = rng.choice(p['nInh'], size=targetDisplayedInhUnits, replace=False)
+        matchingEUnitsBool = np.isin(spikeMonExcI, downSampleE)
+        matchingIUnitsBool = np.isin(spikeMonInhI, downSampleI)
+        DownSampleERev = np.full((downSampleE.max() + 1,), np.nan)
+        DownSampleERev[downSampleE] = np.arange(downSampleE.size)
+        DownSampleIRev = np.full((downSampleI.max() + 1,), np.nan)
+        DownSampleIRev[downSampleI] = np.arange(downSampleI.size)
+        xExc = spikeMonExcT[matchingEUnitsBool]
+        yExc = DownSampleERev[spikeMonExcI[matchingEUnitsBool].astype(int)]
+        xInh = spikeMonInhT[matchingIUnitsBool]
+        yInh = targetDisplayedExcUnits + DownSampleIRev[spikeMonInhI[matchingIUnitsBool].astype(int)]
+        yLims = (0, targetDisplayedExcUnits + targetDisplayedInhUnits)
+    else:
+        xExc = spikeMonExcT
+        yExc = spikeMonExcI
+        xInh = spikeMonInhT
+        yInh = p['nExc'] + spikeMonInhI
+
+    ax.scatter(xExc, yExc, c='g', s=1, marker='.', linewidths=0)
+    ax.scatter(xInh, yInh, c='r', s=1, marker='.', linewidths=0)
+    ax.set(xlim=(0., p['duration'] / second), ylim=yLims, ylabel='neuron index')
+
+
+def plot_firing_rate(ax, histCenters, FRExc, FRInh):
+    ax.plot(histCenters[:FRExc.size], FRExc, label='Exc', color='green', alpha=0.5)
+    ax.plot(histCenters[:FRInh.size], FRInh, label='Inh', color='red', alpha=0.5)
+    # ax.legend()
+    ax.set(ylabel='Firing Rate (Hz)')
+
+
+def plot_voltage_detail(ax, p, stateMonT, voltageSeries, yLims, unitType='Exc', **kwargs):
+
+    if unitType == 'Exc':
+        useColor = 'green'
+    elif unitType == 'Inh':
+        useColor = 'red'
+    else:
+        print('you messed up')
+        return
+
+    ax.plot(stateMonT, voltageSeries, color=useColor, lw=.3, **kwargs)
+    ax.set(xlim=(0., p['duration'] / second), ylim=yLims, ylabel='mV')

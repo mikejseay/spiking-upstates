@@ -5,11 +5,13 @@ i.e. new analyses should copy the dictionary and alter values as needed.
 """
 
 from brian2 import *
+import pandas as pd
 
 paramsJercog = {
     # save / figs
     'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
     'simName': 'classicJercog',
+    'paramSet': 'classicJercog',
     'saveWithDate': True,
 
     # global sim params
@@ -97,6 +99,7 @@ paramsJercogEphysOrig = {
     # save / figs
     'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
     'simName': 'classicJercogEphysOrig',
+    'paramSet': 'classicJercogEphys',
     'saveWithDate': True,
 
     # global sim params
@@ -156,6 +159,7 @@ paramsJercogEphysBuono = {
     # save / figs
     'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
     'simName': 'classicJercogEphysBuono',
+    'paramSet': 'buonoEphys',
     'saveWithDate': True,
 
     # global sim params
@@ -221,6 +225,7 @@ paramsDestexhe = {
     # save / figs?
     'saveFolder': 'C:/Users/mikejseay/Dropbox/UCLA/courses/covid-era-modeling/figs/',
     'simName': 'destexhe',
+    'paramSet': 'classicDestexhe',
     'saveWithDate': True,
 
     # global sim params
@@ -291,6 +296,7 @@ paramsDestexhe = {
 paramsDestexheEphysOrig = {
     'simName': 'destexheEphysOrig',
     'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
+    'paramSet': 'destexheEphys',
     'saveWithDate': True,
 
     # global sim params
@@ -350,6 +356,7 @@ paramsDestexheEphysOrig = {
 paramsDestexheEphysBuono = {
     'simName': 'destexheEphysBuono',
     'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
+    'paramSet': 'buonoEphys',
     'saveWithDate': True,
 
     # global sim params
@@ -405,3 +412,105 @@ paramsDestexheEphysBuono = {
     'eInhSyn': -80 * mV,
 
 }
+
+jP = (
+    # sim
+    ('dt', 'Time step (ms)', ms),
+
+    # net
+    ('nUnits', 'Total # of units', 1),
+    ('propInh', 'Proportion inhibitory units', 1),
+    ('propConnect', 'Probability of connection', 1),
+
+    # units
+    ('eLeakExc', 'E Resting potential (mV)', mV),
+    ('eLeakInh', 'I Resting potential (mV)', mV),
+    ('vResetExc', 'E Reset potential (mV)', mV),
+    ('vResetInh', 'I Reset potential (mV)', mV),
+    ('vThreshExc', 'E Spike threshold (mV)', mV),
+    ('vThreshInh', 'I Spike threshold (mV)', mV),
+    ('refractoryPeriodExc', 'E Refractory period (ms)', ms),
+    ('refractoryPeriodInh', 'I Refractory period (ms)', ms),
+    ('membraneCapacitanceExc', 'E Membrane capacitance (pF)', pF),
+    ('membraneCapacitanceInh', 'E Membrane capacitance (pF)', pF),
+    ('gLeakExc', 'E Leak conductance (nS)', nS),
+    ('gLeakInh', 'I Leak conductance (nS)', nS),
+    ('betaAdaptExc', 'E Adaptation strength (nA * ms)', nA * ms),
+    ('betaAdaptInh', 'I Adaptation strength (nA * ms)', nA * ms),
+    ('adaptTau', 'Adaptation time constant (ms)', ms),
+    ('noiseSigma', 'Noise amplitude (mV)', mV),
+
+    # synapses
+    ('jEE', 'Total E-to-E weight (pA)', pA),
+    ('jIE', 'Total E-to-I weight (pA)', pA),
+    ('jEI', 'Total I-to-E weight (pA)', pA),
+    ('jII', 'Total I-to-I weight (pA)', pA),
+    ('tauRiseExc', 'Excitatory rise time (ms)', ms),
+    ('tauFallExc', 'Excitatory fall time (ms)', ms),
+    ('tauRiseInh', 'Inhibitory rise time (ms)', ms),
+    ('tauFallInh', 'Inhibitory fall time (ms)', ms),
+    ('delayExc', 'Mean excitatory synaptic delay (ms)', ms),
+    ('delayInh', 'Mean inhibitory synaptic delay (ms)', ms),
+
+    # training / experiment
+    ('setUpFRExc', 'Excitatory unit set-point (Hz)', Hz),
+    ('setUpFRInh', 'Inhibitory unit set-point (Hz)', Hz),
+    ('tauUpFRTrials', 'Upstate firing rate moving average time constant (trials)', 1),
+    ('useRule', 'Learning rule', 's'),
+    ('kickType', 'Kick method', 's'),
+    ('initWeightMethod', 'Weight initialization method', 's'),
+    ('maxAllowedFRExc', 'Max. allowed E FR for learning (Hz)', 1),  # should be Hz but 1
+    ('maxAllowedFRInh', 'Max. allowed I FR for learning (Hz)', 1),  # should be Hz but 1
+    ('nTrials', '# of learning trials', 's'),
+    ('nUnitsToSpike', '# of units targeted by kick', 1),
+    ('spikeInputAmplitude', 'Kick amplitude (pA)', pA),
+    ('alpha1', 'Alpha 1 (pA)', pA),
+    ('alpha2', 'Alpha 2 (pA)', pA),
+    ('tauPlasticityTrials', '# of trials to balance', 1),
+    ('alphaBalance', 'Alpha Balance', 1),
+    ('minAllowedWEE', 'Min. allowed E-to-E weight (pA)', pA),
+    ('minAllowedWEI', 'Min. allowed E-to-I weight (pA)', pA),
+    ('minAllowedWIE', 'Min. allowed I-to-E weight (pA)', pA),
+    ('minAllowedWII', 'Min. allowed I-to-I weight (pA)', pA),
+    ('onlyKickExc', 'Whether to kick only E units', 1),
+    ('threshExc', 'E unit threshold (pA)', pA),
+    ('threshInh', 'I unit threshold (pA)', pA),
+    ('gainExc', 'E unit gain (Hz / pA)', Hz / pA),
+    ('gainInh', 'I unit gain (Hz / pA)', Hz / pA),
+    ('wEEScale', 'E-to-E weight change scaling factor', 1),
+    ('wIEScale', 'E-to-I weight change scaling factor', 1),
+    ('wEIScale', 'I-to-E weight change scaling factor', 1),
+    ('wIIScale', 'I-to-I weight change scaling factor', 1),
+)
+
+
+def create_param_df(p, paramNamer, removeParenthetical=True):
+    cellTextList = []
+    for shortName, longName, unit in paramNamer:
+        if removeParenthetical and longName[-1] == ')':
+            displayLongName, unitCrap = longName.split('(')
+        else:
+            displayLongName = longName
+            unitCrap = ''
+        try:
+            if unit == 's':
+                value = p[shortName]
+                displayUnit = ''
+            else:
+                value = p[shortName] / unit
+                displayUnit = unitCrap[:-1]
+        except KeyError:
+            print(shortName, 'was not in the param dict that was given')
+            continue
+        try:
+            if value.is_integer():
+                displayValue = '{:.0f}'.format(value)
+            else:
+                displayValue = value
+        except AttributeError:
+            displayValue = value
+        if len(str(displayValue)) > 15:
+            displayValue = str(int(float(displayValue)))
+        cellTextList.append([displayLongName, displayValue, displayUnit])
+    df = pd.DataFrame(cellTextList, columns=['Parameter', 'Value', 'Unit'])
+    return df

@@ -143,7 +143,7 @@ class Results(object):
 
         self.timeArray = np.arange(0, float(self.p['duration']), float(self.p['dt']))
 
-    def calculate_spike_rate(self):
+    def calculate_PSTH(self):
         dtHist = float(10 * ms)
         histBins = arange(0, float(self.p['duration']), dtHist)
         histCenters = arange(0 + dtHist / 2, float(self.p['duration']) - dtHist / 2, dtHist)
@@ -160,9 +160,21 @@ class Results(object):
         self.FRExc = FRExc
         self.FRInh = FRInh
 
-    def calculate_voltage_histogram(self, removeMode=False):
-        voltageNumpyExc = self.stateMonExcV[0, :]
-        voltageNumpyInh = self.stateMonInhV[0, :]
+    def calculate_avgFR_units(self):
+
+        spikesPerUnitExc = np.bincount(self.spikeMonExcI.astype(int), minlength=self.p['nExc'])
+        spikesPerUnitInh = np.bincount(self.spikeMonInhI.astype(int), minlength=self.p['nInh'])
+
+        self.avgFRExcUnits = spikesPerUnitExc / self.p['duration'] / second
+        self.avgFRInhUnits = spikesPerUnitInh / self.p['duration'] / second
+
+    def calculate_voltage_histogram(self, removeMode=False, useAllRecordedUnits=False):
+        if useAllRecordedUnits:
+            voltageNumpyExc = self.stateMonExcV[:].ravel()
+            voltageNumpyInh = self.stateMonInhV[:].ravel()
+        else:
+            voltageNumpyExc = self.stateMonExcV[0, :]
+            voltageNumpyInh = self.stateMonInhV[0, :]
 
         if removeMode:
             voltageNumpyExcMode, _ = mode(voltageNumpyExc)
@@ -176,7 +188,9 @@ class Results(object):
 
         allVoltageNumpy = np.concatenate((voltageNumpyExc, voltageNumpyInh))
 
-        voltageHistBins = arange(allVoltageNumpy.min(), allVoltageNumpy.max(), .1)
+        # print(allVoltageNumpy.min(), allVoltageNumpy.max())
+        useMax = np.max((self.p['vThreshExc'] / mV, self.p['vThreshInh'] / mV))
+        voltageHistBins = np.arange(allVoltageNumpy.min(), useMax, .1)
         voltageHistCenters = bins_to_centers(voltageHistBins)
 
         voltageHistExc, _ = histogram(voltageNumpyExc, voltageHistBins)
@@ -367,7 +381,7 @@ class Results(object):
         self.upstateFRExc = np.array(upstateFRExc)
         self.upstateFRInh = np.array(upstateFRInh)
 
-    def calculate_FR_in_upstates_units(self):
+    def calculate_upFR_units(self):
 
         # here we calculate by simply counting the spikes in the Up state
         # and dividing by the duration
@@ -459,12 +473,36 @@ class Results(object):
         ax[1].set(xlabel='Subsequent DownDur', ylabel='UpDur',
                   title='k = 1, r = {:.2f}, p = {:.3f}'.format(np.sign(b) * np.sqrt(r2), p))
 
-    def plot_spike_raster(self, ax):
-        ax.scatter(self.spikeMonExcT, self.spikeMonExcI, c='g', s=1,
-                   marker='.', linewidths=0)
-        ax.scatter(self.spikeMonInhT, self.p['nExcSpikemon'] + self.spikeMonInhI, c='r', s=1,
-                   marker='.', linewidths=0)
-        ax.set(xlim=(0., self.p['duration'] / second), ylim=(0, self.p['nUnits']), ylabel='neuron index')
+    def plot_spike_raster(self, ax, downSampleUnits=True, rng=None):
+
+        if not rng:
+            rng = np.random.default_rng(None)  # random seed
+
+        if downSampleUnits:
+            targetDisplayedExcUnits = 100
+            targetDisplayedInhUnits = 100
+            downSampleE = rng.choice(self.p['nExc'], size=targetDisplayedExcUnits, replace=False)
+            downSampleI = rng.choice(self.p['nInh'], size=targetDisplayedInhUnits, replace=False)
+            matchingEUnitsBool = np.isin(self.spikeMonExcI, downSampleE)
+            matchingIUnitsBool = np.isin(self.spikeMonInhI, downSampleI)
+            DownSampleERev = np.full((downSampleE.max() + 1,), np.nan)
+            DownSampleERev[downSampleE] = np.arange(downSampleE.size)
+            DownSampleIRev = np.full((downSampleI.max() + 1,), np.nan)
+            DownSampleIRev[downSampleI] = np.arange(downSampleI.size)
+            xExc = self.spikeMonExcT[matchingEUnitsBool]
+            yExc = DownSampleERev[self.spikeMonExcI[matchingEUnitsBool].astype(int)]
+            xInh = self.spikeMonInhT[matchingIUnitsBool]
+            yInh = targetDisplayedExcUnits + DownSampleIRev[self.spikeMonInhI[matchingIUnitsBool].astype(int)]
+            yLims = (0, targetDisplayedExcUnits + targetDisplayedInhUnits)
+        else:
+            xExc = self.spikeMonExcT
+            yExc = self.spikeMonExcI
+            xInh = self.spikeMonInhT
+            yInh = self.p['nExc'] + self.spikeMonInhI
+
+        ax.scatter(xExc, yExc, c='g', s=1, marker='.', linewidths=0)
+        ax.scatter(xInh, yInh, c='r', s=1, marker='.', linewidths=0)
+        ax.set(xlim=(0., self.p['duration'] / second), ylim=yLims, ylabel='neuron index')  # ylim=(0, self.p['nUnits']),
 
     def plot_firing_rate(self, ax):
         ax.plot(self.histCenters[:self.FRExc.size], self.FRExc, label='Exc', color='green', alpha=0.5)
@@ -693,12 +731,12 @@ class ResultsEphys(object):
 
         useThresh = self.p['vThreshExc'] / mV
         ax[0, 0].plot(stateMonT, self.stateMonExcV[I_index_for_ISI, :], color='g')
-        ax[0, 0].vlines(self.spikeTrainsExc[I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
+        ax[0, 0].vlines(self.spikeTrainsExc[()][I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
         ax[0, 0].set(xlim=(0., self.p['duration'] / second), ylabel='mV', xlabel='Time (s)')
 
         useThresh = self.p['vThreshInh'] / mV
         ax[0, 1].plot(stateMonT, self.stateMonInhV[I_index_for_ISI, :], color='g')
-        ax[0, 1].vlines(self.spikeTrainsInh[I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
+        ax[0, 1].vlines(self.spikeTrainsInh[()][I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
         ax[0, 1].set(xlim=(0., self.p['duration'] / second), ylabel='mV', xlabel='Time (s)')
 
         ax[1, 0].plot(I_ext_range * 1e9, ExcData, label='Exc')
@@ -709,8 +747,8 @@ class ResultsEphys(object):
         ax[1, 0].set_ylabel('Firing Rate (Hz)')
         ax[1, 0].legend()
 
-        ISIExc = diff(self.spikeTrainsExc[I_index_for_ISI])
-        ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
+        ISIExc = diff(self.spikeTrainsExc[()][I_index_for_ISI])
+        ISIInh = diff(self.spikeTrainsInh[()][I_index_for_ISI])
         ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc')
         ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh')
         ax[1, 1].set_xlabel('ISI number')

@@ -5,7 +5,6 @@ from network import DestexheNetwork, DestexheEphysNetwork
 from results import Results, ResultsEphys
 import numpy as np
 import matplotlib.pyplot as plt
-from generate import convert_kicks_to_current_series
 from datetime import datetime
 import dill
 import pickle
@@ -151,16 +150,6 @@ p['wIE_init'] = DN.synapsesIE.qIE[0]
 p['wEI_init'] = DN.synapsesEI.qEI[0]
 p['wII_init'] = DN.synapsesII.qII[0]
 
-# p['wEE_init'] =DN.synapsesEE.qEE[0] / 2
-# p['wEI_init'] =DN.synapsesEI.qEI[0] / 2
-# p['wIE_init'] =DN.synapsesIE.qIE[0] / 2
-# p['wII_init'] =DN.synapsesII.qII[0] / 2
-
-# p['wEE_init'] = np.random.rand() * ??
-# p['wEI_init'] = np.random.rand() *
-# p['wIE_init'] = np.random.rand() *
-# p['wII_init'] = np.random.rand() *
-
 wEE = p['wEE_init']
 wEI = p['wEI_init']
 wIE = p['wIE_init']
@@ -202,7 +191,7 @@ for trialInd in range(p['nTrials']):
     # calculate and record the average FR in the up state
     R = Results()
     R.init_from_network_object(DN)
-    R.calculate_spike_rate()
+    R.calculate_PSTH()
     R.calculate_upstates()
     R.calculate_FR_in_upstates_simply()
 
@@ -213,7 +202,7 @@ for trialInd in range(p['nTrials']):
 
         fig1, ax1 = plt.subplots(5, 1, num=figCounter, figsize=(5, 9), gridspec_kw={'height_ratios': [3, 2, 1, 1, 1]},
                                  sharex=True)
-        R.plot_spike_raster(ax1[0])
+        R.plot_spike_raster(ax1[0])  # uses RNG but we will not use the same random seed...
         R.plot_firing_rate(ax1[1])
         ax1[1].set_ylim(0, 40)
         R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=0)

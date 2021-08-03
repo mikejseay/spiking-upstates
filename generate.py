@@ -9,15 +9,18 @@ from tqdm import tqdm
 from brian2 import *
 
 
-def generate_poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_iki):
+def generate_poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_iki, rng=None):
     """ generate the times and sizes of the kicks, as used in Jercog et al. (2017) """
+
+    if not rng:
+        rng = np.random.default_rng(None)  # random seed
 
     kickTimes = []
     kickSizes = []
     kickInd = -1
     nextTime = 0
     while nextTime < duration:
-        nextISI = -lambda_value / np.log(1 - np.random.rand())
+        nextISI = -lambda_value / np.log(1 - rng.random())
         if nextISI < minimum_iki or nextISI > maximum_iki:
             continue
         kickInd += 1
@@ -28,13 +31,16 @@ def generate_poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_i
     return kickTimes, kickSizes
 
 
-def generate_poisson(rate, dt, duration, nUnits):
+def generate_poisson(rate, dt, duration, nUnits, rng=None):
     """ given a fixed rate as well as the dt and duration of a simulation,
     generates nUnits independent Poisson processes and returns them in the way
     that SpikeGeneratorGroup is expecting them """
 
+    if not rng:
+        rng = np.random.default_rng(None)  # random seed
+
     timeArray = np.arange(0, float(duration), float(dt))
-    randArray = np.random.rand(*timeArray.shape, nUnits)
+    randArray = rng.random(*timeArray.shape, nUnits)
     spikeBool = randArray < (rate * dt)
 
     times_lst = []
@@ -90,13 +96,16 @@ def fixed_current_series(amplitude, duration, dt):
     return iKickRecorded
 
 
-def set_spikes_from_time_varying_rate(time_array, rate_array, nPoissonInputUnits):
+def set_spikes_from_time_varying_rate(time_array, rate_array, nPoissonInputUnits, rng=None):
     """
     This function was inherited from some Destexhe code because I was trying to replicate their results.
     # time_array in ms
     # rate_array in Hz
     # nPoissonInputUnits dictates how many distinct external input units should be simulated
     """
+
+    if not rng:
+        rng = np.random.default_rng(None)  # random seed
 
     outIndices, outTimes = [], []
     DT = (time_array[1] - time_array[0])
@@ -105,7 +114,7 @@ def set_spikes_from_time_varying_rate(time_array, rate_array, nPoissonInputUnits
     # for each time step (could have a different rate per time step i.e. inhomogeneous Poisson process)
     for it in tqdm(range(len(time_array))):
         # generate one random U(0, 1) for each unit
-        rdm_num = np.random.random(nPoissonInputUnits)
+        rdm_num = rng.random(nPoissonInputUnits)
         # for each unit decide whether it spikes on that time step
         for ii in np.arange(nPoissonInputUnits)[rdm_num < DT * rate_array[it] * 1e-3]:  # this samples numbers
             outIndices.append(ii)  # all the indicces
@@ -114,15 +123,18 @@ def set_spikes_from_time_varying_rate(time_array, rate_array, nPoissonInputUnits
     return np.array(outIndices), np.array(outTimes) * ms
 
 
-def generate_adjacency_indices_within(nUnits, pConn, allowAutapses=False):
+def generate_adjacency_indices_within(nUnits, pConn, allowAutapses=False, rng=None):
     """ creates indices representing pre- and post-synaptic units within 1 population
         that has a certain probability of connection and may or may not allow autapses.
         preInds are first output, postInds are second. """
 
+    if not rng:
+        rng = np.random.default_rng(None)  # random seed
+
     bestNumberOfSynapses = int(np.round(pConn * nUnits ** 2))
 
     if allowAutapses:
-        indicesFlat = np.random.choice(nUnits ** 2, bestNumberOfSynapses, replace=False)
+        indicesFlat = rng.choice(nUnits ** 2, bestNumberOfSynapses, replace=False)
     else:
         probabilityArray = np.full((nUnits, nUnits), 1 / (nUnits * (nUnits - 1)))
         probabilityArray[np.diag_indices_from(probabilityArray)] = 0
@@ -130,32 +142,54 @@ def generate_adjacency_indices_within(nUnits, pConn, allowAutapses=False):
         if pConn > (nUnits - 1) / nUnits:
             bestNumberOfSynapses -= int(np.round(nUnits ** 2 * (pConn - (nUnits - 1) / nUnits)))
 
-        indicesFlat = np.random.choice(nUnits ** 2, bestNumberOfSynapses, replace=False, p=probabilityArray.ravel())
+        indicesFlat = rng.choice(nUnits ** 2, bestNumberOfSynapses, replace=False, p=probabilityArray.ravel())
 
     preInds, postInds = np.unravel_index(indicesFlat, (nUnits, nUnits))
     return preInds, postInds
 
 
-def generate_adjacency_indices_between(nUnitsPre, nUnitsPost, pConn):
+def generate_adjacency_indices_between(nUnitsPre, nUnitsPost, pConn, rng=None):
     """ creates indices representing pre- and post-synaptic units between 2 populations
         with a certain probability of connection
         preInds are first output, postInds are second. """
 
+    if not rng:
+        rng = np.random.default_rng(None)  # random seed
+
     bestNumberOfSynapses = int(np.round(pConn * nUnitsPre * nUnitsPost))
-    indicesFlat = np.random.choice(nUnitsPre * nUnitsPost, bestNumberOfSynapses, replace=False)
+    indicesFlat = rng.choice(nUnitsPre * nUnitsPost, bestNumberOfSynapses, replace=False)
 
     preInds, postInds = np.unravel_index(indicesFlat, (nUnitsPre, nUnitsPost))
 
     return preInds, postInds
 
 
-def normal_positive_weights(nConnections, mean, sd):
+def normal_positive_weights(nConnections, mean, sd, rng=None):
     """ given adjacency indices preInds and postinds, generate weight matrix w
     from a random normal distribution with mean and sd.
     clip negative weights to be 0.
     """
 
-    weights = np.random.normal(mean, sd, nConnections)
+    if not rng:
+        rng = np.random.default_rng(None)  # random seed
+
+    weights = rng.normal(mean, sd, nConnections)
+    weights[weights < 0] = 0
+
+    return weights
+
+
+def lognormal_positive_weights(nConnections, mean=0, sd=0.75, rng=None):
+    """ given adjacency indices preInds and postinds, generate weight matrix w
+    from a random normal distribution with mean and sd.
+    clip negative weights to be 0.
+    """
+
+    if not rng:
+        rng = np.random.default_rng(None)  # random seed
+
+    weights = rng.lognormal(mean, sd, nConnections)
+    weights /= weights.mean()  # set the mean to be 1
     weights[weights < 0] = 0
 
     return weights

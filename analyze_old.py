@@ -73,7 +73,7 @@ for printParam in printParameters:
     if printParam in R.p:
         print(printParam, ':', R.p[printParam])
 
-R.calculate_spike_rate()
+R.calculate_PSTH()
 R.calculate_voltage_histogram(removeMode=True)
 R.calculate_upstates()
 if len(R.ups) > 0:

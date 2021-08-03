@@ -62,7 +62,7 @@ JN.save_params_to_file()
 
 R = Results(JN.saveName, JN.p['saveFolder'])
 
-R.calculate_spike_rate()
+R.calculate_PSTH()
 R.calculate_voltage_histogram(removeMode=True)
 R.calculate_upstates()
 if len(R.ups) > 0:

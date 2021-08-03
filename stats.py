@@ -7,6 +7,14 @@ from sklearn import linear_model
 import statsmodels.api as sm
 
 
+def remove_outliers(a, sd_thresh=5):
+    a_mean = np.nanmean(a)
+    a_std = np.nanstd(a)
+    a_outlying = np.logical_or(a > a_mean + sd_thresh * a_std, a < a_mean - sd_thresh * a_std)
+    a_clean = a[~a_outlying]
+    return a_clean
+
+
 def regress_linear(xvals, yvals):
     ''' given equal length vectors, do a linear regression. '''
 
