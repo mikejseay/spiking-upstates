@@ -16,7 +16,8 @@ def remove_outliers(a, sd_thresh=5):
 
 
 def regress_linear(xvals, yvals):
-    ''' given equal length vectors, do a linear regression. '''
+    ''' given equal length vectors, do a linear regression.
+    outputs are pred_x, pred_y, b, r2, p'''
 
     if len(xvals.shape) < 2:
         xvals = xvals.reshape(-1, 1)

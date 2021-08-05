@@ -6,13 +6,11 @@ from generate import convert_kicks_to_current_series
 from trainer import JercogTrainer
 from results import Results
 
-rngSeed = 4
 
 defaultclock.dt = p['dt']
 
-# p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
-p['saveFolder'] = '~/BrianResults/'
-p['nameSuffix'] = 'testSeed'
+p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
+# p['saveFolder'] = '/u/home/m/mikeseay/BrianResults/'
 p['saveWithDate'] = True
 p['useOldWeightMagnitude'] = True
 p['disableWeightScaling'] = True
@@ -31,14 +29,19 @@ p['propConnect'] = 0.25
 p['setUpFRExc'] = 5 * Hz
 p['setUpFRInh'] = 14 * Hz
 p['tauUpFRTrials'] = 1
-p['useRule'] = 'cross-homeo-pre-scalar-homeo'  # cross-homeo or balance
-p['kickType'] = 'spike'  # kick or spike
+p['useRule'] = 'cross-homeo-scalar-homeo'  # cross-homeo or balance
+rngSeed = None
+p['nameSuffix'] = 'movAvg1'
+# cross-homeo-scalar and cross-homeo-scalar-homeo are the new ones
+p['saveTermsSeparately'] = True
 # defaultEqual, defaultNormal, defaultNormalScaled, defaultUniform,
 # randomUniform, randomUniformMid, randomUniformLow, randomUniformSaray, randomUniformSarayMid, randomUniformSarayHigh
 
-p['initWeightMethod'] = 'seed' + str(rngSeed)
+# p['initWeightMethod'] = 'seed' + str(rngSeed)
 # p['initWeightMethod'] = 'guessGoodWeights2e3p025LogNormal'
-# # p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025'
+# p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025LogNormal'
+p['initWeightMethod'] = 'guessHighActivityWeights2e3p025LogNormal'
+# p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025'
 # # p['initWeightMethod'] = 'guessLowActivityWeights2e3p025'
 # p['initWeightMethod'] = 'randomUniformSarayHigh5e3p02Converge'
 # p['initWeightMethod'] = 'randomUniformSarayHigh'
@@ -46,6 +49,7 @@ p['initWeightMethod'] = 'seed' + str(rngSeed)
 # p['initWeightMethod'] = 'resumePrior'  # note this completely overwrites ALL values of the p parameter
 # p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed8__2021-08-02-14-33_results'
 
+p['kickType'] = 'spike'  # kick or spike
 p['jEEScaleRatio'] = None
 p['jIEScaleRatio'] = None
 p['jEIScaleRatio'] = None
@@ -54,7 +58,7 @@ p['jIIScaleRatio'] = None
 p['maxAllowedFRExc'] = 2 * p['setUpFRExc'] / Hz
 p['maxAllowedFRInh'] = 2 * p['setUpFRInh'] / Hz
 
-p['nTrials'] = 144  # 6765
+p['nTrials'] = 6765  # 6765
 # p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597]  # 1-indexed
 # p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181]  # 1-indexed
 p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765]  # 1-indexed
@@ -95,6 +99,9 @@ elif p['useRule'][:7] == 'balance':
 
 if p['useRule'] == 'cross-homeo-pre-scalar-homeo-norm':
     p['alpha1'] *= 100
+
+if p['useRule'][:18] == 'cross-homeo-scalar':
+    p['alpha1'] *= 10
 
 # params not important unless using "kick" instead of "spike"
 p['propKicked'] = 0.1
