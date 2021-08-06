@@ -1026,17 +1026,17 @@ class JercogTrainer(object):
                 # here we assume there is a global sensed value of the average FR of E or I units,
                 # so the error term is a scalar
                 # we divide by Hz because of the units of alpha to convert to amps
-                dwEECH =  p['alpha1'] * (+.0197 + movAvgUpFRExcUnits * (p['setUpFRExc'] - movAvgUpFRInhUnits.mean()) / Hz)
-                dwEICH = -p['alpha1'] * (-0.0674 + movAvgUpFRInhUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz)
-                dwIECH = -p['alpha1'] * (+0.00760 + movAvgUpFRExcUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz)
-                dwIICH =  p['alpha1'] * (-0.0194 + movAvgUpFRInhUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz)
+                dwEECH =  p['alpha1'] * (+.0197 * Hz + movAvgUpFRExcUnits * (p['setUpFRExc'] - movAvgUpFRInhUnits.mean()) / Hz)
+                dwEICH = -p['alpha1'] * (-0.0674 * Hz + movAvgUpFRInhUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz)
+                dwIECH = -p['alpha1'] * (+0.00760 * Hz + movAvgUpFRExcUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz)
+                dwIICH =  p['alpha1'] * (-0.0194 * Hz + movAvgUpFRInhUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz)
 
                 # regular homeo (outer product)
                 # since outer strips units and because of alpha we multiply by Hz to convert to amps
-                dwEEH =  p['alpha1'] * (+.0150 + np.outer(movAvgUpFRExcUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz)
-                dwEIH = -p['alpha1'] * (+0.143 + np.outer(movAvgUpFRInhUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz)
-                dwIEH =  p['alpha1'] * (+0.0927 + np.outer(movAvgUpFRExcUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz)
-                dwIIH = -p['alpha1'] * (+0.213 + np.outer(movAvgUpFRInhUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz)
+                dwEEH =  p['alpha1'] * (+.0150 * Hz + np.outer(movAvgUpFRExcUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz)
+                dwEIH = -p['alpha1'] * (+0.143 * Hz+ np.outer(movAvgUpFRInhUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz)
+                dwIEH =  p['alpha1'] * (+0.0927 * Hz + np.outer(movAvgUpFRExcUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz)
+                dwIIH = -p['alpha1'] * (+0.213 * Hz + np.outer(movAvgUpFRInhUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz)
 
                 if self.p['saveTermsSeparately']:
                     if not hasattr(self, 'trialdwEECHUnits'):

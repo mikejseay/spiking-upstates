@@ -29,7 +29,7 @@ p['propConnect'] = 0.25
 p['setUpFRExc'] = 5 * Hz
 p['setUpFRInh'] = 14 * Hz
 p['tauUpFRTrials'] = 1
-p['useRule'] = 'cross-homeo-pre-scalar-homeo'  # cross-homeo or balance
+p['useRule'] = 'cross-homeo-pre-scalar-homeo-corrected'  # cross-homeo or balance
 rngSeed = None
 p['nameSuffix'] = 'movAvg1'
 # cross-homeo-scalar and cross-homeo-scalar-homeo are the new ones
@@ -38,10 +38,10 @@ p['saveTermsSeparately'] = True
 # randomUniform, randomUniformMid, randomUniformLow, randomUniformSaray, randomUniformSarayMid, randomUniformSarayHigh
 
 # p['initWeightMethod'] = 'seed' + str(rngSeed)
-# p['initWeightMethod'] = 'guessGoodWeights2e3p025LogNormal'
+p['initWeightMethod'] = 'guessGoodWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessHighActivityWeights2e3p025LogNormal'
-p['initWeightMethod'] = 'guessUpperLeftWeights2e3p025LogNormal'
+# p['initWeightMethod'] = 'guessUpperLeftWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessLowerRightWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025'
 # # p['initWeightMethod'] = 'guessLowActivityWeights2e3p025'
