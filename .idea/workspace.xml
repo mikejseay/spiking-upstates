@@ -331,25 +331,25 @@
       <screen x="1920" y="0" width="1920" height="1040" />
     </state>
     <state width="1514" height="466" key="DebuggerActiveHint/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1619556577006" />
-    <state width="1921" height="289" key="GridCell.Tab.0.bottom" timestamp="1628186373539">
+    <state width="1921" height="306" key="GridCell.Tab.0.bottom" timestamp="1628464316046">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="289" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628186373539" />
+    <state width="1921" height="306" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628464316046" />
     <state width="1921" height="289" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1628102533599" />
-    <state width="1921" height="289" key="GridCell.Tab.0.center" timestamp="1628186373539">
+    <state width="1921" height="306" key="GridCell.Tab.0.center" timestamp="1628464316046">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="289" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628186373539" />
+    <state width="1921" height="306" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628464316046" />
     <state width="1921" height="289" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1628102533599" />
-    <state width="1921" height="289" key="GridCell.Tab.0.left" timestamp="1628186373539">
+    <state width="1921" height="306" key="GridCell.Tab.0.left" timestamp="1628464316046">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="289" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628186373539" />
+    <state width="1921" height="306" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628464316046" />
     <state width="1921" height="289" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1628102533598" />
-    <state width="1921" height="289" key="GridCell.Tab.0.right" timestamp="1628186373539">
+    <state width="1921" height="306" key="GridCell.Tab.0.right" timestamp="1628464316046">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="289" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628186373539" />
+    <state width="1921" height="306" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628464316046" />
     <state width="1921" height="289" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1628102533599" />
     <state width="1899" height="283" key="GridCell.Tab.1.bottom" timestamp="1619628438794">
       <screen x="1920" y="0" width="1920" height="1040" />
@@ -491,7 +491,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1257</line>
+          <line>1558</line>
           <option name="timeStamp" value="325" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -501,22 +501,22 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1614</line>
+          <line>1915</line>
           <option name="timeStamp" value="357" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1463</line>
+          <line>1764</line>
           <option name="timeStamp" value="365" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1469</line>
+          <line>1770</line>
           <option name="timeStamp" value="366" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1210</line>
+          <line>1511</line>
           <option name="timeStamp" value="380" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -526,7 +526,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/simulateJercogUpLearn2.py</url>
-          <line>146</line>
+          <line>147</line>
           <option name="timeStamp" value="412" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">

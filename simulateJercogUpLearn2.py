@@ -1,4 +1,4 @@
-from brian2 import defaultclock, ms, pA, nA, Hz, seed
+from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV
 from params import paramsJercog as p
 from params import paramsJercogEphysBuono
 import numpy as np
@@ -24,14 +24,15 @@ ephysParams = paramsJercogEphysBuono.copy()
 # simulation params
 p['nUnits'] = 2e3
 p['propConnect'] = 0.25
+# p['noiseSigma'] = 2.5 * mV  # 2.5 * mV
 
 # define parameters
 p['setUpFRExc'] = 5 * Hz
 p['setUpFRInh'] = 14 * Hz
 p['tauUpFRTrials'] = 1
-p['useRule'] = 'cross-homeo-pre-scalar-homeo-corrected'  # cross-homeo or balance
+p['useRule'] = 'cross-homeo-pre-scalar-homeo-flipH'  # cross-homeo or balance
 rngSeed = None
-p['nameSuffix'] = 'movAvg1'
+p['nameSuffix'] = 'fixSigns'
 # cross-homeo-scalar and cross-homeo-scalar-homeo are the new ones
 p['saveTermsSeparately'] = True
 # defaultEqual, defaultNormal, defaultNormalScaled, defaultUniform,
