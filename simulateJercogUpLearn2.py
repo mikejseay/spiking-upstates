@@ -6,6 +6,15 @@ from generate import convert_kicks_to_current_series
 from trainer import JercogTrainer
 from results import Results
 
+p['useNewEphysParams'] = False
+ephysParams = paramsJercogEphysBuono.copy()
+
+if p['useNewEphysParams']:
+    # remove protected keys from the dict whose params are being imported
+    protectedKeys = ('nUnits', 'propInh', 'duration')
+    for pK in protectedKeys:
+        del ephysParams[pK]
+    p.update(ephysParams)
 
 defaultclock.dt = p['dt']
 
@@ -18,15 +27,6 @@ p['applyLogToFR'] = False
 p['setMinimumBasedOnBalance'] = False
 p['recordMovieVariables'] = True
 p['downSampleVoltageTo'] = 1 * ms
-p['useNewEphysParams'] = False
-ephysParams = paramsJercogEphysBuono.copy()
-
-if p['useNewEphysParams']:
-    # remove protected keys from the dict whose params are being imported
-    protectedKeys = ('nUnits', 'propInh', 'duration')
-    for pK in protectedKeys:
-        del ephysParams[pK]
-    p.update(ephysParams)
 
 # simulation params
 p['nUnits'] = 2e3

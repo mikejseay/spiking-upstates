@@ -253,6 +253,19 @@ class JercogTrainer(object):
             self.wIE_init = wIE_mean * lognormal_positive_weights(self.JN.synapsesIE.jIE[:].size, rng=self.p['rng']) * pA
             self.wEI_init = wEI_mean * lognormal_positive_weights(self.JN.synapsesEI.jEI[:].size, rng=self.p['rng']) * pA
             self.wII_init = wII_mean * lognormal_positive_weights(self.JN.synapsesII.jII[:].size, rng=self.p['rng']) * pA
+        elif self.p['initWeightMethod'] == 'guessLowWeights2e3p025LogNormal':
+            wEE_mean = 90
+            wIE_mean = 67.5
+            wEI_mean = 104
+            wII_mean = 54
+            self.wEE_init = wEE_mean * lognormal_positive_weights(self.JN.synapsesEE.jEE[:].size,
+                                                                  rng=self.p['rng']) * pA
+            self.wIE_init = wIE_mean * lognormal_positive_weights(self.JN.synapsesIE.jIE[:].size,
+                                                                  rng=self.p['rng']) * pA
+            self.wEI_init = wEI_mean * lognormal_positive_weights(self.JN.synapsesEI.jEI[:].size,
+                                                                  rng=self.p['rng']) * pA
+            self.wII_init = wII_mean * lognormal_positive_weights(self.JN.synapsesII.jII[:].size,
+                                                                  rng=self.p['rng']) * pA
         elif self.p['initWeightMethod'] == 'guessUpperLeftWeights2e3p025LogNormal':
             wEE_mean = 125.9
             wIE_mean = 94.6
