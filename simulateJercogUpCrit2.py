@@ -10,7 +10,6 @@ from results import Results
 defaultclock.dt = p['dt']
 
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
-# p['saveFolder'] = '/u/home/m/mikeseay/BrianResults/'
 p['saveWithDate'] = True
 p['useOldWeightMagnitude'] = True
 p['disableWeightScaling'] = True
@@ -31,7 +30,6 @@ if p['useNewEphysParams']:
 # simulation params
 p['nUnits'] = 2e3
 p['propConnect'] = 0.25
-# p['noiseSigma'] = 2.5 * mV  # 2.5 * mV
 
 # define parameters
 p['setUpFRExc'] = 5 * Hz

@@ -731,12 +731,14 @@ class ResultsEphys(object):
 
         useThresh = self.p['vThreshExc'] / mV
         ax[0, 0].plot(stateMonT, self.stateMonExcV[I_index_for_ISI, :], color='g')
-        ax[0, 0].vlines(self.spikeTrainsExc[()][I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
+        # ax[0, 0].vlines(self.spikeTrainsExc[()][I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
+        ax[0, 0].vlines(self.spikeTrainsExc[I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
         ax[0, 0].set(xlim=(0., self.p['duration'] / second), ylabel='mV', xlabel='Time (s)')
 
         useThresh = self.p['vThreshInh'] / mV
-        ax[0, 1].plot(stateMonT, self.stateMonInhV[I_index_for_ISI, :], color='g')
-        ax[0, 1].vlines(self.spikeTrainsInh[()][I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
+        ax[0, 1].plot(stateMonT, self.stateMonInhV[I_index_for_ISI, :], color='r')
+        # ax[0, 1].vlines(self.spikeTrainsInh[()][I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
+        ax[0, 1].vlines(self.spikeTrainsInh[I_index_for_ISI], useThresh, useThresh + 40, color='r', lw=.3)
         ax[0, 1].set(xlim=(0., self.p['duration'] / second), ylabel='mV', xlabel='Time (s)')
 
         ax[1, 0].plot(I_ext_range * 1e9, ExcData, label='Exc')
@@ -745,10 +747,12 @@ class ResultsEphys(object):
                          label='displayed value', color='grey', ls='--')
         ax[1, 0].set_xlabel('Current (nA)')
         ax[1, 0].set_ylabel('Firing Rate (Hz)')
-        ax[1, 0].legend()
+        # ax[1, 0].legend()
 
-        ISIExc = diff(self.spikeTrainsExc[()][I_index_for_ISI])
-        ISIInh = diff(self.spikeTrainsInh[()][I_index_for_ISI])
+        # ISIExc = diff(self.spikeTrainsExc[()][I_index_for_ISI])
+        # ISIInh = diff(self.spikeTrainsInh[()][I_index_for_ISI])
+        ISIExc = diff(self.spikeTrainsExc[I_index_for_ISI])
+        ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
         ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc')
         ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh')
         ax[1, 1].set_xlabel('ISI number')

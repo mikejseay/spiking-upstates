@@ -7,6 +7,10 @@ from sklearn import linear_model
 import statsmodels.api as sm
 
 
+def moving_average(x, w):
+    return np.convolve(x, np.ones(w), 'valid') / w
+
+
 def remove_outliers(a, sd_thresh=5):
     a_mean = np.nanmean(a)
     a_std = np.nanstd(a)
