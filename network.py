@@ -19,10 +19,8 @@ import dill
 from datetime import datetime
 import os
 from generate import set_spikes_from_time_varying_rate, fixed_current_series, \
-    generate_adjacency_indices_within, generate_adjacency_indices_between, normal_positive_weights
+    generate_adjacency_indices_within, generate_adjacency_indices_between, normal_positive_weights, poisson_single
 from results import Results
-from functions import find_upstates
-from results import bins_to_centers
 import numpy as np
 
 
@@ -429,6 +427,84 @@ class JercogNetwork(object):
         self.N.add(unitsInh)
 
     def initialize_units_twice_kickable2(self):
+        unitModel = '''
+                dv/dt = (gl * (eLeak - v) - iAdapt +
+                         sE - sI + sExt +
+                         kKick * iKick) / Cm +
+                         noiseSigma * (Cm / gl)**-0.5 * xi: volt (unless refractory)
+                diAdapt/dt = -iAdapt / tauAdapt : amp
+
+                dsE/dt = (-sE + uE) / tauFallE : amp
+                duE/dt = -uE / tauRiseE : amp
+                dsI/dt = (-sI + uI) / tauFallI : amp
+                duI/dt = -uI / tauRiseI : amp
+                dsExt/dt = (-sExt + uExt) / tauFallE : amp
+                duExt/dt = -uExt / tauRiseE : amp
+
+                eLeak : volt
+                kKick : amp
+                iKick = iKickRecorded(t) : 1
+                vReset : volt
+                vThresh : volt
+                betaAdapt : amp * second
+                gl : siemens
+                Cm : farad
+                '''
+
+        resetCode = '''
+        v = vReset
+        iAdapt += betaAdapt / tauAdapt 
+        '''
+
+        threshCode = 'v >= vThresh'
+
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = int(self.p['nUnits'] - self.p['nInh'])
+
+        unitsExc = NeuronGroup(
+            N=self.p['nExc'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriodExc'],
+            clock=defaultclock,
+        )
+        unitsInh = NeuronGroup(
+            N=self.p['nInh'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriodInh'],
+            clock=defaultclock,
+        )
+
+        self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
+        self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
+
+        unitsExc.v = self.p['eLeakExc']
+        unitsExc.vReset = self.p['vResetExc']
+        unitsExc.vThresh = self.p['vThreshExc']
+        unitsExc.betaAdapt = self.p['betaAdaptExc']
+        unitsExc.eLeak = self.p['eLeakExc']
+        unitsExc.Cm = self.p['membraneCapacitanceExc']
+        unitsExc.gl = self.p['gLeakExc']
+
+        unitsInh.v = self.p['eLeakInh']
+        unitsInh.vReset = self.p['vResetInh']
+        unitsInh.vThresh = self.p['vThreshInh']
+        unitsInh.betaAdapt = self.p['betaAdaptInh']
+        unitsInh.eLeak = self.p['eLeakInh']
+        unitsInh.Cm = self.p['membraneCapacitanceInh']
+        unitsInh.gl = self.p['gLeakInh']
+
+        self.unitsExc = unitsExc
+        self.unitsInh = unitsInh
+        self.N.add(unitsExc)
+        self.N.add(unitsInh)
+
+    def initialize_units_twice_kickable2_eSubPop(self):
         unitModel = '''
                 dv/dt = (gl * (eLeak - v) - iAdapt +
                          sE - sI + sExt +
@@ -1583,6 +1659,36 @@ class JercogNetwork(object):
         self.N.add(Uppers, feedforwardUpExc)
 
         self.p['duration'] = (np.array(times).max() * second + timeSpacing)
+        self.p['iKickRecorded'] = fixed_current_series(0, self.p['duration'], self.p['dt'])
+
+    def prepare_upPoisson_experiment(self, poissonLambda=0.025 * Hz, duration=30 * second, spikeUnits=100, rng=None):
+
+        kickTimes = poisson_single(poissonLambda, self.p['dt'], duration, rng)
+
+        test = 0
+
+        indices = []
+        times = []
+        for kickTime in kickTimes:
+            indices.extend(list(range(spikeUnits)))
+            times.extend([float(kickTime), ] * spikeUnits)
+
+        test = 0
+
+        Uppers = SpikeGeneratorGroup(spikeUnits, np.array(indices), np.array(times) * second)
+
+        feedforwardUpExc = Synapses(
+            source=Uppers,
+            target=self.unitsExc,
+            on_pre='uExt_post += 0.98 * nA'
+            # on_pre='uE_post += ' + str(currentAmp / nA) + ' * nA'
+            #  + str(critExc / (100 * Mohm) / tauRiseE * ms),
+        )
+        feedforwardUpExc.connect('i==j')
+
+        self.N.add(Uppers, feedforwardUpExc)
+
+        self.p['duration'] = duration
         self.p['iKickRecorded'] = fixed_current_series(0, self.p['duration'], self.p['dt'])
 
 

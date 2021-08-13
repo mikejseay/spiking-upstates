@@ -2,7 +2,7 @@
 from brian2 import second, ms, volt, mV, Hz, defaultclock
 from params import paramsJercog as p
 from params import paramsJercogEphysBuono
-from generate import generate_poisson_kicks_jercog, convert_kicks_to_current_series
+from generate import poisson_kicks_jercog, convert_kicks_to_current_series
 from network import JercogNetwork
 from results import Results
 import matplotlib.pyplot as plt
@@ -96,8 +96,8 @@ excWeightMultiplier = 35  # it's right around 35 that it begins to be able to ig
 
 defaultclock.dt = p['dt']
 if KICKS_POISSON:
-    kickTimes, kickSizes = generate_poisson_kicks_jercog(p['kickLambda'], p['duration'],
-                                                         p['kickMinimumISI'], p['kickMaximumISI'])
+    kickTimes, kickSizes = poisson_kicks_jercog(p['kickLambda'], p['duration'],
+                                                p['kickMinimumISI'], p['kickMaximumISI'])
 else:
     kickTimes = [100 * ms, 1100 * ms]
     kickSizes = [1, 0.5]

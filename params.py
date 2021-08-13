@@ -97,7 +97,7 @@ paramsJercog['nIncExc'] = paramsJercog['nUnits'] - paramsJercog['nIncInh']
 
 paramsJercogEphysOrig = {
     # save / figs
-    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
     'simName': 'classicJercogEphysOrig',
     'paramSet': 'classicJercogEphys',
     'saveWithDate': True,
@@ -157,7 +157,7 @@ paramsJercogEphysOrig = {
 
 paramsJercogEphysBuono = {
     # save / figs
-    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
     'simName': 'classicJercogEphysBuono',
     'paramSet': 'buonoEphys',
     'saveWithDate': True,
@@ -223,7 +223,7 @@ paramsJercogEphysBuono = {
 
 paramsJercogEphysBuono2 = {
     # save / figs
-    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
     'simName': 'classicJercogEphysBuono',
     'paramSet': 'buonoEphys',
     'saveWithDate': True,
@@ -254,7 +254,7 @@ paramsJercogEphysBuono2 = {
     'vThreshExc': -50 * mV,
     'vThreshInh': -42 * mV,
     'adaptTau': 500 * ms,
-    'betaAdaptExc': 10 * nA * ms,
+    'betaAdaptExc': 11 * nA * ms,
     'betaAdaptInh': 2 * nA * ms,
     'refractoryPeriodExc': 2.5 * ms,
     'refractoryPeriodInh': 1 * ms,
@@ -287,9 +287,75 @@ paramsJercogEphysBuono2 = {
 
 }
 
+paramsJercogEphysBuono3 = {
+    # save / figs
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
+    'simName': 'classicJercogEphysBuono',
+    'paramSet': 'buonoEphys',
+    'saveWithDate': True,
+
+    # global sim params
+    'dt': 0.1 * ms,
+    'duration': 250 * ms,
+    # 'updateMethod': 'exact',
+    'reportType': 'stdout',
+    'reportPeriod': 10 * second,
+    'doProfile': False,
+
+    # recording parameters
+    'propSpikemon': 1,
+    'recordStateVariables': ['v', ],  # ['v', 'w', 'ge', 'gi'],
+    'indsRecordStateExc': [0, ],
+    'indsRecordStateInh': [0, ],
+
+    # network params
+    'nUnits': 2,  # ***
+    'propInh': 0.5,
+
+    # unit params
+    'eLeakExc': -60 * mV,
+    'eLeakInh': -60 * mV,
+    'vResetExc': -60 * mV,
+    'vResetInh': -60 * mV,
+    'vThreshExc': -50 * mV,
+    'vThreshInh': -42.5 * mV,
+    'adaptTau': 500 * ms,
+    'betaAdaptExc': 10 * nA * ms,
+    'betaAdaptInh': 2.5 * nA * ms,
+    'refractoryPeriodExc': 2.5 * ms,
+    'refractoryPeriodInh': 1 * ms,
+    'refractoryPeriod': 1 * ms,  # overridden by the above but necessary
+    'membraneCapacitanceExc': 200 * pF,  # dictated by surface area
+    'membraneCapacitanceInh': 125 * pF,  # so it's smaller for inhibitory neurons
+    'gLeakExc': 10 * nS,  # in theory dictated by density of Na+/K+ pump, etc
+    'gLeakInh': 7.5 * nS,  # so it's the same between the two
+
+    # ephys params
+    'iExtRange': linspace(0, .3, 31) * nA,
+    'iDur': 250 * ms,
+
+    # synaptic params
+    # 'jEE': 280 * mV,
+    # 'jEI': 70 * mV,
+    # 'jIE': 500 * mV,
+    # 'jII': 100 * mV,
+    'jEE': 2.8 * nA,
+    'jEI': 0.7 * nA,
+    'jIE': 5 * nA,
+    'jII': 1 * nA,
+    'tauRiseExc': 8 * ms,
+    'tauFallExc': 23 * ms,
+    'tauRiseInh': 1 * ms,
+    'tauFallInh': 1 * ms,
+    'delayExc': 1 * ms,
+    'delayInh': 0.5 * ms,
+    'scaleWeightsByPConn': True,
+
+}
+
 paramsJercogEphysBuonoBen1 = {
     # save / figs
-    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
     'simName': 'classicJercogEphysBuonoBen1',
     'paramSet': 'buonoEphys',
     'saveWithDate': True,
@@ -365,7 +431,7 @@ paramsJercogEphysBuonoBen1 = {
 
 paramsJercogEphysBuonoBen2 = {
     # save / figs
-    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
     'simName': 'classicJercogEphysBuono',
     'paramSet': 'buonoEphysBen2',
     'saveWithDate': True,
@@ -511,7 +577,7 @@ paramsDestexhe = {
 
 paramsDestexheEphysOrig = {
     'simName': 'destexheEphysOrig',
-    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
     'paramSet': 'destexheEphys',
     'saveWithDate': True,
 
@@ -571,7 +637,7 @@ paramsDestexheEphysOrig = {
 
 paramsDestexheEphysBuono = {
     'simName': 'destexheEphysBuono',
-    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
     'paramSet': 'buonoEphys',
     'saveWithDate': True,
 

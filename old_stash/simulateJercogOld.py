@@ -1,7 +1,7 @@
 from brian2 import *
 from params import paramsJercog as p
 from params import paramsJercogEphysBuono
-from generate import generate_poisson_kicks_jercog, convert_kicks_to_current_series
+from generate import poisson_kicks_jercog, convert_kicks_to_current_series
 from network import JercogNetwork
 
 USE_NEW_EPHYS_PARAMS = True
@@ -77,8 +77,8 @@ p['nIncInh'] = int(p['propConnect'] * p['propInh'] * p['nUnits'])
 
 defaultclock.dt = p['dt']
 if KICKS_POISSON:
-    kickTimes, kickSizes = generate_poisson_kicks_jercog(p['kickLambda'], p['duration'],
-                                                     p['kickMinimumISI'], p['kickMaximumISI'])
+    kickTimes, kickSizes = poisson_kicks_jercog(p['kickLambda'], p['duration'],
+                                                p['kickMinimumISI'], p['kickMaximumISI'])
 else:
     kickTimes = [100 * ms, 1100 * ms]
     kickSizes = [1, 0.5]

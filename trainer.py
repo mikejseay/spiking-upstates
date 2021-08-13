@@ -12,7 +12,7 @@ import dill
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-from brian2 import ms, nA, pA, Hz, second
+from brian2 import ms, nA, pA, Hz, second, mV
 from network import JercogEphysNetwork, JercogNetwork
 from results import ResultsEphys, Results
 from generate import lognormal_positive_weights, normal_positive_weights, adjacency_matrix_from_flat_inds, weight_matrix_from_flat_inds_weights
@@ -84,6 +84,20 @@ class JercogTrainer(object):
             JN.p['wIEScale'] = 1
             JN.p['wEIScale'] = 1
             JN.p['wIIScale'] = 1
+
+        self.JN = JN
+
+    def set_up_network_Poisson(self):
+        # set up network, experiment, and start recording
+        JN = JercogNetwork(self.p)
+        JN.initialize_network()
+        JN.initialize_units_twice_kickable2()
+        JN.prepare_upPoisson_experiment(poissonLambda=self.p['poissonLambda'],
+                                        duration=self.p['duration'],
+                                        spikeUnits=self.p['nUnitsToSpike'],
+                                        rng=self.p['rng'])
+        JN.initialize_recurrent_synapses_4bundles_modifiable()
+        JN.create_monitors()
 
         self.JN = JN
 
@@ -253,11 +267,42 @@ class JercogTrainer(object):
             self.wIE_init = wIE_mean * lognormal_positive_weights(self.JN.synapsesIE.jIE[:].size, rng=self.p['rng']) * pA
             self.wEI_init = wEI_mean * lognormal_positive_weights(self.JN.synapsesEI.jEI[:].size, rng=self.p['rng']) * pA
             self.wII_init = wII_mean * lognormal_positive_weights(self.JN.synapsesII.jII[:].size, rng=self.p['rng']) * pA
+        elif self.p['initWeightMethod'] == 'guessGoodWeights2e3p1LogNormal':
+            wEE_mean = 30
+            wIE_mean = 22.5
+            wEI_mean = 26
+            wII_mean = 13.5
+            self.wEE_init = wEE_mean * lognormal_positive_weights(self.JN.synapsesEE.jEE[:].size, rng=self.p['rng']) * pA
+            self.wIE_init = wIE_mean * lognormal_positive_weights(self.JN.synapsesIE.jIE[:].size, rng=self.p['rng']) * pA
+            self.wEI_init = wEI_mean * lognormal_positive_weights(self.JN.synapsesEI.jEI[:].size, rng=self.p['rng']) * pA
+            self.wII_init = wII_mean * lognormal_positive_weights(self.JN.synapsesII.jII[:].size, rng=self.p['rng']) * pA
+        elif self.p['initWeightMethod'] == 'guessGoodWeights5e3p02LogNormal':
+            wEE_mean = 60
+            wIE_mean = 45
+            wEI_mean = 52
+            wII_mean = 27
+            self.wEE_init = wEE_mean * lognormal_positive_weights(self.JN.synapsesEE.jEE[:].size, rng=self.p['rng']) * pA
+            self.wIE_init = wIE_mean * lognormal_positive_weights(self.JN.synapsesIE.jIE[:].size, rng=self.p['rng']) * pA
+            self.wEI_init = wEI_mean * lognormal_positive_weights(self.JN.synapsesEI.jEI[:].size, rng=self.p['rng']) * pA
+            self.wII_init = wII_mean * lognormal_positive_weights(self.JN.synapsesII.jII[:].size, rng=self.p['rng']) * pA
         elif self.p['initWeightMethod'] == 'guessLowWeights2e3p025LogNormal':
             wEE_mean = 90
             wIE_mean = 67.5
             wEI_mean = 104
             wII_mean = 54
+            self.wEE_init = wEE_mean * lognormal_positive_weights(self.JN.synapsesEE.jEE[:].size,
+                                                                  rng=self.p['rng']) * pA
+            self.wIE_init = wIE_mean * lognormal_positive_weights(self.JN.synapsesIE.jIE[:].size,
+                                                                  rng=self.p['rng']) * pA
+            self.wEI_init = wEI_mean * lognormal_positive_weights(self.JN.synapsesEI.jEI[:].size,
+                                                                  rng=self.p['rng']) * pA
+            self.wII_init = wII_mean * lognormal_positive_weights(self.JN.synapsesII.jII[:].size,
+                                                                  rng=self.p['rng']) * pA
+        elif self.p['initWeightMethod'] == 'guessLowWeights2e3p025LogNormal2':
+            wEE_mean = 80
+            wIE_mean = 70
+            wEI_mean = 130
+            wII_mean = 50
             self.wEE_init = wEE_mean * lognormal_positive_weights(self.JN.synapsesEE.jEE[:].size,
                                                                   rng=self.p['rng']) * pA
             self.wIE_init = wIE_mean * lognormal_positive_weights(self.JN.synapsesIE.jIE[:].size,
@@ -328,6 +373,15 @@ class JercogTrainer(object):
             self.wIE_init = wIE_mean * normal_positive_weights(self.JN.synapsesIE.jIE[:].size, 1, 0.2, rng=self.p['rng']) * pA
             self.wEI_init = wEI_mean * normal_positive_weights(self.JN.synapsesEI.jEI[:].size, 1, 0.2, rng=self.p['rng']) * pA
             self.wII_init = wII_mean * normal_positive_weights(self.JN.synapsesII.jII[:].size, 1, 0.2, rng=self.p['rng']) * pA
+        elif self.p['initWeightMethod'] == 'guessBuono2Weights2e3p025LogNormal':
+            wEE_mean = 110
+            wIE_mean = 81
+            wEI_mean = 144
+            wII_mean = 89
+            self.wEE_init = wEE_mean * lognormal_positive_weights(self.JN.synapsesEE.jEE[:].size, rng=self.p['rng']) * pA
+            self.wIE_init = wIE_mean * lognormal_positive_weights(self.JN.synapsesIE.jIE[:].size, rng=self.p['rng']) * pA
+            self.wEI_init = wEI_mean * lognormal_positive_weights(self.JN.synapsesEI.jEI[:].size, rng=self.p['rng']) * pA
+            self.wII_init = wII_mean * lognormal_positive_weights(self.JN.synapsesII.jII[:].size, rng=self.p['rng']) * pA
         elif self.p['initWeightMethod'][:4] == 'seed':
             excMeanWeightsPossible = (75, 112.5, 150)
             inhMeanWeightsPossible = (700, 450, 200)
@@ -1959,6 +2013,32 @@ class JercogTrainer(object):
         self.posEI = JN.posEI
         self.posII = JN.posII
 
+    def run_upCrit(self):
+
+        JN = self.JN
+
+        wEE = self.wEE_init.copy()
+        wEI = self.wEI_init.copy()
+        wIE = self.wIE_init.copy()
+        wII = self.wII_init.copy()
+
+        # run the simulation
+        JN.run()
+
+        # assign some objects to pass to saving the results
+        self.wEE = wEE
+        self.wIE = wIE
+        self.wEI = wEI
+        self.wII = wII
+        self.preEE = JN.preEE
+        self.preIE = JN.preIE
+        self.preEI = JN.preEI
+        self.preII = JN.preII
+        self.posEE = JN.posEE
+        self.posIE = JN.posIE
+        self.posEI = JN.posEI
+        self.posII = JN.posII
+
     def save_params(self):
         savePath = os.path.join(self.p['saveFolder'], self.saveName + '_params.pkl')
         with open(savePath, 'wb') as f:
@@ -2039,5 +2119,40 @@ class JercogTrainer(object):
                 'selectTrialSpikeInhT': self.selectTrialSpikeInhT,
             }
             saveDict.update(saveDictMovie)
+
+        np.savez(savePath, **saveDict)
+
+    def save_results_upCrit(self):
+        savePath = os.path.join(self.p['saveFolder'], self.saveName + '_results.npz')
+
+        useDType = np.single
+
+        spikeMonExcT = np.array(self.JN.spikeMonExc.t, dtype=useDType)
+        spikeMonExcI = np.array(self.JN.spikeMonExc.i, dtype=useDType)
+        spikeMonInhT = np.array(self.JN.spikeMonInh.t, dtype=useDType)
+        spikeMonInhI = np.array(self.JN.spikeMonInh.i, dtype=useDType)
+        stateMonExcV = np.array(self.JN.stateMonExc.v / mV, dtype=useDType)
+        stateMonInhV = np.array(self.JN.stateMonInh.v / mV, dtype=useDType)
+
+        saveDict = {
+            'wEE_init': self.wEE_init / pA,
+            'wIE_init': self.wIE_init / pA,
+            'wEI_init': self.wEI_init / pA,
+            'wII_init': self.wII_init / pA,
+            'preEE': self.preEE,
+            'preIE': self.preIE,
+            'preEI': self.preEI,
+            'preII': self.preII,
+            'posEE': self.posEE,
+            'posIE': self.posIE,
+            'posEI': self.posEI,
+            'posII': self.posII,
+            'spikeMonExcT': spikeMonExcT,
+            'spikeMonExcI': spikeMonExcI,
+            'spikeMonInhT': spikeMonInhT,
+            'spikeMonInhI': spikeMonInhI,
+            'stateMonExcV': stateMonExcV,
+            'stateMonInhV': stateMonInhV,
+        }
 
         np.savez(savePath, **saveDict)

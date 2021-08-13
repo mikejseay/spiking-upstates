@@ -1,4 +1,5 @@
-from params import (paramsJercog, paramsJercogEphysOrig, paramsJercogEphysBuono,
+from params import (paramsJercog, paramsJercogEphysOrig, paramsJercogEphysBuono, paramsJercogEphysBuono2,
+                    paramsJercogEphysBuono3,
                     paramsJercogEphysBuonoBen1, paramsJercogEphysBuonoBen2)
 from network import JercogEphysNetwork
 from results import ResultsEphys
@@ -12,7 +13,9 @@ useParams = paramsJercog.copy()
 
 # remove protected keys from the dict whose params are being imported
 # ephysParams = paramsJercogEphysOrig.copy()
-ephysParams = paramsJercogEphysBuono.copy()
+# ephysParams = paramsJercogEphysBuono.copy()
+ephysParams = paramsJercogEphysBuono2.copy()
+# ephysParams = paramsJercogEphysBuono3.copy()
 # ephysParams = paramsJercogEphysBuonoBen1.copy()
 # ephysParams = paramsJercogEphysBuonoBen2.copy()
 protectedKeys = ('nUnits', 'propInh', 'duration')
@@ -23,7 +26,7 @@ if USE_NEW_EPHYS_PARAMS:
     useParams.update(ephysParams)
 
 useParams['propInh'] = 0.5
-useParams['duration'] = 250 * ms
+useParams['duration'] = 1000 * ms
 useParams['iExtRange'] = np.linspace(0, .3, 301) * nA
 
 JEN = JercogEphysNetwork(useParams)

@@ -39,7 +39,7 @@ p['setUpFRInh'] = 14 * Hz
 p['tauUpFRTrials'] = 1
 p['useRule'] = 'cross-homeo-pre-scalar-homeo'  # cross-homeo or balance
 rngSeed = None
-p['nameSuffix'] = ''
+p['nameSuffix'] = 'bigNet'
 # cross-homeo-scalar and cross-homeo-scalar-homeo are the new ones
 p['saveTermsSeparately'] = True
 # defaultEqual, defaultNormal, defaultNormalScaled, defaultUniform,
@@ -47,11 +47,12 @@ p['saveTermsSeparately'] = True
 
 # p['initWeightMethod'] = 'seed' + str(rngSeed)
 # p['initWeightMethod'] = 'guessGoodWeights2e3p025LogNormal'
-# p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025LogNormal'
+# p['initWeightMethod'] = 'guessGoodWeights2e3p1LogNormal'
+p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessHighActivityWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessUpperLeftWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessLowerRightWeights2e3p025LogNormal'
-p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025'
+# p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025'
 # # p['initWeightMethod'] = 'guessLowActivityWeights2e3p025'
 # p['initWeightMethod'] = 'randomUniformSarayHigh5e3p02Converge'
 # p['initWeightMethod'] = 'randomUniformSarayHigh'

@@ -9,7 +9,7 @@ from tqdm import tqdm
 from brian2 import *
 
 
-def generate_poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_iki, rng=None):
+def poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_iki, rng=None):
     """ generate the times and sizes of the kicks, as used in Jercog et al. (2017) """
 
     if not rng:
@@ -31,7 +31,26 @@ def generate_poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_i
     return kickTimes, kickSizes
 
 
-def generate_poisson(rate, dt, duration, nUnits, rng=None):
+def poisson_single(rate, dt, duration, rng=None):
+    """ given a fixed rate as well as the dt and duration of a simulation,
+    generates 1 Poisson process """
+
+    if not rng:
+        rng = np.random.default_rng(None)  # random seed
+
+    timeArray = np.arange(0, float(duration), float(dt))
+    randArray = rng.random(*timeArray.shape)
+    spikeBool = randArray < (rate * dt)
+
+    times_lst = []
+    indices_lst = []
+
+    times = timeArray[spikeBool]
+
+    return times
+
+
+def poisson(rate, dt, duration, nUnits, rng=None):
     """ given a fixed rate as well as the dt and duration of a simulation,
     generates nUnits independent Poisson processes and returns them in the way
     that SpikeGeneratorGroup is expecting them """

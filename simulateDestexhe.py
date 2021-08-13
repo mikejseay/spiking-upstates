@@ -2,7 +2,7 @@ from brian2 import set_device, second, ms, mV, pA, uS, Hz, nS, defaultclock
 from params import paramsDestexhe as p
 from params import paramsDestexheEphysBuono, paramsDestexheEphysOrig
 from network import DestexheNetwork
-from generate import generate_poisson_kicks_jercog
+from generate import poisson_kicks_jercog
 from results import Results
 import matplotlib.pyplot as plt
 
@@ -99,8 +99,8 @@ p['poissonInputWeightMultiplier'] = 1  # the factor by which to multiply the fee
 if APPLY_KICKS:
     p['propKicked'] = 0.02
     p['onlyKickExc'] = True
-    kickTimes, kickSizes = generate_poisson_kicks_jercog(p['kickLambda'], p['duration'],
-                                                         p['kickMinimumISI'], p['kickMaximumISI'])
+    kickTimes, kickSizes = poisson_kicks_jercog(p['kickLambda'], p['duration'],
+                                                p['kickMinimumISI'], p['kickMaximumISI'])
     print(kickTimes)
     p['kickTimes'] = kickTimes
     p['kickSizes'] = kickSizes

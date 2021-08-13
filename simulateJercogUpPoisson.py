@@ -1,4 +1,4 @@
-from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV
+from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV, second
 from params import paramsJercog as p
 from params import paramsJercogEphysBuono2
 import numpy as np
@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 rngSeed = None
 defaultclock.dt = p['dt']
 
-p['useRule'] = 'upCrit'
+p['useRule'] = 'upPoisson'
 p['nameSuffix'] = 'test'
-p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/upCrit'
+p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/upPoisson'
 p['saveWithDate'] = True
 p['useOldWeightMagnitude'] = True
 p['disableWeightScaling'] = True
@@ -37,6 +37,14 @@ p['propConnect'] = 0.25
 p['initWeightMethod'] = 'guessBuono2Weights2e3p025LogNormal'
 p['kickType'] = 'spike'  # kick or spike
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
+
+# Poisson
+p['poissonLambda'] = 0.1 * Hz
+p['duration'] = 60 * second
+
+# E subpop
+
+# upCrit
 p['timeToSpike'] = 100 * ms
 p['timeAfterSpiked'] = 5000 * ms
 p['spikeInputAmplitude'] = 0.98 * nA
@@ -66,7 +74,8 @@ p['rng'] = rng
 
 JT = JercogTrainer(p)
 # JT.calculate_unit_thresh_and_gain()
-JT.set_up_network()
+# JT.set_up_network()
+JT.set_up_network_Poisson()
 JT.initialize_weight_matrices()
 JT.run_upCrit()
 JT.save_params()
@@ -87,7 +96,7 @@ if len(R.ups) > 0:
 R.calculate_voltage_histogram(removeMode=True)
 R.reshape_upstates()
 
-fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(5, 9),
+fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(16, 9),
                          gridspec_kw={'height_ratios': [3, 2, 1, 1, 1]},
                          sharex=True)
 R.plot_spike_raster(ax1[0])  # uses RNG but with a separate random seed
