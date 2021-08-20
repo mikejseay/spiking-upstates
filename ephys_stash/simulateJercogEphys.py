@@ -1,6 +1,7 @@
 from params import (paramsJercog, paramsJercogEphysOrig, paramsJercogEphysBuono, paramsJercogEphysBuono2,
                     paramsJercogEphysBuono3,
-                    paramsJercogEphysBuonoBen1, paramsJercogEphysBuonoBen2)
+                    paramsJercogEphysBuonoBen11, paramsJercogEphysBuonoBen21,
+                    paramsJercogEphysBuono22)
 from network import JercogEphysNetwork
 from results import ResultsEphys
 import matplotlib.pyplot as plt
@@ -14,10 +15,11 @@ useParams = paramsJercog.copy()
 # remove protected keys from the dict whose params are being imported
 # ephysParams = paramsJercogEphysOrig.copy()
 # ephysParams = paramsJercogEphysBuono.copy()
-ephysParams = paramsJercogEphysBuono2.copy()
+# ephysParams = paramsJercogEphysBuono2.copy()
 # ephysParams = paramsJercogEphysBuono3.copy()
-# ephysParams = paramsJercogEphysBuonoBen1.copy()
-# ephysParams = paramsJercogEphysBuonoBen2.copy()
+# ephysParams = paramsJercogEphysBuonoBen11.copy()
+# ephysParams = paramsJercogEphysBuonoBen21.copy()
+ephysParams = paramsJercogEphysBuono22.copy()
 protectedKeys = ('nUnits', 'propInh', 'duration')
 for pK in protectedKeys:
     del ephysParams[pK]
@@ -26,8 +28,9 @@ if USE_NEW_EPHYS_PARAMS:
     useParams.update(ephysParams)
 
 useParams['propInh'] = 0.5
-useParams['duration'] = 1000 * ms
+useParams['duration'] = 250 * ms
 useParams['iExtRange'] = np.linspace(0, .3, 301) * nA
+useParams['useSecondPopExc'] = True
 
 JEN = JercogEphysNetwork(useParams)
 JEN.build_classic()
@@ -39,11 +42,20 @@ R = ResultsEphys()
 R.init_from_file(JEN.saveName, JEN.p['saveFolder'])
 R.calculate_thresh_and_gain()
 
-print(R.threshExc)
-print(R.threshInh)
-print(R.gainExc)
-print(R.gainInh)
+print('excThresh:', R.threshExc)
+print('excGain:', R.gainExc)
+print('excTau:', R.p['membraneCapacitanceExc'] / R.p['gLeakExc'])
 
-fig1, ax1 = plt.subplots(2, 2, num=1)
+print('inhThresh:', R.threshInh)
+print('inhGain:', R.gainInh)
+print('inhTau:', R.p['membraneCapacitanceInh'] / R.p['gLeakInh'])
 
-R.calculate_and_plot(fig1, ax1)
+if R.p['useSecondPopExc']:
+    fig1, ax1 = plt.subplots(2, 3, num=1)
+    R.calculate_and_plot_secondExcPop(fig1, ax1)
+    print('excThresh2:', R.threshExc2)
+    print('excGain2:', R.gainExc2)
+    print('excTau2:', R.p['membraneCapacitanceExc2'] / R.p['gLeakExc2'])
+else:
+    fig1, ax1 = plt.subplots(2, 2, num=1)
+    R.calculate_and_plot(fig1, ax1)

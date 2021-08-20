@@ -689,31 +689,47 @@ class ResultsEphys(object):
         self.spikeMonExcT = npzObject['spikeMonExcT']
         self.spikeMonExcI = npzObject['spikeMonExcI']
         self.spikeMonExcC = npzObject['spikeMonExcC']
+        self.stateMonExcV = npzObject['stateMonExcV']
+        self.spikeTrainsExc = npzObject['spikeTrainsExc'][()]
+
         self.spikeMonInhT = npzObject['spikeMonInhT']
         self.spikeMonInhI = npzObject['spikeMonInhI']
         self.spikeMonInhC = npzObject['spikeMonInhC']
-        self.stateMonExcV = npzObject['stateMonExcV']
         self.stateMonInhV = npzObject['stateMonInhV']
-        self.spikeTrainsExc = npzObject['spikeTrainsExc'][()]
         self.spikeTrainsInh = npzObject['spikeTrainsInh'][()]
 
-    def init_from_network_object(self, network_object):
-        self.rID = network_object.saveName
-        self.p = network_object.p
+        if self.p['useSecondPopExc']:
+            self.spikeMonExc2T = npzObject['spikeMonExc2T']
+            self.spikeMonExc2I = npzObject['spikeMonExc2I']
+            self.spikeMonExc2C = npzObject['spikeMonExc2C']
+            self.stateMonExc2V = npzObject['stateMonExc2V']
+            self.spikeTrainsExc2 = npzObject['spikeTrainsExc2'][()]
+
+    def init_from_network_object(self, N):
+        self.rID = N.saveName
+        self.p = N.p
 
         # load results from network object
         useDType = np.single
 
-        self.spikeMonExcT = np.array(network_object.spikeMonExc.t, dtype=useDType)
-        self.spikeMonExcI = np.array(network_object.spikeMonExc.i, dtype=useDType)
-        self.spikeMonExcC = np.array(network_object.spikeMonExc.count, dtype=useDType)
-        self.spikeMonInhT = np.array(network_object.spikeMonInh.t, dtype=useDType)
-        self.spikeMonInhI = np.array(network_object.spikeMonInh.i, dtype=useDType)
-        self.spikeMonInhC = np.array(network_object.spikeMonInh.count, dtype=useDType)
-        self.stateMonExcV = np.array(network_object.stateMonExc.v / mV, dtype=useDType)
-        self.stateMonInhV = np.array(network_object.stateMonInh.v / mV, dtype=useDType)
-        self.spikeTrainsExc = np.array(network_object.spikeMonExc.spike_trains(), dtype=object)
-        self.spikeTrainsInh = np.array(network_object.spikeMonInh.spike_trains(), dtype=object)
+        self.spikeMonExcT = np.array(N.spikeMonExc.t, dtype=useDType)
+        self.spikeMonExcI = np.array(N.spikeMonExc.i, dtype=useDType)
+        self.spikeMonExcC = np.array(N.spikeMonExc.count, dtype=useDType)
+        self.stateMonExcV = np.array(N.stateMonExc.v / mV, dtype=useDType)
+        self.spikeTrainsExc = np.array(N.spikeMonExc.spike_trains(), dtype=object)
+
+        self.spikeMonInhT = np.array(N.spikeMonInh.t, dtype=useDType)
+        self.spikeMonInhI = np.array(N.spikeMonInh.i, dtype=useDType)
+        self.spikeMonInhC = np.array(N.spikeMonInh.count, dtype=useDType)
+        self.stateMonInhV = np.array(N.stateMonInh.v / mV, dtype=useDType)
+        self.spikeTrainsInh = np.array(N.spikeMonInh.spike_trains(), dtype=object)
+
+        # if self.p['useSecondPopExc']:
+        #     self.spikeMonExc2T = np.array(N.spikeMonExc2.t, dtype=useDType)
+        #     self.spikeMonExc2I = np.array(N.spikeMonExc2.i, dtype=useDType)
+        #     self.spikeMonExc2C = np.array(N.spikeMonExc2.count, dtype=useDType)
+        #     self.stateMonExc2V = np.array(N.stateMonExc2.v / mV, dtype=useDType)
+        #     self.spikeTrainsExc2 = np.array(N.spikeMonExc2.spike_trains(), dtype=object)
 
     def calculate_and_plot(self, f, ax):
         I_ext_range = self.p['iExtRange']
@@ -762,28 +778,96 @@ class ResultsEphys(object):
         f.tight_layout()
         f.subplots_adjust(top=.9)
 
-    def calculate_thresh_and_gain(self):
+    def calculate_and_plot_secondExcPop(self, f, ax):
         I_ext_range = self.p['iExtRange']
+
         ExcData = self.spikeMonExcC / self.p['duration']
+        Exc2Data = self.spikeMonExc2C / self.p['duration']
         InhData = self.spikeMonInhC / self.p['duration']
 
+        I_index_for_ISI = int(len(I_ext_range) * .9) - 1
+
+        # reconstruct time
+        stateMonT = np.arange(0, float(self.p['duration']), float(self.p['dt']))
+
+        # might be useful...
+        # ax.axhline(useThresh, color=useColor, linestyle=':')  # Threshold
+        # ax.axhline(self.p['eLeak' + unitType] / mV, color=useColor, linestyle='--')  # Resting
+
+        excColor = 'darkgreen'
+        exc2Color = 'turquoise'
+        inhColor = 'red'
+
+        useThresh = self.p['vThreshExc'] / mV
+        ax[0, 0].plot(stateMonT, self.stateMonExcV[I_index_for_ISI, :], color=excColor)
+        # ax[0, 0].vlines(self.spikeTrainsExc[()][I_index_for_ISI], useThresh, useThresh + 40, color=excColor, lw=.3)
+        ax[0, 0].vlines(self.spikeTrainsExc[I_index_for_ISI], useThresh, useThresh + 40, color=excColor, lw=.3)
+        ax[0, 0].set(xlim=(0., self.p['duration'] / second), ylabel='mV', xlabel='Time (s)')
+
+        useThresh = self.p['vThreshExc2'] / mV
+        ax[0, 1].plot(stateMonT, self.stateMonExc2V[I_index_for_ISI, :], color=exc2Color)
+        # ax[0, 1].vlines(self.spikeTrainsExc2[()][I_index_for_ISI], useThresh, useThresh + 40, color=exc2Color, lw=.3)
+        ax[0, 1].vlines(self.spikeTrainsExc2[I_index_for_ISI], useThresh, useThresh + 40, color=exc2Color, lw=.3)
+        ax[0, 1].set(xlim=(0., self.p['duration'] / second), ylabel='mV', xlabel='Time (s)')
+
+        useThresh = self.p['vThreshInh'] / mV
+        ax[0, 2].plot(stateMonT, self.stateMonInhV[I_index_for_ISI, :], color=inhColor)
+        # ax[0, 2].vlines(self.spikeTrainsInh[()][I_index_for_ISI], useThresh, useThresh + 40, color=inhColor, lw=.3)
+        ax[0, 2].vlines(self.spikeTrainsInh[I_index_for_ISI], useThresh, useThresh + 40, color=inhColor, lw=.3)
+        ax[0, 2].set(xlim=(0., self.p['duration'] / second), ylabel='mV', xlabel='Time (s)')
+
+        ax[1, 0].plot(I_ext_range * 1e9, ExcData, label='Exc', color=excColor)
+        ax[1, 0].plot(I_ext_range * 1e9, Exc2Data, label='Exc22', color=exc2Color)
+        ax[1, 0].plot(I_ext_range * 1e9, InhData, label='Inh', color=inhColor)
+        ax[1, 0].axvline(float(I_ext_range[I_index_for_ISI]) * 1e9,
+                         label='displayed value', color='grey', ls='--')
+        ax[1, 0].set_xlabel('Current (nA)')
+        ax[1, 0].set_ylabel('Firing Rate (Hz)')
+        # ax[1, 0].legend()
+
+        # ISIExc = diff(self.spikeTrainsExc[()][I_index_for_ISI])
+        # ISIInh = diff(self.spikeTrainsInh[()][I_index_for_ISI])
+        ISIExc = diff(self.spikeTrainsExc[I_index_for_ISI])
+        ISIExc2 = diff(self.spikeTrainsExc2[I_index_for_ISI])
+        ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
+        ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc', color=excColor)
+        ax[1, 1].plot(arange(1, len(ISIExc2) + 1), ISIExc2 * 1000, label='Exc2', color=exc2Color)
+        ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh', color=inhColor)
+        ax[1, 1].set_xlabel('ISI number')
+        ax[1, 1].set_ylabel('ISI (ms)')
+        ax[1, 1].legend()
+
+        f.tight_layout()
+        f.subplots_adjust(top=.9)
+
+    def calculate_thresh_and_gain(self):
+        I_ext_range = self.p['iExtRange']
+
+        ExcData = self.spikeMonExcC / self.p['duration']
         firstSpikeIndExc = np.where(ExcData)[0][0]
-        firstSpikeIndInh = np.where(InhData)[0][0]
-
         threshExc = I_ext_range[firstSpikeIndExc]
-        threshInh = I_ext_range[firstSpikeIndInh]
-
-        # gain: rise over run
         gainRiseExc = ExcData[-1] - ExcData[firstSpikeIndExc - 1]
-        gainRiseInh = InhData[-1] - InhData[firstSpikeIndInh - 1]
-
         gainRunExc = I_ext_range[-1] - I_ext_range[firstSpikeIndExc - 1]
-        gainRunInh = I_ext_range[-1] - I_ext_range[firstSpikeIndInh - 1]
-
         gainExc = gainRiseExc / gainRunExc
+
+        InhData = self.spikeMonInhC / self.p['duration']
+        firstSpikeIndInh = np.where(InhData)[0][0]
+        threshInh = I_ext_range[firstSpikeIndInh]
+        gainRiseInh = InhData[-1] - InhData[firstSpikeIndInh - 1]
+        gainRunInh = I_ext_range[-1] - I_ext_range[firstSpikeIndInh - 1]
         gainInh = gainRiseInh / gainRunInh
 
         self.threshExc = threshExc
-        self.threshInh = threshInh
         self.gainExc = gainExc
+        self.threshInh = threshInh
         self.gainInh = gainInh
+
+        if self.p['useSecondPopExc']:
+            Exc2Data = self.spikeMonExc2C / self.p['duration']
+            firstSpikeIndExc2 = np.where(Exc2Data)[0][0]
+            threshExc2 = I_ext_range[firstSpikeIndExc2]
+            gainRiseExc2 = Exc2Data[-1] - Exc2Data[firstSpikeIndExc2 - 1]
+            gainRunExc2 = I_ext_range[-1] - I_ext_range[firstSpikeIndExc2 - 1]
+            gainExc2 = gainRiseExc2 / gainRunExc2
+            self.threshExc2 = threshExc2
+            self.gainExc2 = gainExc2

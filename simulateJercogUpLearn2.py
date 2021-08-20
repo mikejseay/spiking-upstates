@@ -1,13 +1,14 @@
 from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV
 from params import paramsJercog as p
-from params import paramsJercogEphysBuono
+from params import paramsJercogEphysBuono2, paramsJercogEphysBuonoBen1, paramsJercogEphysBuonoBen2, paramsJercogEphysBuono22
 import numpy as np
 from generate import convert_kicks_to_current_series
 from trainer import JercogTrainer
 from results import Results
 
 p['useNewEphysParams'] = False
-ephysParams = paramsJercogEphysBuono.copy()
+p['useSecondPopExc'] = False
+ephysParams = paramsJercogEphysBuono22.copy()
 
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
@@ -37,18 +38,25 @@ p['propConnect'] = 0.25
 p['setUpFRExc'] = 5 * Hz
 p['setUpFRInh'] = 14 * Hz
 p['tauUpFRTrials'] = 1
-p['useRule'] = 'cross-homeo-pre-scalar-homeo'  # cross-homeo or balance
-rngSeed = None
-p['nameSuffix'] = 'bigNet'
+p['useRule'] = 'cross-homeo-pre-scalar-homeo-reMean'  # cross-homeo or balance
+# p['betaAdaptExc'] = 0 * nA * ms
+# p['betaAdaptInh'] = 0 * nA * ms
+rngSeed = 3
+p['allowAutapses'] = False
+p['nameSuffix'] = 'reMean'
 # cross-homeo-scalar and cross-homeo-scalar-homeo are the new ones
-p['saveTermsSeparately'] = True
+p['saveTermsSeparately'] = False
 # defaultEqual, defaultNormal, defaultNormalScaled, defaultUniform,
 # randomUniform, randomUniformMid, randomUniformLow, randomUniformSaray, randomUniformSarayMid, randomUniformSarayHigh
 
-# p['initWeightMethod'] = 'seed' + str(rngSeed)
-# p['initWeightMethod'] = 'guessGoodWeights2e3p025LogNormal'
+p['initWeightMethod'] = 'seed' + str(rngSeed)
+# p['initWeightMethod'] = 'guessLowWeights2e3p025LogNormal2'
+# p['initWeightMethod'] = 'guessBuono2Weights2e3p025LogNormal2'
 # p['initWeightMethod'] = 'guessGoodWeights2e3p1LogNormal'
-p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025LogNormal'
+# p['initWeightMethod'] = 'guessGoodWeights2e3p025'
+# p['initWeightMethod'] = 'guessGoodWeights2e3p025Normal'
+# p['initWeightMethod'] = 'guessGoodWeights2e3p025LogNormal'
+# p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessHighActivityWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessUpperLeftWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessLowerRightWeights2e3p025LogNormal'
@@ -77,7 +85,10 @@ p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
 p['timeToSpike'] = 100 * ms
 p['timeAfterSpiked'] = 1400 * ms
-p['spikeInputAmplitude'] = 0.98 * nA
+if p['useNewEphysParams']:
+    p['spikeInputAmplitude'] = 0.49  # nA
+else:
+    p['spikeInputAmplitude'] = 0.98  # nA
 
 if p['useRule'][:5] == 'cross' or p['useRule'] == 'homeo':
     p['alpha1'] = 0.002 * pA / Hz / p['propConnect']  # 0.005

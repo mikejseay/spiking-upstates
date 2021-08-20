@@ -99,12 +99,27 @@ def determine_drift_rates(R, startTrialInd=1000, endTrialInd=-1):
     R.driftRateII = driftRateIIRaw / (R.p['alpha1'] / second / pA)
 
 
-def FR_scatter(R, startTrialInd=0, endTrialInd=-1):
+def FR_scatter(R, startTrialInd=0, endTrialInd=-1, removeOutliers=False):
     # goal: scatter plot the average E firing rate vs. I firing rate for each trial
 
+    if removeOutliers:
+        sd_thresh = 3
+        a = R.trialUpFRExc[startTrialInd:endTrialInd]
+        b = R.trialUpFRInh[startTrialInd:endTrialInd]
+        c = np.sqrt(a ** 2 + b ** 2)
+        c_mean = np.nanmean(c)
+        c_std = np.nanstd(c)
+        c_outlying = np.logical_or(c > c_mean + sd_thresh * c_std, c < c_mean - sd_thresh * c_std)
+        xData = a[~c_outlying]
+        yData = b[~c_outlying]
+    else:
+        xData = R.trialUpFRExc[startTrialInd:endTrialInd]
+        yData = R.trialUpFRInh[startTrialInd:endTrialInd]
+
+    zData = np.arange(xData.size) + 2
+
     f, ax = plt.subplots()
-    s = ax.scatter(R.trialUpFRExc[startTrialInd:endTrialInd], R.trialUpFRInh[startTrialInd:endTrialInd],
-                   s=3, c=np.arange(R.trialUpFRExc[startTrialInd:endTrialInd].size) + 2, cmap=plt.cm.viridis, alpha=0.5)
+    s = ax.scatter(xData, yData, s=3, c=zData, cmap=plt.cm.viridis, alpha=0.5)
     # ax.plot(R.trialUpFRExc, R.trialUpFRInh, color='k', alpha=0.1)
     ax.hlines(R.p['setUpFRInh'] / Hz, ax.get_xlim()[0], ax.get_xlim()[1], linestyles='dotted')
     ax.vlines(R.p['setUpFRExc'] / Hz, ax.get_ylim()[0], ax.get_ylim()[1], linestyles='dotted')
@@ -115,11 +130,25 @@ def FR_scatter(R, startTrialInd=0, endTrialInd=-1):
     cb.ax.set_ylabel('Trial Index', rotation=270)
 
 
-def FR_hist2d(R, startTrialInd=0, endTrialInd=-1):
+def FR_hist2d(R, startTrialInd=0, endTrialInd=-1, removeOutliers=False):
     # goal: 2d hist of the average E firing rate vs. I firing rate for each trial
 
+    if removeOutliers:
+        sd_thresh = 3
+        a = R.trialUpFRExc[startTrialInd:endTrialInd]
+        b = R.trialUpFRInh[startTrialInd:endTrialInd]
+        c = np.sqrt(a ** 2 + b ** 2)
+        c_mean = np.nanmean(c)
+        c_std = np.nanstd(c)
+        c_outlying = np.logical_or(c > c_mean + sd_thresh * c_std, c < c_mean - sd_thresh * c_std)
+        xData = a[~c_outlying]
+        yData = b[~c_outlying]
+    else:
+        xData = R.trialUpFRExc[startTrialInd:endTrialInd]
+        yData = R.trialUpFRInh[startTrialInd:endTrialInd]
+
     f, ax = plt.subplots()
-    h = ax.hist2d(R.trialUpFRExc[startTrialInd:endTrialInd], R.trialUpFRInh[startTrialInd:endTrialInd], bins=50)
+    h = ax.hist2d(xData, yData, bins=50)
     # ax.plot(R.trialUpFRExc, R.trialUpFRInh, color='k', alpha=0.1)
     ax.hlines(R.p['setUpFRInh'] / Hz, ax.get_xlim()[0], ax.get_xlim()[1], color='white', linestyles='dotted')
     ax.vlines(R.p['setUpFRExc'] / Hz, ax.get_ylim()[0], ax.get_ylim()[1], color='white', linestyles='dotted')

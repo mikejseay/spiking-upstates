@@ -22,6 +22,7 @@ p['recordMovieVariables'] = False
 p['downSampleVoltageTo'] = 1 * ms
 p['useNewEphysParams'] = True
 ephysParams = paramsJercogEphysBuono2.copy()
+p['useSecondPopExc'] = False
 
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
@@ -39,7 +40,7 @@ p['kickType'] = 'spike'  # kick or spike
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
 p['timeToSpike'] = 100 * ms
 p['timeAfterSpiked'] = 5000 * ms
-p['spikeInputAmplitude'] = 0.98 * nA
+p['spikeInputAmplitude'] = 0.4  # in nA
 
 # params not important unless using "kick" instead of "spike"
 p['propKicked'] = 0.1

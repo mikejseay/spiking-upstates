@@ -14,7 +14,7 @@ can ALSO set up certain classic types of experiments for characterizing a networ
 """
 
 from brian2 import start_scope, NeuronGroup, Synapses, SpikeMonitor, StateMonitor, Network, defaultclock, mV, ms, volt, \
-    PoissonGroup, SpikeGeneratorGroup, Mohm, second, nS, uS, TimedArray, Hz, nA, pA
+    PoissonGroup, SpikeGeneratorGroup, Mohm, second, nS, uS, TimedArray, Hz, nA, pA, amp
 import dill
 from datetime import datetime
 import os
@@ -499,6 +499,23 @@ class JercogNetwork(object):
         unitsInh.Cm = self.p['membraneCapacitanceInh']
         unitsInh.gl = self.p['gLeakInh']
 
+        if 'useSecondPopExc' not in self.p:
+            self.p['useSecondPopExc'] = False
+
+        if self.p['useSecondPopExc']:
+            startInd = self.p['startIndSecondPopExc']
+            endInd = startInd + self.p['nUnitsSecondPopExc']
+
+            unitsExc2 = unitsExc[startInd:endInd]
+
+            unitsExc2.v = self.p['eLeakExc2']
+            unitsExc2.vReset = self.p['vResetExc2']
+            unitsExc2.vThresh = self.p['vThreshExc2']
+            unitsExc2.betaAdapt = self.p['betaAdaptExc2']
+            unitsExc2.eLeak = self.p['eLeakExc2']
+            unitsExc2.Cm = self.p['membraneCapacitanceExc2']
+            unitsExc2.gl = self.p['gLeakExc2']
+
         self.unitsExc = unitsExc
         self.unitsInh = unitsInh
         self.N.add(unitsExc)
@@ -576,6 +593,20 @@ class JercogNetwork(object):
         unitsInh.eLeak = self.p['eLeakInh']
         unitsInh.Cm = self.p['membraneCapacitanceInh']
         unitsInh.gl = self.p['gLeakInh']
+
+        if self.p['useSecondPopExc']:
+            startInd = self.p['startIndSecondPopExc']
+            endInd = startInd + self.p['nUnitsSecondPopExc']
+
+            unitsExc2 = unitsExc[startInd:endInd]
+
+            unitsExc2.v = self.p['eLeakExc2']
+            unitsExc2.vReset = self.p['vResetExc2']
+            unitsExc2.vThresh = self.p['vThreshExc2']
+            unitsExc2.betaAdapt = self.p['betaAdaptExc2']
+            unitsExc2.eLeak = self.p['eLeakExc2']
+            unitsExc2.Cm = self.p['membraneCapacitanceExc2']
+            unitsExc2.gl = self.p['gLeakExc2']
 
         self.unitsExc = unitsExc
         self.unitsInh = unitsInh
@@ -1033,7 +1064,7 @@ class JercogNetwork(object):
         #     synapsesEE.connect('i!=j', p=self.p['propConnect'])
         # else:
         preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
-                                                              allowAutapses=False, rng=self.p['rng'])
+                                                              allowAutapses=self.p['allowAutapses'], rng=self.p['rng'])
         synapsesEE.connect(i=preInds, j=postInds)
         self.preEE = preInds
         self.posEE = postInds
@@ -1084,7 +1115,7 @@ class JercogNetwork(object):
         #     synapsesII.connect('i!=j', p=self.p['propConnect'])
         # else:
         preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
-                                                              allowAutapses=False, rng=self.p['rng'])
+                                                              allowAutapses=self.p['allowAutapses'], rng=self.p['rng'])
         synapsesII.connect(i=preInds, j=postInds)
         self.preII = preInds
         self.posII = postInds
@@ -1623,7 +1654,7 @@ class JercogNetwork(object):
         self.p['iKickRecorded'] = fixed_current_series(0, self.p['duration'], self.p['dt'])
 
     def prepare_upCrit_experiment2(self, minUnits=170, maxUnits=180, unitSpacing=5, timeSpacing=3000 * ms,
-                                   startTime=100 * ms, currentAmp=0.98 * nA):
+                                   startTime=100 * ms, currentAmp=0.98):
 
         tauRiseE = self.p['tauRiseExc']
 
@@ -1650,7 +1681,7 @@ class JercogNetwork(object):
         feedforwardUpExc = Synapses(
             source=Uppers,
             target=self.unitsExc,
-            on_pre='uExt_post += 0.98 * nA'
+            on_pre='uExt_post += ' + str(currentAmp) + ' * nA'
             # on_pre='uE_post += ' + str(currentAmp / nA) + ' * nA'
             #  + str(critExc / (100 * Mohm) / tauRiseE * ms),
         )
@@ -2939,7 +2970,7 @@ class JercogEphysNetwork(object):
         unitModel = '''
         dv/dt = (gl * (eLeak - v) - iAdapt + iExt) / Cm: volt (unless refractory)
         diAdapt/dt = -iAdapt / tauAdapt : amp
-        
+
         eLeak : volt
         vReset : volt
         vThresh : volt
@@ -2967,6 +2998,7 @@ class JercogEphysNetwork(object):
             refractory=self.p['refractoryPeriodExc'],
             clock=defaultclock,
         )
+
         unitsInh = NeuronGroup(
             N=numIValues,
             model=unitModel,
@@ -2981,16 +3013,6 @@ class JercogEphysNetwork(object):
         self.p['nExc'] = self.p['nUnits'] - self.p['nInh']
         self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
         self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
-
-        # just gonna comment this because it doesn't get used here but will be useful
-
-        # vTauExc = self.p['membraneCapacitanceExc'] / self.p['gLeakExc']
-        # vTauInh = self.p['membraneCapacitanceInh'] / self.p['gLeakInh']
-
-        # unitsExc.jE = vTauExc * self.p['jEE'] / self.p['nIncExc'] / ms
-        # unitsExc.jI = vTauExc * self.p['jEI'] / self.p['nIncInh'] / ms
-        # unitsInh.jE = vTauInh * self.p['jIE'] / self.p['nIncExc'] / ms
-        # unitsInh.jI = vTauInh * self.p['jII'] / self.p['nIncInh'] / ms
 
         unitsExc.v = self.p['eLeakExc']
         unitsExc.vReset = self.p['vResetExc']
@@ -3013,6 +3035,27 @@ class JercogEphysNetwork(object):
         self.unitsExc = unitsExc
         self.unitsInh = unitsInh
         self.N.add(unitsExc, unitsInh)
+
+        if self.p['useSecondPopExc']:
+            unitsExc2 = NeuronGroup(
+                N=numIValues,
+                model=unitModel,
+                method=self.p['updateMethod'],
+                threshold=threshCode,
+                reset=resetCode,
+                refractory=self.p['refractoryPeriodExc2'],
+                clock=defaultclock,
+            )
+            unitsExc2.v = self.p['eLeakExc2']
+            unitsExc2.vReset = self.p['vResetExc2']
+            unitsExc2.vThresh = self.p['vThreshExc2']
+            unitsExc2.betaAdapt = self.p['betaAdaptExc2']
+            unitsExc2.eLeak = self.p['eLeakExc2']
+            unitsExc2.Cm = self.p['membraneCapacitanceExc2']
+            unitsExc2.gl = self.p['gLeakExc2']
+            unitsExc2.iExt = self.p['iExtRange']
+            self.unitsExc2 = unitsExc2
+            self.N.add(unitsExc2)
 
     def initialize_units_synaptic(self):
         unitModel = '''
@@ -3104,10 +3147,17 @@ class JercogEphysNetwork(object):
         stateMonInh = StateMonitor(self.unitsInh, self.p['recordStateVariables'], record=True)
 
         self.spikeMonExc = spikeMonExc
-        self.spikeMonInh = spikeMonInh
         self.stateMonExc = stateMonExc
+        self.spikeMonInh = spikeMonInh
         self.stateMonInh = stateMonInh
         self.N.add(spikeMonExc, spikeMonInh, stateMonExc, stateMonInh)
+
+        if self.p['useSecondPopExc']:
+            spikeMonExc2 = SpikeMonitor(self.unitsExc2)
+            stateMonExc2 = StateMonitor(self.unitsExc2, self.p['recordStateVariables'], record=True)
+            self.spikeMonExc2 = spikeMonExc2
+            self.stateMonExc2 = stateMonExc2
+            self.N.add(spikeMonExc2, stateMonExc2)
 
     def build_classic(self):
         self.initialize_network()
@@ -3126,24 +3176,51 @@ class JercogEphysNetwork(object):
     def save_results(self):
         useDType = np.single
 
-        spikeMonExcT = np.array(self.spikeMonExc.t, dtype=useDType)
-        spikeMonExcI = np.array(self.spikeMonExc.i, dtype=useDType)
-        spikeMonExcC = np.array(self.spikeMonExc.count, dtype=useDType)
-        spikeMonInhT = np.array(self.spikeMonInh.t, dtype=useDType)
-        spikeMonInhI = np.array(self.spikeMonInh.i, dtype=useDType)
-        spikeMonInhC = np.array(self.spikeMonInh.count, dtype=useDType)
-        stateMonExcV = np.array(self.stateMonExc.v / mV, dtype=useDType)
-        stateMonInhV = np.array(self.stateMonInh.v / mV, dtype=useDType)
-        spikeTrainsExc = np.array(self.spikeMonExc.spike_trains(), dtype=object)
-        spikeTrainsInh = np.array(self.spikeMonInh.spike_trains(), dtype=object)
-
         savePath = os.path.join(self.p['saveFolder'],
                                 self.saveName + '_results.npz')
 
-        np.savez(savePath, spikeMonExcT=spikeMonExcT, spikeMonExcI=spikeMonExcI, spikeMonInhT=spikeMonInhT,
-                 spikeMonInhI=spikeMonInhI, stateMonExcV=stateMonExcV, stateMonInhV=stateMonInhV,
-                 spikeMonExcC=spikeMonExcC, spikeMonInhC=spikeMonInhC,
-                 spikeTrainsExc=spikeTrainsExc, spikeTrainsInh=spikeTrainsInh)
+        spikeMonExcT = np.array(self.spikeMonExc.t, dtype=useDType)
+        spikeMonExcI = np.array(self.spikeMonExc.i, dtype=useDType)
+        spikeMonExcC = np.array(self.spikeMonExc.count, dtype=useDType)
+        stateMonExcV = np.array(self.stateMonExc.v / mV, dtype=useDType)
+        spikeTrainsExc = np.array(self.spikeMonExc.spike_trains(), dtype=object)
+
+        spikeMonInhT = np.array(self.spikeMonInh.t, dtype=useDType)
+        spikeMonInhI = np.array(self.spikeMonInh.i, dtype=useDType)
+        spikeMonInhC = np.array(self.spikeMonInh.count, dtype=useDType)
+        stateMonInhV = np.array(self.stateMonInh.v / mV, dtype=useDType)
+        spikeTrainsInh = np.array(self.spikeMonInh.spike_trains(), dtype=object)
+
+        saveDict = {
+            'spikeMonExcT': spikeMonExcT,
+            'spikeMonExcI': spikeMonExcI,
+            'spikeMonExcC': spikeMonExcC,
+            'stateMonExcV': stateMonExcV,
+            'spikeTrainsExc': spikeTrainsExc,
+
+            'spikeMonInhT': spikeMonInhT,
+            'spikeMonInhI': spikeMonInhI,
+            'spikeMonInhC': spikeMonInhC,
+            'stateMonInhV': stateMonInhV,
+            'spikeTrainsInh': spikeTrainsInh,
+        }
+
+        if self.p['useSecondPopExc']:
+            spikeMonExc2T = np.array(self.spikeMonExc2.t, dtype=useDType)
+            spikeMonExc2I = np.array(self.spikeMonExc2.i, dtype=useDType)
+            spikeMonExc2C = np.array(self.spikeMonExc2.count, dtype=useDType)
+            stateMonExc2V = np.array(self.stateMonExc2.v / mV, dtype=useDType)
+            spikeTrainsExc2 = np.array(self.spikeMonExc2.spike_trains(), dtype=object)
+            saveDictAdd = {
+                'spikeMonExc2T': spikeMonExc2T,
+                'spikeMonExc2I': spikeMonExc2I,
+                'spikeMonExc2C': spikeMonExc2C,
+                'stateMonExc2V': stateMonExc2V,
+                'spikeTrainsExc2': spikeTrainsExc2,
+            }
+            saveDict.update(saveDictAdd)
+
+        np.savez(savePath, **saveDict)
 
     def save_params(self):
         savePath = os.path.join(self.p['saveFolder'],
