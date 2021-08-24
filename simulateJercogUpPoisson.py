@@ -1,7 +1,8 @@
 from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV, second
 from params import paramsJercog as p
 from params import (paramsJercogEphysBuono2, paramsJercogEphysBuonoBen1, paramsJercogEphysBuonoBen2,
-                    paramsJercogEphysBuono22)
+                    paramsJercogEphysBuono22, paramsJercogEphysBuono4, paramsJercogEphysBuono5, paramsJercogEphysBuono6,
+                    paramsJercogBen)
 import numpy as np
 from generate import convert_kicks_to_current_series
 from trainer import JercogTrainer
@@ -9,7 +10,7 @@ from results import Results
 import matplotlib.pyplot as plt
 
 p['useNewEphysParams'] = True
-ephysParams = paramsJercogEphysBuono22.copy()
+ephysParams = paramsJercogEphysBuono6.copy()
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
     protectedKeys = ('nUnits', 'propInh', 'duration')
@@ -21,7 +22,7 @@ rngSeed = None
 defaultclock.dt = p['dt']
 
 p['useRule'] = 'upPoisson'
-p['nameSuffix'] = 'test'
+p['nameSuffix'] = ''
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/upPoisson'
 p['saveWithDate'] = True
 p['useOldWeightMagnitude'] = True
@@ -38,9 +39,11 @@ p['downSampleVoltageTo'] = 1 * ms
 
 # simulation params
 p['nUnits'] = 2e3
-p['propConnect'] = 0.25
+p['propConnect'] = 0.5
+p['allowAutapses'] = False
 
-p['initWeightMethod'] = 'guessBuono2Weights2e3p025LogNormal'
+# p['initWeightMethod'] = 'guessGoodWeights2e3p025LogNormal'
+p['initWeightMethod'] = 'guessBuono6Weights2e3p05Beta10'
 # p['initWeightMethod'] = 'guessLowWeights2e3p025LogNormal2'
 p['kickType'] = 'spike'  # kick or spike
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
@@ -50,7 +53,7 @@ p['nUnitsSecondPopExc'] = int(np.round(0.05 * p['nUnits']))
 p['startIndSecondPopExc'] = p['nUnitsToSpike']
 
 # Poisson
-p['poissonLambda'] = 0.1 * Hz
+p['poissonLambda'] = 0.2 * Hz
 p['duration'] = 60 * second
 
 # E subpop
@@ -58,7 +61,7 @@ p['duration'] = 60 * second
 # upCrit
 p['timeToSpike'] = 100 * ms
 p['timeAfterSpiked'] = 5000 * ms
-p['spikeInputAmplitude'] = 0.49
+p['spikeInputAmplitude'] = 0.94
 
 # params not important unless using "kick" instead of "spike"
 p['propKicked'] = 0.1

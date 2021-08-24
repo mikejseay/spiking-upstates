@@ -3,14 +3,16 @@
   <component name="ChangeListManager">
     <list default="true" id="c50fe96e-73b6-429f-aab6-173e82858304" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/analysis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ephys_stash/simulateJercogEphys.py" beforeDir="false" afterPath="$PROJECT_DIR$/ephys_stash/simulateJercogEphys.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/generate.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/spiking-upstates-compare.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/spiking-upstates-compare.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebooks/up-poisson-plotting.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/up-poisson-plotting.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/params.py" beforeDir="false" afterPath="$PROJECT_DIR$/params.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/results.py" beforeDir="false" afterPath="$PROJECT_DIR$/results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateJercogUpCrit.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpCrit.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulateJercogUpCrit2.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpCrit2.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateJercogUpLearn.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpLearn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulateJercogUpLearn2.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpLearn2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulateJercogUpPoisson.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpPoisson.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainer.py" afterDir="false" />
@@ -342,43 +344,44 @@
       <screen x="1920" y="0" width="1920" height="1040" />
     </state>
     <state x="2361" y="273" key="#xdebugger.XInspectDialog/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1628098614355" />
-    <state x="495" y="398" width="960" height="442" key="#xdebugger.evaluate" timestamp="1629430655446">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state x="1951" y="225" width="960" height="442" key="#xdebugger.evaluate" timestamp="1629833594642">
+      <screen x="1920" y="0" width="1920" height="1040" />
     </state>
-    <state x="1951" y="225" width="960" height="442" key="#xdebugger.evaluate/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629138191055" />
+    <state x="1951" y="225" width="960" height="442" key="#xdebugger.evaluate/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629833594642" />
     <state x="274" y="210" width="954" height="652" key="#xdebugger.evaluate/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1629309263128" />
     <state x="495" y="398" key="#xdebugger.evaluate/1920.0.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1629430655446" />
-    <state width="1921" height="300" key="GridCell.Tab.0.bottom" timestamp="1629430662221">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="1921" height="364" key="GridCell.Tab.0.bottom" timestamp="1629833597012">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="291" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629224061316" />
+    <state width="1921" height="364" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629833597012" />
     <state width="1921" height="288" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1629321693706" />
     <state width="1921" height="300" key="GridCell.Tab.0.bottom/1920.0.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1629430662221" />
-    <state width="1921" height="300" key="GridCell.Tab.0.center" timestamp="1629430662221">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="1921" height="364" key="GridCell.Tab.0.center" timestamp="1629833597012">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="291" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629224061316" />
+    <state width="1921" height="364" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629833597012" />
     <state width="1921" height="288" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1629321693706" />
     <state width="1921" height="300" key="GridCell.Tab.0.center/1920.0.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1629430662221" />
-    <state width="1921" height="300" key="GridCell.Tab.0.left" timestamp="1629430662221">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="1921" height="364" key="GridCell.Tab.0.left" timestamp="1629833597012">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="291" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629224061315" />
+    <state width="1921" height="364" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629833597012" />
     <state width="1921" height="288" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1629321693706" />
     <state width="1921" height="300" key="GridCell.Tab.0.left/1920.0.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1629430662221" />
-    <state width="1921" height="300" key="GridCell.Tab.0.right" timestamp="1629430662221">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="1921" height="364" key="GridCell.Tab.0.right" timestamp="1629833597012">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="291" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629224061316" />
+    <state width="1921" height="364" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629833597012" />
     <state width="1921" height="288" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1629321693706" />
     <state width="1921" height="300" key="GridCell.Tab.0.right/1920.0.1920.1080/0.0.1920.1080@0.0.1920.1080" timestamp="1629430662221" />
     <state width="968" height="528" key="XDebugger.FullValuePopup" timestamp="1628186223715">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="968" height="528" key="XDebugger.FullValuePopup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628186223715" />
-    <state x="2689" y="437" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1623777008648">
-      <screen x="1920" y="0" width="1920" height="1040" />
+    <state x="769" y="437" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2" timestamp="1629757095224">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
+    <state x="769" y="437" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629757095224" />
     <state x="2689" y="437" key="com.intellij.openapi.vcs.update.UpdateOrStatusOptionsDialogupdate-v2/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1623777008648" />
     <state x="2451" y="256" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1624035531761">
       <screen x="1920" y="0" width="1920" height="1040" />
@@ -389,17 +392,17 @@
     </state>
     <state x="943" y="130" width="607" height="804" key="find.popup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628016156705" />
     <state x="943" y="130" width="607" height="804" key="find.popup/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1628012512311" />
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1628810049625">
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1629748396699">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1628810049625" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1629748396699" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/results.py</url>
-          <line>639</line>
+          <line>643</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -439,7 +442,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/results.py</url>
-          <line>778</line>
+          <line>782</line>
           <option name="timeStamp" value="175" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -474,7 +477,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2181</line>
+          <line>2430</line>
           <option name="timeStamp" value="325" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -484,93 +487,118 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2568</line>
+          <line>2828</line>
           <option name="timeStamp" value="357" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2387</line>
+          <line>2640</line>
           <option name="timeStamp" value="365" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2393</line>
+          <line>2647</line>
           <option name="timeStamp" value="366" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2134</line>
+          <line>2383</line>
           <option name="timeStamp" value="380" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>694</line>
+          <line>847</line>
           <option name="timeStamp" value="382" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/simulateJercogUpLearn2.py</url>
-          <line>159</line>
-          <option name="timeStamp" value="412" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>999</line>
+          <line>1176</line>
           <option name="timeStamp" value="415" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1090</line>
+          <line>1269</line>
           <option name="timeStamp" value="425" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1196</line>
+          <line>1381</line>
           <option name="timeStamp" value="427" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>323</line>
+          <line>330</line>
           <option name="timeStamp" value="429" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2434</line>
+          <line>2688</line>
           <option name="timeStamp" value="459" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2297</line>
+          <line>2548</line>
           <option name="timeStamp" value="460" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2423</line>
+          <line>2677</line>
           <option name="timeStamp" value="461" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2426</line>
+          <line>2680</line>
           <option name="timeStamp" value="462" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2429</line>
+          <line>2683</line>
           <option name="timeStamp" value="463" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2432</line>
+          <line>2686</line>
           <option name="timeStamp" value="464" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1318</line>
+          <line>1509</line>
           <option name="timeStamp" value="468" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1311</line>
+          <line>1502</line>
           <option name="timeStamp" value="469" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/trainer.py</url>
+          <line>670</line>
+          <option name="timeStamp" value="478" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/network.py</url>
+          <line>1013</line>
+          <option name="timeStamp" value="479" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/network.py</url>
+          <line>1070</line>
+          <option name="timeStamp" value="480" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/trainer.py</url>
+          <line>2745</line>
+          <option name="timeStamp" value="482" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/trainer.py</url>
+          <line>553</line>
+          <option name="timeStamp" value="483" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/simulateJercogUpLearn2.py</url>
+          <line>156</line>
+          <option name="timeStamp" value="486" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -11,7 +11,7 @@ import dill
 import pickle
 import os
 from matplotlib.backends.backend_pdf import PdfPages
-from generate import adjacency_matrix_from_flat_inds, weight_matrix_from_flat_inds_weights, normal_positive_weights
+from generate import adjacency_matrix_from_flat_inds, weight_matrix_from_flat_inds_weights, norm_weights
 
 defaultclock.dt = p['dt']
 

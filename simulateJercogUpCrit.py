@@ -4,7 +4,7 @@ from params import paramsJercogEphysBuono
 from network import JercogNetwork
 from results import Results
 import matplotlib.pyplot as plt
-from generate import normal_positive_weights
+from generate import norm_weights
 
 # # for using Brian2GENN
 # USE_BRIAN2GENN = False

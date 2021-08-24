@@ -183,7 +183,7 @@ def generate_adjacency_indices_between(nUnitsPre, nUnitsPost, pConn, rng=None):
     return preInds, postInds
 
 
-def normal_positive_weights(nConnections, mean, sd, rng=None):
+def norm_weights(nConnections, mean, sd, rng=None):
     """ given adjacency indices preInds and postinds, generate weight matrix w
     from a random normal distribution with mean and sd.
     clip negative weights to be 0.
@@ -198,7 +198,7 @@ def normal_positive_weights(nConnections, mean, sd, rng=None):
     return weights
 
 
-def lognormal_positive_weights(nConnections, mean=0, sd=0.75, rng=None):
+def lognorm_weights(nConnections, mean=0, sd=0.75, rng=None):
     """ given adjacency indices preInds and postinds, generate weight matrix w
     from a random normal distribution with mean and sd.
     clip negative weights to be 0.

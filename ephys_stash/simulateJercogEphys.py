@@ -1,7 +1,7 @@
 from params import (paramsJercog, paramsJercogEphysOrig, paramsJercogEphysBuono, paramsJercogEphysBuono2,
-                    paramsJercogEphysBuono3,
+                    paramsJercogEphysBuono3, paramsJercogEphysBuono4, paramsJercogEphysBuono5, paramsJercogEphysBuono6,
                     paramsJercogEphysBuonoBen11, paramsJercogEphysBuonoBen21,
-                    paramsJercogEphysBuono22)
+                    paramsJercogEphysBuono22, paramsJercogBen)
 from network import JercogEphysNetwork
 from results import ResultsEphys
 import matplotlib.pyplot as plt
@@ -14,12 +14,14 @@ useParams = paramsJercog.copy()
 
 # remove protected keys from the dict whose params are being imported
 # ephysParams = paramsJercogEphysOrig.copy()
+# ephysParams = paramsJercogBen.copy()
 # ephysParams = paramsJercogEphysBuono.copy()
 # ephysParams = paramsJercogEphysBuono2.copy()
 # ephysParams = paramsJercogEphysBuono3.copy()
+ephysParams = paramsJercogEphysBuono6.copy()
 # ephysParams = paramsJercogEphysBuonoBen11.copy()
 # ephysParams = paramsJercogEphysBuonoBen21.copy()
-ephysParams = paramsJercogEphysBuono22.copy()
+# ephysParams = paramsJercogEphysBuono22.copy()
 protectedKeys = ('nUnits', 'propInh', 'duration')
 for pK in protectedKeys:
     del ephysParams[pK]

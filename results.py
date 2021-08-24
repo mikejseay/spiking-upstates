@@ -168,13 +168,13 @@ class Results(object):
         self.avgFRExcUnits = spikesPerUnitExc / self.p['duration'] / second
         self.avgFRInhUnits = spikesPerUnitInh / self.p['duration'] / second
 
-    def calculate_voltage_histogram(self, removeMode=False, useAllRecordedUnits=False):
+    def calculate_voltage_histogram(self, removeMode=False, useAllRecordedUnits=False, useExcUnits=0, useInhUnits=0):
         if useAllRecordedUnits:
             voltageNumpyExc = self.stateMonExcV[:].ravel()
             voltageNumpyInh = self.stateMonInhV[:].ravel()
         else:
-            voltageNumpyExc = self.stateMonExcV[0, :]
-            voltageNumpyInh = self.stateMonInhV[0, :]
+            voltageNumpyExc = self.stateMonExcV[useExcUnits, :]
+            voltageNumpyInh = self.stateMonInhV[useInhUnits, :]
 
         if removeMode:
             voltageNumpyExcMode, _ = mode(voltageNumpyExc)
@@ -499,10 +499,14 @@ class Results(object):
             yExc = self.spikeMonExcI
             xInh = self.spikeMonInhT
             yInh = self.p['nExc'] + self.spikeMonInhI
+            yLims = (0, self.p['nUnits'])
 
         ax.scatter(xExc, yExc, c='g', s=1, marker='.', linewidths=0)
         ax.scatter(xInh, yInh, c='r', s=1, marker='.', linewidths=0)
         ax.set(xlim=(0., self.p['duration'] / second), ylim=yLims, ylabel='neuron index')  # ylim=(0, self.p['nUnits']),
+
+        if 'upPoissonTimes' in self.p:
+            ax.vlines(self.p['upPoissonTimes'], *ax.get_ylim(), color='k', linestyles='--')
 
     def plot_firing_rate(self, ax):
         ax.plot(self.histCenters[:self.FRExc.size], self.FRExc, label='Exc', color='green', alpha=0.5)

@@ -19,7 +19,7 @@ import dill
 from datetime import datetime
 import os
 from generate import set_spikes_from_time_varying_rate, fixed_current_series, \
-    generate_adjacency_indices_within, generate_adjacency_indices_between, normal_positive_weights, poisson_single
+    generate_adjacency_indices_within, generate_adjacency_indices_between, norm_weights, poisson_single
 from results import Results
 import numpy as np
 
@@ -1704,7 +1704,7 @@ class JercogNetwork(object):
             indices.extend(list(range(spikeUnits)))
             times.extend([float(kickTime), ] * spikeUnits)
 
-        test = 0
+        self.p['upPoissonTimes'] = kickTimes
 
         Uppers = SpikeGeneratorGroup(spikeUnits, np.array(indices), np.array(times) * second)
 
@@ -2402,7 +2402,7 @@ class DestexheNetwork(object):
         preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
                                                               allowAutapses=False, rng=self.p['rng'])
         synapsesEE.connect(i=preInds, j=postInds)
-        weights = normal_positive_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
+        weights = norm_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesEE.wSyn = weights
         self.preInds_EE = preInds
         self.postInds_EE = postInds
@@ -2418,7 +2418,7 @@ class DestexheNetwork(object):
         preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'],
                                                                rng=self.p['rng'])
         synapsesIE.connect(i=preInds, j=postInds)
-        weights = normal_positive_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
+        weights = norm_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesIE.wSyn = weights
         self.preInds_IE = preInds
         self.postInds_IE = postInds
@@ -2434,7 +2434,7 @@ class DestexheNetwork(object):
         preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'],
                                                                rng=self.p['rng'])
         synapsesEI.connect(i=preInds, j=postInds)
-        weights = normal_positive_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
+        weights = norm_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesEI.wSyn = weights
         self.preInds_EI = preInds
         self.postInds_EI = postInds
@@ -2450,7 +2450,7 @@ class DestexheNetwork(object):
         preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
                                                               allowAutapses=False, rng=self.p['rng'])
         synapsesII.connect(i=preInds, j=postInds)
-        weights = normal_positive_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
+        weights = norm_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesII.wSyn = weights
         self.preInds_II = preInds
         self.postInds_II = postInds

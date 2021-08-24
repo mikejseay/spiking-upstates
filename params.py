@@ -95,6 +95,102 @@ paramsJercog = {
 paramsJercog['nIncInh'] = int(paramsJercog['propInh'] * paramsJercog['nUnits'])
 paramsJercog['nIncExc'] = paramsJercog['nUnits'] - paramsJercog['nIncInh']
 
+paramsJercogBen = {
+    # save / figs
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/',
+    'simName': 'classicJercog',
+    'paramSet': 'classicJercog',
+    'saveWithDate': True,
+
+    # global sim params
+    'dt': 0.1 * ms,
+    'duration': 10 * second,
+    'updateMethod': 'euler',
+    'reportType': 'stdout',
+    'reportPeriod': 10 * second,
+    'doProfile': False,
+
+    # recording parameters
+    'propSpikemon': 1,
+    'recordStateVariables': ['v', ],  # ['v', 'sE', 'sI', 'uE', 'uI'],
+    'indsRecordStateExc': [0, ],
+    'indsRecordStateInh': [0, ],
+
+    # network params
+    'nUnits': 5000,
+    'propInh': 0.2,
+    'propConnect': 1,
+    'propKicked': 0.1,
+
+    # external inputs
+    'kickMode': 'Poisson',  # fixed or Poisson
+    'kickTau': 0.5 * ms,
+    'kickDur': 2 * ms,
+    'kickLambda': 0.4 * second,
+    'kickMinimumISI': 1 * second,
+    'kickMaximumISI': 10 * second,
+    'kickTimes': [0.1, 0.8] * second,
+    'kickSizes': [1, 1],
+    # 'kickAmplitudeExc': 220 * mV,
+    # 'kickAmplitudeInh': 0.4 * 220 * mV,
+    'kickAmplitudeExc': 2.2 * nA,
+    'kickAmplitudeInh': 0.4 * 2.2 * nA,
+
+    # unit params
+    'noiseSigma': 2.5 * mV,
+    'adaptTau': 500 * ms,
+    'refractoryPeriod': 1 * ms,  # overridden by the above but necessary
+
+    'eLeakExc': 7.6 * mV,
+    'vResetExc': 14 * mV,
+    'vThreshExc': 20 * mV,
+    'refractoryPeriodExc': 2.5 * ms,
+    'membraneCapacitanceExc': 200 * pF,
+    'gLeakExc': 10 * nS,
+    'betaAdaptExc': 3 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea!
+
+    'eLeakExc2': 7.6 * mV,
+    'vResetExc2': 14 * mV,
+    'vThreshExc2': 24 * mV,
+    'refractoryPeriodExc2': 2.5 * ms,
+    'membraneCapacitanceExc2': 240 * pF,
+    'gLeakExc2': 8 * nS,
+    'betaAdaptExc2': 3 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea!
+
+    'eLeakInh': 6.5 * mV,
+    'vResetInh': 14 * mV,
+    'vThreshInh': 20 * mV,
+    'refractoryPeriodInh': 1 * ms,
+    'membraneCapacitanceInh': 100 * pF,
+    'gLeakInh': 10 * nS,
+    'betaAdaptInh': 0 * nA * ms,  # 'adaptStrengthInh': 0 * mV,
+    # i think it's supposed to be 15 mV * 10 nS * 20 (membrane tau) = 3 nA...
+
+    # synaptic params
+    # 'jEE': 280 * mV,
+    # 'jEI': 70 * mV,
+    # 'jIE': 500 * mV,
+    # 'jII': 100 * mV,
+
+    'adaptStrengthExc': 15 * mV,  # not used anymore...
+    'adaptStrengthInh': 0 * mV,
+
+    'jEE': 2.8 * nA,  # 280 mV * 10 nS
+    'jEI': 0.7 * nA,  # 70 mV * 10 nS
+    'jIE': 5 * nA,  # 500 mV * 10 nS
+    'jII': 1 * nA,  # 100 mV * 10 nS
+    'tauRiseExc': 8 * ms,
+    'tauFallExc': 23 * ms,
+    'tauRiseInh': 1 * ms,
+    'tauFallInh': 1 * ms,
+    'delayExc': 1 * ms,
+    'delayInh': 0.5 * ms,
+    'scaleWeightsByPConn': True,
+    'critExc': 0.784 * volt,
+    'critInh': 0.67625 * volt,
+
+}
+
 paramsJercogEphysOrig = {
     # save / figs
     'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
@@ -426,6 +522,243 @@ paramsJercogEphysBuono3 = {
     # 'jEI': 70 * mV,
     # 'jIE': 500 * mV,
     # 'jII': 100 * mV,
+    'jEE': 2.8 * nA,
+    'jEI': 0.7 * nA,
+    'jIE': 5 * nA,
+    'jII': 1 * nA,
+    'tauRiseExc': 8 * ms,
+    'tauFallExc': 23 * ms,
+    'tauRiseInh': 1 * ms,
+    'tauFallInh': 1 * ms,
+    'delayExc': 1 * ms,
+    'delayInh': 0.5 * ms,
+    'scaleWeightsByPConn': True,
+
+}
+
+paramsJercogEphysBuono4 = {
+    # save / figs
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
+    'simName': 'classicJercogEphysBuonoBen1',
+    'paramSet': 'buonoEphysBen1',
+    'saveWithDate': True,
+
+    # global sim params
+    'dt': 0.1 * ms,
+    'duration': 250 * ms,
+    # 'updateMethod': 'exact',
+    'reportType': 'stdout',
+    'reportPeriod': 10 * second,
+    'doProfile': False,
+
+    # recording parameters
+    'propSpikemon': 1,
+    'recordStateVariables': ['v', ],  # ['v', 'w', 'ge', 'gi'],
+    'indsRecordStateExc': [0, ],
+    'indsRecordStateInh': [0, ],
+
+    # network params
+    'nUnits': 2,  # ***
+    'propInh': 0.5,
+
+    # unit params
+    'eLeakExc': -60 * mV,
+    'eLeakExc2': -60 * mV,
+    'vResetExc': -60 * mV,
+    'vResetExc2': -60 * mV,
+    'vThreshExc': -47 * mV,
+    'vThreshExc2': -43 * mV,
+    'adaptTau': 500 * ms,
+    'betaAdaptExc': 14.5 * nA * ms,
+    'betaAdaptExc2': 14.5 * nA * ms,
+    'refractoryPeriodExc': 2.5 * ms,
+    'refractoryPeriodExc2': 2.5 * ms,
+    'refractoryPeriod': 1 * ms,  # overridden by the above but necessary
+    'membraneCapacitanceExc': 200 * pF,  # dictated by surface area
+    'membraneCapacitanceExc2': 240 * pF,  # so it's smaller for inhibitory neurons
+    'gLeakExc': 10 * nS,  # in theory dictated by density of Na+/K+ pump, etc
+    'gLeakExc2': 8 * nS,  # so it's the same between the two
+
+    # ephys params
+
+    'noiseSigma': 1 * mV,
+    'iExtRange': linspace(0, .3, 31) * nA,
+    'iDur': 250 * ms,
+
+    'eLeakInh': -60 * mV,
+    'vResetInh': -60 * mV,
+    'vThreshInh': -42 * mV,
+    'betaAdaptInh': 2 * nA * ms,
+    'refractoryPeriodInh': 1 * ms,
+    'membraneCapacitanceInh': 120 * pF,  # so it's smaller for inhibitory neurons
+    'gLeakInh': 8 * nS,  # so it's the same between the two
+
+    # ephys params
+
+    # synaptic params
+    # 'jEE': 280 * mV,
+    # 'jEI': 70 * mV,
+    # 'jIE': 500 * mV,
+    # 'jII': 100 * mV,
+
+    'jEE': 2.8 * nA,
+    'jEI': 0.7 * nA,
+    'jIE': 5 * nA,
+    'jII': 1 * nA,
+    'tauRiseExc': 8 * ms,
+    'tauFallExc': 23 * ms,
+    'tauRiseInh': 1 * ms,
+    'tauFallInh': 1 * ms,
+    'delayExc': 1 * ms,
+    'delayInh': 0.5 * ms,
+    'scaleWeightsByPConn': True,
+
+}
+
+paramsJercogEphysBuono5 = {
+    # save / figs
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
+    'simName': 'classicJercogEphysBuonoBen1',
+    'paramSet': 'buonoEphysBen1',
+    'saveWithDate': True,
+
+    # global sim params
+    'dt': 0.1 * ms,
+    'duration': 250 * ms,
+    # 'updateMethod': 'exact',
+    'reportType': 'stdout',
+    'reportPeriod': 10 * second,
+    'doProfile': False,
+
+    # recording parameters
+    'propSpikemon': 1,
+    'recordStateVariables': ['v', ],  # ['v', 'w', 'ge', 'gi'],
+    'indsRecordStateExc': [0, ],
+    'indsRecordStateInh': [0, ],
+
+    # network params
+    'nUnits': 2,  # ***
+    'propInh': 0.5,
+
+    # unit params
+    'eLeakExc': -65 * mV,
+    'eLeakExc2': -65 * mV,
+    'vResetExc': -65 * mV,
+    'vResetExc2': -65 * mV,
+    'vThreshExc': -48 * mV,
+    'vThreshExc2': -43 * mV,
+    'adaptTau': 500 * ms,
+    'betaAdaptExc': 10 * nA * ms,  # 14.5 * nA * ms,
+    'betaAdaptExc2': 10 * nA * ms,  # 14.5 * nA * ms,
+    'refractoryPeriodExc': 2.5 * ms,
+    'refractoryPeriodExc2': 2.5 * ms,
+    'refractoryPeriod': 1 * ms,  # overridden by the above but necessary
+    'membraneCapacitanceExc': 200 * pF,  # dictated by surface area
+    'membraneCapacitanceExc2': 240 * pF,  # so it's smaller for inhibitory neurons
+    'gLeakExc': 10 * nS,  # in theory dictated by density of Na+/K+ pump, etc
+    'gLeakExc2': 8 * nS,  # so it's the same between the two
+
+    # ephys params
+
+    'noiseSigma': 1 * mV,
+    'iExtRange': linspace(0, .3, 31) * nA,
+    'iDur': 250 * ms,
+
+    'eLeakInh': -65 * mV,
+    'vResetInh': -65 * mV,
+    'vThreshInh': -42 * mV,
+    'betaAdaptInh': 2 * nA * ms,
+    'refractoryPeriodInh': 1 * ms,
+    'membraneCapacitanceInh': 120 * pF,  # so it's smaller for inhibitory neurons
+    'gLeakInh': 8 * nS,  # so it's the same between the two
+
+    # ephys params
+
+    # synaptic params
+    # 'jEE': 280 * mV,
+    # 'jEI': 70 * mV,
+    # 'jIE': 500 * mV,
+    # 'jII': 100 * mV,
+
+    'jEE': 2.8 * nA,
+    'jEI': 0.7 * nA,
+    'jIE': 5 * nA,
+    'jII': 1 * nA,
+    'tauRiseExc': 8 * ms,
+    'tauFallExc': 23 * ms,
+    'tauRiseInh': 1 * ms,
+    'tauFallInh': 1 * ms,
+    'delayExc': 1 * ms,
+    'delayInh': 0.5 * ms,
+    'scaleWeightsByPConn': True,
+
+}
+
+paramsJercogEphysBuono6 = {
+    # save / figs
+    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
+    'simName': 'classicJercogEphysBuonoBen1',
+    'paramSet': 'buonoEphysBen1',
+    'saveWithDate': True,
+
+    # global sim params
+    'dt': 0.1 * ms,
+    'duration': 250 * ms,
+    # 'updateMethod': 'exact',
+    'reportType': 'stdout',
+    'reportPeriod': 10 * second,
+    'doProfile': False,
+
+    # recording parameters
+    'propSpikemon': 1,
+    'recordStateVariables': ['v', ],  # ['v', 'w', 'ge', 'gi'],
+    'indsRecordStateExc': [0, ],
+    'indsRecordStateInh': [0, ],
+
+    # network params
+    'nUnits': 2,  # ***
+    'propInh': 0.5,
+
+    # unit params
+    'eLeakExc': -65 * mV,
+    'eLeakExc2': -65 * mV,
+    'vResetExc': -65 * mV,
+    'vResetExc2': -65 * mV,
+    'vThreshExc': -52 * mV,
+    'vThreshExc2': -46 * mV,
+    'adaptTau': 500 * ms,
+    'betaAdaptExc': 10 * nA * ms,  # 14.5 * nA * ms,
+    'betaAdaptExc2': 10 * nA * ms,  # 14.5 * nA * ms,
+    'refractoryPeriodExc': 2.5 * ms,
+    'refractoryPeriodExc2': 2.5 * ms,
+    'refractoryPeriod': 1 * ms,  # overridden by the above but necessary
+    'membraneCapacitanceExc': 200 * pF,  # dictated by surface area
+    'membraneCapacitanceExc2': 240 * pF,  # so it's smaller for inhibitory neurons
+    'gLeakExc': 10 * nS,  # in theory dictated by density of Na+/K+ pump, etc
+    'gLeakExc2': 8 * nS,  # so it's the same between the two
+
+    # ephys params
+
+    'noiseSigma': 1 * mV,
+    'iExtRange': linspace(0, .3, 31) * nA,
+    'iDur': 250 * ms,
+
+    'eLeakInh': -65 * mV,
+    'vResetInh': -65 * mV,
+    'vThreshInh': -43 * mV,
+    'betaAdaptInh': 1 * nA * ms,
+    'refractoryPeriodInh': 1 * ms,
+    'membraneCapacitanceInh': 120 * pF,  # so it's smaller for inhibitory neurons
+    'gLeakInh': 8 * nS,  # so it's the same between the two
+
+    # ephys params
+
+    # synaptic params
+    # 'jEE': 280 * mV,
+    # 'jEI': 70 * mV,
+    # 'jIE': 500 * mV,
+    # 'jII': 100 * mV,
+
     'jEE': 2.8 * nA,
     'jEI': 0.7 * nA,
     'jIE': 5 * nA,

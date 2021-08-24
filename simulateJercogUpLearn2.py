@@ -1,6 +1,6 @@
 from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV
 from params import paramsJercog as p
-from params import paramsJercogEphysBuono2, paramsJercogEphysBuonoBen1, paramsJercogEphysBuonoBen2, paramsJercogEphysBuono22
+from params import paramsJercogEphysBuono22, paramsJercogEphysBuono4, paramsJercogEphysBuono5, paramsJercogEphysBuono6
 import numpy as np
 from generate import convert_kicks_to_current_series
 from trainer import JercogTrainer
@@ -8,7 +8,7 @@ from results import Results
 
 p['useNewEphysParams'] = False
 p['useSecondPopExc'] = False
-ephysParams = paramsJercogEphysBuono22.copy()
+ephysParams = paramsJercogEphysBuono6.copy()
 
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
@@ -38,24 +38,31 @@ p['propConnect'] = 0.25
 p['setUpFRExc'] = 5 * Hz
 p['setUpFRInh'] = 14 * Hz
 p['tauUpFRTrials'] = 1
-p['useRule'] = 'cross-homeo-pre-scalar-homeo-reMean'  # cross-homeo or balance
+p['useRule'] = 'cross-homeo-pre-scalar-homeo'  # cross-homeo or balance
+# p['useRule'] = 'balance'  # cross-homeo or balance
 # p['betaAdaptExc'] = 0 * nA * ms
 # p['betaAdaptInh'] = 0 * nA * ms
-rngSeed = 3
+rngSeed = None
 p['allowAutapses'] = False
-p['nameSuffix'] = 'reMean'
+p['nameSuffix'] = ''
 # cross-homeo-scalar and cross-homeo-scalar-homeo are the new ones
 p['saveTermsSeparately'] = False
 # defaultEqual, defaultNormal, defaultNormalScaled, defaultUniform,
 # randomUniform, randomUniformMid, randomUniformLow, randomUniformSaray, randomUniformSarayMid, randomUniformSarayHigh
 
-p['initWeightMethod'] = 'seed' + str(rngSeed)
+# turn off adaptation?
+# p['betaAdaptExc'] = 0 * nA * ms
+# p['betaAdaptExc2'] = 0 * nA * ms
+# p['betaAdaptInh'] = 0 * nA * ms
+
+# p['initWeightMethod'] = 'seed' + str(rngSeed)
 # p['initWeightMethod'] = 'guessLowWeights2e3p025LogNormal2'
 # p['initWeightMethod'] = 'guessBuono2Weights2e3p025LogNormal2'
 # p['initWeightMethod'] = 'guessGoodWeights2e3p1LogNormal'
 # p['initWeightMethod'] = 'guessGoodWeights2e3p025'
 # p['initWeightMethod'] = 'guessGoodWeights2e3p025Normal'
-# p['initWeightMethod'] = 'guessGoodWeights2e3p025LogNormal'
+# p['initWeightMethod'] = 'guessBuono6Weights2e3p05Beta10'
+# p['initWeightMethod'] = 'guessBuono4Weights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessHighActivityWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessUpperLeftWeights2e3p025LogNormal'
@@ -65,8 +72,9 @@ p['initWeightMethod'] = 'seed' + str(rngSeed)
 # p['initWeightMethod'] = 'randomUniformSarayHigh5e3p02Converge'
 # p['initWeightMethod'] = 'randomUniformSarayHigh'
 # p['initWeightMethod'] = 'randomUniformMidUnequal'
-# p['initWeightMethod'] = 'resumePrior'  # note this completely overwrites ALL values of the p parameter
-# p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed8__2021-08-02-14-33_results'
+
+p['initWeightMethod'] = 'resumePrior'  # note this completely overwrites ALL values of the p parameter
+p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed3__2021-08-21-09-34_results'
 
 p['kickType'] = 'spike'  # kick or spike
 p['jEEScaleRatio'] = None
@@ -85,10 +93,10 @@ p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
 p['timeToSpike'] = 100 * ms
 p['timeAfterSpiked'] = 1400 * ms
-if p['useNewEphysParams']:
-    p['spikeInputAmplitude'] = 0.49  # nA
-else:
-    p['spikeInputAmplitude'] = 0.98  # nA
+# if p['useNewEphysParams']:
+#     p['spikeInputAmplitude'] = 0.49  # nA
+# else:
+p['spikeInputAmplitude'] = 0.98  # 0.95  # 1.34  # 1.03  # nA
 
 if p['useRule'][:5] == 'cross' or p['useRule'] == 'homeo':
     p['alpha1'] = 0.002 * pA / Hz / p['propConnect']  # 0.005
@@ -104,8 +112,8 @@ elif p['useRule'][:7] == 'balance':
     # p['alpha1'] = 0.05 * pA * pA / Hz / Hz / Hz / p['propConnect']
     # p['alpha2'] = 0.0005 * pA * pA / Hz / Hz / Hz / p['propConnect']
     # customized change version - no longer multiply by gain (Hz/amp) so must do that here
-    p['alpha1'] = 0.05 * pA / p['propConnect']
-    p['alpha2'] = 0.005 * pA / p['propConnect']
+    p['alpha1'] = 0.01 * pA / p['propConnect']
+    p['alpha2'] = 0.001 * pA / p['propConnect']
     p['tauPlasticityTrials'] = 100
     p['alphaBalance'] = 1 / p['tauPlasticityTrials']
 
@@ -144,17 +152,13 @@ p['saveTrials'] = np.array(p['saveTrials']) - 1
 
 # END OF PARAMS
 
-# set RNG seeds...
-p['rngSeed'] = rngSeed
-rng = np.random.default_rng(rngSeed)  # for numpy
-seed(rngSeed)  # for Brian... will insert code to set the random number generator seed into the generated code
-p['rng'] = rng
-
 if p['initWeightMethod'] == 'resumePrior':
     PR = Results()
     PR.init_from_file(p['initWeightPrior'], p['saveFolder'])
     p = PR.p.copy()  # note this completely overwrites all settings above
     p['nameSuffix'] = p['initWeightMethod'] + p['nameSuffix']  # a way to remember what it was...
+    if 'seed' in p['nameSuffix']:  # this will only work for single digit seeds...
+        rngSeed = int(p['nameSuffix'][p['nameSuffix'].find('seed') + 4])
     p['initWeightMethod'] = 'resumePrior'  # and then we put this back...
     JT = JercogTrainer(p)
     JT.set_up_network(priorResults=PR)  # additional argument allows synapses to be initialized from previous results
@@ -162,6 +166,12 @@ else:
     JT = JercogTrainer(p)
     JT.calculate_unit_thresh_and_gain()
     JT.set_up_network()
+
+# set RNG seeds...
+p['rngSeed'] = rngSeed
+rng = np.random.default_rng(rngSeed)  # for numpy
+seed(rngSeed)  # for Brian... will insert code to set the random number generator seed into the generated code
+p['rng'] = rng
 
 if p['useRule'] == 'balance' and p['setMinimumBasedOnBalance']:  # multiply by Hz below because set points lack units
     p['minAllowedWEE'] = (p['setUpFRInh'] / p['setUpFRExc'] * \

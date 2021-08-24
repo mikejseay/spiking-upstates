@@ -1,6 +1,6 @@
 from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV
 from params import paramsJercog as p
-from params import paramsJercogEphysBuono2
+from params import paramsJercogEphysBuono22, paramsJercogEphysBuono4, paramsJercogEphysBuono5, paramsJercogEphysBuono6
 import numpy as np
 from generate import convert_kicks_to_current_series
 from trainer import JercogTrainer
@@ -10,18 +10,8 @@ import matplotlib.pyplot as plt
 rngSeed = None
 defaultclock.dt = p['dt']
 
-p['useRule'] = 'upCrit'
-p['nameSuffix'] = 'test'
-p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/upCrit'
-p['saveWithDate'] = True
-p['useOldWeightMagnitude'] = True
-p['disableWeightScaling'] = True
-p['applyLogToFR'] = False
-p['setMinimumBasedOnBalance'] = False
-p['recordMovieVariables'] = False
-p['downSampleVoltageTo'] = 1 * ms
 p['useNewEphysParams'] = True
-ephysParams = paramsJercogEphysBuono2.copy()
+ephysParams = paramsJercogEphysBuono6.copy()
 p['useSecondPopExc'] = False
 
 if p['useNewEphysParams']:
@@ -31,16 +21,29 @@ if p['useNewEphysParams']:
         del ephysParams[pK]
     p.update(ephysParams)
 
+p['useRule'] = 'upCrit'
+p['nameSuffix'] = ''
+p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/upCrit'
+p['saveWithDate'] = True
+p['useOldWeightMagnitude'] = True
+p['disableWeightScaling'] = True
+p['applyLogToFR'] = False
+p['setMinimumBasedOnBalance'] = False
+p['recordMovieVariables'] = False
+p['downSampleVoltageTo'] = 1 * ms
+
 # simulation params
 p['nUnits'] = 2e3
-p['propConnect'] = 0.25
+p['propConnect'] = 0.5
 
-p['initWeightMethod'] = 'guessBuono2Weights2e3p025LogNormal'
+p['initWeightMethod'] = 'guessBuono6Weights2e3p05Beta10'
+# p['initWeightMethod'] = 'guessBuono4Weights2e3p025LogNormalStart2'
 p['kickType'] = 'spike'  # kick or spike
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
 p['timeToSpike'] = 100 * ms
 p['timeAfterSpiked'] = 5000 * ms
-p['spikeInputAmplitude'] = 0.4  # in nA
+p['spikeInputAmplitude'] = 0.95  # in nA
+p['allowAutapses'] = False
 
 # params not important unless using "kick" instead of "spike"
 p['propKicked'] = 0.1
@@ -91,7 +94,7 @@ R.reshape_upstates()
 fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(5, 9),
                          gridspec_kw={'height_ratios': [3, 2, 1, 1, 1]},
                          sharex=True)
-R.plot_spike_raster(ax1[0])  # uses RNG but with a separate random seed
+R.plot_spike_raster(ax1[0], downSampleUnits=False)  # uses RNG but with a separate random seed
 R.plot_firing_rate(ax1[1])
 ax1[1].set_ylim(0, 30)
 R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=0)
@@ -104,6 +107,9 @@ ax1[3].set(xlabel='Time (s)')
 R.plot_voltage_histogram_sideways(ax1[2], 'Exc')
 R.plot_voltage_histogram_sideways(ax1[3], 'Inh')
 fig1.suptitle(R.p['simName'])
+uniqueSpikers = np.unique(R.spikeMonExcI).size
+totalSpikes = R.spikeMonExcI.size
+print(uniqueSpikers, 'neurons fired an average of', totalSpikes / uniqueSpikers, 'spikes')
 
 '''
 plt.close('all')
