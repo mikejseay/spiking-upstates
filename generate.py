@@ -92,6 +92,18 @@ def convert_indices_times_to_dict(indices, times):
     return spikeDict
 
 
+def square_bumps(kickTimes, kickDurs, kickSizes, duration, dt):
+    """ given the times and sizes of kicks, generate a time series of injected current values """
+
+    tRecorded = np.arange(int(duration / dt)) * dt
+    iKickNumpy = np.zeros(tRecorded.shape)
+    for tKick, dKick, sKick in zip(kickTimes, kickDurs, kickSizes):
+        kickDurInd = int(dKick / dt)
+        startInd = int(tKick / dt)
+        iKickNumpy[startInd:startInd + kickDurInd] = 1
+    iKickRecorded = TimedArray(iKickNumpy, dt=dt)
+    return iKickRecorded
+
 def convert_kicks_to_current_series(kickDur, kickTau, kickTimes, kickSizes, duration, dt):
     """ given the times and sizes of kicks, generate a time series of injected current values """
 
@@ -142,7 +154,7 @@ def set_spikes_from_time_varying_rate(time_array, rate_array, nPoissonInputUnits
     return np.array(outIndices), np.array(outTimes) * ms
 
 
-def generate_adjacency_indices_within(nUnits, pConn, allowAutapses=False, rng=None):
+def adjacency_indices_within(nUnits, pConn, allowAutapses=False, rng=None):
     """ creates indices representing pre- and post-synaptic units within 1 population
         that has a certain probability of connection and may or may not allow autapses.
         preInds are first output, postInds are second. """
@@ -167,7 +179,7 @@ def generate_adjacency_indices_within(nUnits, pConn, allowAutapses=False, rng=No
     return preInds, postInds
 
 
-def generate_adjacency_indices_between(nUnitsPre, nUnitsPost, pConn, rng=None):
+def adjacency_indices_between(nUnitsPre, nUnitsPost, pConn, rng=None):
     """ creates indices representing pre- and post-synaptic units between 2 populations
         with a certain probability of connection
         preInds are first output, postInds are second. """
@@ -183,7 +195,7 @@ def generate_adjacency_indices_between(nUnitsPre, nUnitsPost, pConn, rng=None):
     return preInds, postInds
 
 
-def norm_weights(nConnections, mean, sd, rng=None):
+def norm_weights(nConnections, mean=1, sd=0.2, rng=None):
     """ given adjacency indices preInds and postinds, generate weight matrix w
     from a random normal distribution with mean and sd.
     clip negative weights to be 0.

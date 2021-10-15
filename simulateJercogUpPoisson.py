@@ -2,15 +2,24 @@ from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV, second
 from params import paramsJercog as p
 from params import (paramsJercogEphysBuono2, paramsJercogEphysBuonoBen1, paramsJercogEphysBuonoBen2,
                     paramsJercogEphysBuono22, paramsJercogEphysBuono4, paramsJercogEphysBuono5, paramsJercogEphysBuono6,
+                    paramsJercogEphysBuono7,
                     paramsJercogBen)
 import numpy as np
-from generate import convert_kicks_to_current_series
+from generate import convert_kicks_to_current_series, weight_matrix_from_flat_inds_weights, norm_weights
 from trainer import JercogTrainer
 from results import Results
 import matplotlib.pyplot as plt
 
 p['useNewEphysParams'] = True
-ephysParams = paramsJercogEphysBuono6.copy()
+ephysParams = paramsJercogEphysBuono7.copy()
+rngSeed = 43
+defaultclock.dt = p['dt']
+
+p['useSecondPopExc'] = False
+p['manipulateConnectivity'] = False
+p['removePropConn'] = 0.2
+p['addBackRemovedConns'] = True
+
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
     protectedKeys = ('nUnits', 'propInh', 'duration')
@@ -18,12 +27,9 @@ if p['useNewEphysParams']:
         del ephysParams[pK]
     p.update(ephysParams)
 
-rngSeed = None
-defaultclock.dt = p['dt']
-
 p['useRule'] = 'upPoisson'
 p['nameSuffix'] = ''
-p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/upPoisson'
+p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
 p['useOldWeightMagnitude'] = True
 p['disableWeightScaling'] = True
@@ -39,16 +45,16 @@ p['downSampleVoltageTo'] = 1 * ms
 
 # simulation params
 p['nUnits'] = 2e3
-p['propConnect'] = 0.5
+p['propConnect'] = 0.25
 p['allowAutapses'] = False
 
 # p['initWeightMethod'] = 'guessGoodWeights2e3p025LogNormal'
-p['initWeightMethod'] = 'guessBuono6Weights2e3p05Beta10'
+# p['initWeightMethod'] = 'guessBuono7Weights2e3p025'
 # p['initWeightMethod'] = 'guessLowWeights2e3p025LogNormal2'
+p['initWeightMethod'] = 'resumePrior'
+p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_guessBuono7Weights2e3p025SlightLow__2021-09-04-08-20_results'
 p['kickType'] = 'spike'  # kick or spike
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
-
-p['useSecondPopExc'] = True
 p['nUnitsSecondPopExc'] = int(np.round(0.05 * p['nUnits']))
 p['startIndSecondPopExc'] = p['nUnitsToSpike']
 
@@ -60,8 +66,8 @@ p['duration'] = 60 * second
 
 # upCrit
 p['timeToSpike'] = 100 * ms
-p['timeAfterSpiked'] = 5000 * ms
-p['spikeInputAmplitude'] = 0.94
+p['timeAfterSpiked'] = 3000 * ms
+p['spikeInputAmplitude'] = 0.96
 
 # params not important unless using "kick" instead of "spike"
 p['propKicked'] = 0.1
@@ -79,6 +85,24 @@ indUnkickedExc = int(p['nUnits'] - (p['propInh'] * p['nUnits']) - 1)
 indSecondPopExc = p['nUnitsToSpike']
 p['indsRecordStateExc'].append(indUnkickedExc)
 p['indsRecordStateExc'].append(indSecondPopExc)
+p['indsRecordStateExc'].append(1422)
+p['indsRecordStateExc'].append(87)
+p['indsRecordStateExc'].append(1357)
+p['indsRecordStateInh'].append(238)
+
+# p['indsRecordStateExc'].append(1152)
+# p['indsRecordStateExc'].append(239)
+# p['indsRecordStateExc'].append(892)
+# p['indsRecordStateInh'].append(59)
+
+# p['indsRecordStateExc'].append(940)
+# p['indsRecordStateExc'].append(1052)
+# p['indsRecordStateExc'].append(1434)
+# p['indsRecordStateInh'].append(27)
+
+p['stateVariableDT'] = p['dt'].copy()
+p['nExc'] = int(p['nUnits'] * (1 - p['propInh']))
+p['nInh'] = int(p['nUnits'] * p['propInh'])
 
 # END OF PARAMS
 
@@ -91,8 +115,131 @@ p['rng'] = rng
 JT = JercogTrainer(p)
 # JT.calculate_unit_thresh_and_gain()
 # JT.set_up_network()
-JT.set_up_network_Poisson()
+if p['initWeightMethod'] == 'resumePrior':
+    PR = Results()
+    PR.init_from_file(p['initWeightPrior'], p['saveFolder'])
+    p = dict(list(p.items()) + list(PR.p.items()))
+    # p = PR.p.copy()  # note this completely overwrites all settings above
+    p['nameSuffix'] = p['initWeightMethod'] + p['nameSuffix']  # a way to remember what it was...
+    if 'seed' in p['nameSuffix']:  # this will only work for single digit seeds...
+        rngSeed = int(p['nameSuffix'][p['nameSuffix'].find('seed') + 4])
+    p['initWeightMethod'] = 'resumePrior'  # and then we put this back...
+else:
+    PR = None
+
+if p['manipulateConnectivity']:
+
+    startIndExc2 = p['startIndSecondPopExc']
+    endIndExc2 = p['startIndSecondPopExc'] + p['nUnitsSecondPopExc']
+
+    E2E1Inds = \
+        np.where(
+            np.logical_and(PR.preEE >= endIndExc2, np.logical_and(PR.posEE >= startIndExc2, PR.posEE < endIndExc2)))[0]
+    E1E2Inds = \
+        np.where(
+            np.logical_and(PR.posEE >= endIndExc2, np.logical_and(PR.preEE >= startIndExc2, PR.preEE < endIndExc2)))[0]
+
+    removeE2E1Inds = np.random.choice(E2E1Inds, int(np.round(E2E1Inds.size * p['removePropConn'])), replace=False)
+    removeE1E2Inds = np.random.choice(E1E2Inds, int(np.round(E1E2Inds.size * p['removePropConn'])), replace=False)
+
+    removeInds = np.concatenate((removeE2E1Inds, removeE1E2Inds))
+
+    # save some info...
+    wEEInit = weight_matrix_from_flat_inds_weights(PR.p['nExc'], PR.p['nExc'], PR.preEE, PR.posEE, PR.wEE_final)
+    weightsSaved = PR.wEE_final[removeInds]  # save the weights to be used below
+
+    PR.preEE = np.delete(PR.preEE, removeInds, None)
+    PR.posEE = np.delete(PR.posEE, removeInds, None)
+    PR.wEE_final = np.delete(PR.wEE_final, removeInds, None)
+
+    if p['addBackRemovedConns']:
+        nConnRemoved = removeInds.size
+        propAddedConnToE2E2 = p['nUnitsSecondPopExc'] / (p['nExc'] - p['nUnitsToSpike'])
+        # propAddedConnToE2E2 = (p['nUnitsSecondPopExc'] / (p['nExc'] - p['nUnitsToSpike'])) ** 2  # arguably should be this
+        nConnAddedToE2E2 = int(np.round(propAddedConnToE2E2 * nConnRemoved))
+        nConnAddedToE1E1 = nConnRemoved - nConnAddedToE2E2
+        E2E2Inds = np.where(np.logical_and(np.logical_and(PR.preEE >= startIndExc2, PR.preEE < endIndExc2),
+                                           np.logical_and(PR.posEE >= startIndExc2, PR.posEE < endIndExc2)))[0]
+        E1E1Inds = np.where(np.logical_and(PR.preEE >= endIndExc2, PR.posEE >= endIndExc2))[0]
+
+        # construct a probability array that is the shape of E2E2, fill it with the value of 1 / (nExc2*nExc2 - nExistingConns - nExc2)
+        # in positions where there are not already connections... set existing connection and the diagonal to 0 (should sum to 1)
+        # and same for E1E1
+        # this will allow us to choose some number of new synapses to add, where there are not already connections, and not on the diag
+
+        nExc1 = p['nExc'] - p['nUnitsSecondPopExc'] - p['nUnitsToSpike']
+        nExc2 = p['nUnitsSecondPopExc']
+        probabilityArrayE2E2 = np.full((nExc2, nExc2), 1 / (nExc2 * nExc2 - E2E2Inds.size - nExc2))
+        probabilityArrayE2E2[PR.preEE[E2E2Inds] - p['nUnitsToSpike'], PR.posEE[E2E2Inds] - p['nUnitsToSpike']] = 0
+        probabilityArrayE2E2[np.diag_indices_from(probabilityArrayE2E2)] = 0
+        probabilityArrayE1E1 = np.full((nExc1, nExc1), 1 / (nExc1 * nExc1 - E1E1Inds.size - nExc1))
+        probabilityArrayE1E1[
+            PR.preEE[E1E1Inds] - nExc2 - p['nUnitsToSpike'], PR.posEE[E1E1Inds] - nExc2 - p['nUnitsToSpike']] = 0
+        probabilityArrayE1E1[np.diag_indices_from(probabilityArrayE1E1)] = 0
+
+        indicesE2E2Flat = np.random.choice(nExc2 ** 2, nConnAddedToE2E2, replace=False, p=probabilityArrayE2E2.ravel())
+        indicesE1E1Flat = np.random.choice(nExc1 ** 2, nConnAddedToE1E1, replace=False, p=probabilityArrayE1E1.ravel())
+
+        propConnE2E1 = (E2E1Inds.size - removeE2E1Inds.size) / (nExc2 * nExc1)
+        propConnE1E2 = (E1E2Inds.size - removeE1E2Inds.size) / (nExc2 * nExc1)
+        propConnE2E2 = (E2E2Inds.size + nConnAddedToE2E2) / (nExc2 * nExc2)
+        propConnE1E1 = (E1E1Inds.size + nConnAddedToE1E1) / (nExc1 * nExc1)
+
+        print(propConnE2E1)
+        print(propConnE1E2)
+        print(propConnE2E2)
+        print(propConnE1E1)
+
+        # must add  + p['nUnitsToSpike'] for E2E2 and  + p['nUnitsToSpike'] + nExc2 for E1E1
+        preIndsE2E2, posIndsE2E2 = np.unravel_index(indicesE2E2Flat, (nExc2, nExc2))
+        preIndsE1E1, posIndsE1E1 = np.unravel_index(indicesE1E1Flat, (nExc1, nExc1))
+        PR.preEE = np.concatenate((PR.preEE, preIndsE2E2 + p['nUnitsToSpike']))
+        PR.posEE = np.concatenate((PR.posEE, posIndsE2E2 + p['nUnitsToSpike']))
+        PR.wEE_final = np.concatenate((PR.wEE_final, weightsSaved[:preIndsE2E2.size]))
+        PR.preEE = np.concatenate((PR.preEE, preIndsE1E1 + p['nUnitsToSpike'] + nExc2))
+        PR.posEE = np.concatenate((PR.posEE, posIndsE1E1 + p['nUnitsToSpike'] + nExc2))
+        PR.wEE_final = np.concatenate((PR.wEE_final, weightsSaved[preIndsE2E2.size:]))
+
+        # turn the final into a matrix also...
+        wEEFinal = weight_matrix_from_flat_inds_weights(PR.p['nExc'], PR.p['nExc'], PR.preEE, PR.posEE, PR.wEE_final)
+
+        # make inhibition stronger/weaker to compensate
+        wEICompensate = weight_matrix_from_flat_inds_weights(PR.p['nInh'], PR.p['nExc'], PR.preEI, PR.posEI,
+                                                             PR.wEI_final)
+        wEICompensate[:, endIndExc2:] = wEICompensate[:, endIndExc2:] * propConnE1E1 / PR.p['propConnect']
+
+        # decreaseInhOntoE2Factor = np.nansum(wEEFinal[startIndExc2:endIndExc2, :], 0).mean() / np.nansum(wEEInit[startIndExc2:endIndExc2, :], 0).mean()
+        decreaseInhOntoE2Factor = np.nansum(wEEFinal[:, startIndExc2:endIndExc2], 1).mean() / np.nansum(wEEInit[:, startIndExc2:endIndExc2], 1).mean()
+        wEICompensate[:, startIndExc2:endIndExc2] = wEICompensate[:, startIndExc2:endIndExc2] * decreaseInhOntoE2Factor
+        PR.wEI_final = wEICompensate[PR.preEI, PR.posEI]
+
+JT.set_up_network_Poisson(priorResults=PR)
 JT.initialize_weight_matrices()
+
+# calculate the "most balanced" E unit
+# JT.JN.calculate_connectivity_stats()
+# wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JT.JN.preEE, JT.JN.posEE, JT.wEE_init / pA)
+
+
+# add that unit to the monitors
+
+# create monitors
+JT.JN.create_monitors()
+
+# manipulate the weights to make things less stable
+# here i will do so by multiplying by normal noise
+# or by simply decreasing all the weights by a constant multiplier
+useMult = 0.85
+JT.wEE_init = JT.wEE_init * useMult
+JT.wEI_init = JT.wEI_init * useMult
+JT.wIE_init = JT.wIE_init * useMult
+JT.wII_init = JT.wII_init * useMult
+
+# JT.wEE_init = JT.wEE_init * norm_weights(JT.wEE_init.shape[0])
+# JT.wEI_init = JT.wEI_init * norm_weights(JT.wEI_init.shape[0])
+# JT.wIE_init = JT.wIE_init * norm_weights(JT.wIE_init.shape[0])
+# JT.wII_init = JT.wII_init * norm_weights(JT.wII_init.shape[0])
+
 JT.run_upCrit()
 JT.save_params()
 JT.save_results_upCrit()
@@ -101,34 +248,49 @@ R = Results()
 R.init_from_file(JT.saveName, JT.p['saveFolder'])
 
 R.calculate_PSTH()
-R.calculate_voltage_histogram(removeMode=True, useAllRecordedUnits=True)
+R.calculate_voltage_histogram(removeMode=True, removeReset=True, useAllRecordedUnits=True)
 R.calculate_upstates()
 if len(R.ups) > 0:
     R.reshape_upstates()
     R.calculate_FR_in_upstates()
-    print('average FR in upstate for Exc: {:.2f}, Inh: {:.2f}, average upDur: {:.2f}'.format(R.upstateFRExcHist.mean(), R.upstateFRInhHist.mean(), R.upDurs.mean()))
+    infoStr = 'average FR in upstate for Exc: {:.2f}, Inh: {:.2f}, average upDur: {:.2f}, upFreq: {:.2f}'.format(
+        R.upstateFRExcHist.mean(), R.upstateFRInhHist.mean(), R.upDurs.mean(), R.ups.size / R.p['duration'] / Hz)
+    print(infoStr)
 
 
-R.calculate_voltage_histogram(removeMode=True)
+R.calculate_voltage_histogram(useExcUnits=(3, 4, 5), useInhUnits=(1,), removeMode=True, removeReset=True)
 R.reshape_upstates()
 
-fig1, ax1 = plt.subplots(6, 1, num=1, figsize=(16, 9),
-                         gridspec_kw={'height_ratios': [3, 1, 1, 1, 1, 1]},
+fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(16, 9),
+                         gridspec_kw={'height_ratios': [3, 1, 1, 1, 1]},
                          sharex=True)
 R.plot_spike_raster(ax1[0])  # uses RNG but with a separate random seed
 R.plot_firing_rate(ax1[1])
 ax1[1].set_ylim(0, 30)
-R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=0)
-R.plot_updur_lines(ax1[2])
+R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=3)
 R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=0)
+R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=2)
+R.plot_updur_lines(ax1[2])
 R.plot_updur_lines(ax1[3])
-R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=1)
 R.plot_updur_lines(ax1[4])
-R.plot_voltage_detail(ax1[5], unitType='Exc', useStateInd=2)
-R.plot_updur_lines(ax1[5])
-ax1[5].set(xlabel='Time (s)')
+ax1[4].set(xlabel='Time (s)')
 R.plot_voltage_histogram_sideways(ax1[2], 'Exc')
 R.plot_voltage_histogram_sideways(ax1[3], 'Inh')
+R.plot_voltage_histogram_sideways(ax1[4], 'Exc')
+fig1.suptitle(R.p['simName'])
+
+fig2, ax2 = plt.subplots(8, 1, num=2, figsize=(16, 11), sharex=True)
+R.plot_voltage_detail(ax2[0], unitType='Exc', useStateInd=0)
+R.plot_voltage_detail(ax2[1], unitType='Exc', useStateInd=1)
+R.plot_voltage_detail(ax2[2], unitType='Exc', useStateInd=2)
+R.plot_voltage_detail(ax2[3], unitType='Exc', useStateInd=3)
+R.plot_voltage_detail(ax2[4], unitType='Exc', useStateInd=4)
+R.plot_voltage_detail(ax2[5], unitType='Exc', useStateInd=5)
+R.plot_voltage_detail(ax2[6], unitType='Inh', useStateInd=0)
+R.plot_voltage_detail(ax2[7], unitType='Inh', useStateInd=1)
+ax2[6].set(xlabel='Time (s)')
+R.plot_voltage_histogram_sideways(ax2[0], 'Exc')
+R.plot_voltage_histogram_sideways(ax2[7], 'Inh')
 fig1.suptitle(R.p['simName'])
 
 '''

@@ -18,8 +18,8 @@ from brian2 import start_scope, NeuronGroup, Synapses, SpikeMonitor, StateMonito
 import dill
 from datetime import datetime
 import os
-from generate import set_spikes_from_time_varying_rate, fixed_current_series, \
-    generate_adjacency_indices_within, generate_adjacency_indices_between, norm_weights, poisson_single
+from generate import set_spikes_from_time_varying_rate, fixed_current_series, adjacency_matrix_from_flat_inds, \
+    adjacency_indices_within, adjacency_indices_between, norm_weights, poisson_single
 from results import Results
 import numpy as np
 
@@ -152,6 +152,21 @@ class JercogNetwork(object):
     def initialize_network(self):
         start_scope()
         self.N = Network()
+
+    def calculate_connectivity_stats(self):
+        # get some adjacency matrix and nPre
+        aEE = adjacency_matrix_from_flat_inds(self.p['nExc'], self.p['nExc'], self.preEE, self.posEE)
+        aEI = adjacency_matrix_from_flat_inds(self.p['nInh'], self.p['nExc'], self.preEI, self.posEI)
+        aIE = adjacency_matrix_from_flat_inds(self.p['nExc'], self.p['nInh'], self.preIE, self.posIE)
+        aII = adjacency_matrix_from_flat_inds(self.p['nInh'], self.p['nInh'], self.preII, self.posII)
+        nIncomingExcOntoEachExc = aEE.sum(0)
+        nIncomingInhOntoEachExc = aEI.sum(0)
+        nIncomingExcOntoEachInh = aIE.sum(0)
+        nIncomingInhOntoEachInh = aII.sum(0)
+        self.nIncomingExcOntoEachExc = nIncomingExcOntoEachExc
+        self.nIncomingInhOntoEachExc = nIncomingInhOntoEachExc
+        self.nIncomingExcOntoEachInh = nIncomingExcOntoEachInh
+        self.nIncomingInhOntoEachInh = nIncomingInhOntoEachInh
 
     def initialize_units(self):
         unitModel = '''
@@ -796,6 +811,10 @@ class JercogNetwork(object):
             unitsInhKicked = self.unitsInh[:int(self.p['nInh'] * self.p['propKicked'])]
             unitsInhKicked.kKick = self.p['kickAmplitudeInh']
 
+    def set_paradoxical_kicked(self):
+        unitsInhKicked = self.unitsInh[:int(self.p['nInh'] * self.p['propKicked'])]
+        unitsInhKicked.kKick = self.p['kickAmplitudeInh']
+
     def set_spiked_units(self, onlySpikeExc=True, critExc=0.784 * volt, critInh=0.67625 * volt):
 
         nSpikedUnits = int(self.p['nUnits'] * self.p['propKicked'])
@@ -1063,8 +1082,8 @@ class JercogNetwork(object):
         # if self.p['propConnect'] == 1:
         #     synapsesEE.connect('i!=j', p=self.p['propConnect'])
         # else:
-        preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
-                                                              allowAutapses=self.p['allowAutapses'], rng=self.p['rng'])
+        preInds, postInds = adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
+                                                     allowAutapses=self.p['allowAutapses'], rng=self.p['rng'])
         synapsesEE.connect(i=preInds, j=postInds)
         self.preEE = preInds
         self.posEE = postInds
@@ -1080,8 +1099,8 @@ class JercogNetwork(object):
         # if self.p['propConnect'] == 1:
         #     synapsesIE.connect('i!=j', p=self.p['propConnect'])
         # else:
-        preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'],
-                                                               self.p['propConnect'], rng=self.p['rng'])
+        preInds, postInds = adjacency_indices_between(self.p['nExc'], self.p['nInh'],
+                                                      self.p['propConnect'], rng=self.p['rng'])
         synapsesIE.connect(i=preInds, j=postInds)
         self.preIE = preInds
         self.posIE = postInds
@@ -1097,8 +1116,8 @@ class JercogNetwork(object):
         # if self.p['propConnect'] == 1:
         #     synapsesEI.connect('i!=j', p=self.p['propConnect'])
         # else:
-        preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'],
-                                                               self.p['propConnect'], rng=self.p['rng'])
+        preInds, postInds = adjacency_indices_between(self.p['nInh'], self.p['nExc'],
+                                                      self.p['propConnect'], rng=self.p['rng'])
         synapsesEI.connect(i=preInds, j=postInds)
         self.preEI = preInds
         self.posEI = postInds
@@ -1114,8 +1133,8 @@ class JercogNetwork(object):
         # if self.p['propConnect'] == 1:
         #     synapsesII.connect('i!=j', p=self.p['propConnect'])
         # else:
-        preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
-                                                              allowAutapses=self.p['allowAutapses'], rng=self.p['rng'])
+        preInds, postInds = adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
+                                                     allowAutapses=self.p['allowAutapses'], rng=self.p['rng'])
         synapsesII.connect(i=preInds, j=postInds)
         self.preII = preInds
         self.posII = postInds
@@ -1380,6 +1399,24 @@ class JercogNetwork(object):
         stateMonInh = StateMonitor(self.unitsInh, self.p['recordStateVariables'],
                                    record=self.p['indsRecordStateInh'],
                                    clock=defaultclock)
+
+        self.spikeMonExc = spikeMonExc
+        self.spikeMonInh = spikeMonInh
+        self.stateMonExc = stateMonExc
+        self.stateMonInh = stateMonInh
+        self.N.add(spikeMonExc, spikeMonInh, stateMonExc, stateMonInh)
+
+    def create_monitors_allVoltage(self):
+
+        spikeMonExc = SpikeMonitor(self.unitsExc[:self.p['nExcSpikemon']])
+        spikeMonInh = SpikeMonitor(self.unitsInh[:self.p['nInhSpikemon']])
+
+        stateMonExc = StateMonitor(self.unitsExc, self.p['recordStateVariables'],
+                                   record=True,
+                                   dt=self.p['stateVariableDT'])
+        stateMonInh = StateMonitor(self.unitsInh, self.p['recordStateVariables'],
+                                   record=True,
+                                   dt=self.p['stateVariableDT'])
 
         self.spikeMonExc = spikeMonExc
         self.spikeMonInh = spikeMonInh
@@ -2097,8 +2134,8 @@ class DestexheNetwork(object):
         if self.p['propConnect'] == 1:
             synapsesEE.connect('i!=j', p=self.p['propConnect'])
         else:
-            preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
-                                                                  allowAutapses=False, rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
+                                                         allowAutapses=False, rng=self.p['rng'])
             synapsesEE.connect(i=preInds, j=postInds)
 
         # from E to I
@@ -2110,8 +2147,8 @@ class DestexheNetwork(object):
         if self.p['propConnect'] == 1:
             synapsesIE.connect('i!=j', p=self.p['propConnect'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'],
-                                                                   self.p['propConnect'], rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_between(self.p['nExc'], self.p['nInh'],
+                                                          self.p['propConnect'], rng=self.p['rng'])
             synapsesIE.connect(i=preInds, j=postInds)
 
         # from I to E
@@ -2123,8 +2160,8 @@ class DestexheNetwork(object):
         if self.p['propConnect'] == 1:
             synapsesEI.connect('i!=j', p=self.p['propConnect'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'],
-                                                                   self.p['propConnect'], rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_between(self.p['nInh'], self.p['nExc'],
+                                                          self.p['propConnect'], rng=self.p['rng'])
             synapsesEI.connect(i=preInds, j=postInds)
 
         # from I to I
@@ -2136,8 +2173,8 @@ class DestexheNetwork(object):
         if self.p['propConnect'] == 1:
             synapsesII.connect('i!=j', p=self.p['propConnect'])
         else:
-            preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
-                                                                  allowAutapses=False, rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
+                                                         allowAutapses=False, rng=self.p['rng'])
             synapsesII.connect(i=preInds, j=postInds)
 
         self.synapsesEE = synapsesEE
@@ -2178,8 +2215,8 @@ class DestexheNetwork(object):
         if self.p['propConnect'] == 1:
             synapsesEE.connect('i!=j', p=self.p['propConnect'])
         else:
-            preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
-                                                                  allowAutapses=False, rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
+                                                         allowAutapses=False, rng=self.p['rng'])
             synapsesEE.connect(i=preInds, j=postInds)
         synapsesEE.qEE = useQExc
 
@@ -2193,8 +2230,8 @@ class DestexheNetwork(object):
         if self.p['propConnect'] == 1:
             synapsesIE.connect('i!=j', p=self.p['propConnect'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'],
-                                                                   self.p['propConnect'], rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_between(self.p['nExc'], self.p['nInh'],
+                                                          self.p['propConnect'], rng=self.p['rng'])
             synapsesIE.connect(i=preInds, j=postInds)
         synapsesIE.qIE = useQExc
 
@@ -2208,8 +2245,8 @@ class DestexheNetwork(object):
         if self.p['propConnect'] == 1:
             synapsesEI.connect('i!=j', p=self.p['propConnect'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'],
-                                                                   self.p['propConnect'], rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_between(self.p['nInh'], self.p['nExc'],
+                                                          self.p['propConnect'], rng=self.p['rng'])
             synapsesEI.connect(i=preInds, j=postInds)
         synapsesEI.qEI = useQInh
 
@@ -2223,8 +2260,8 @@ class DestexheNetwork(object):
         if self.p['propConnect'] == 1:
             synapsesII.connect('i!=j', p=self.p['propConnect'])
         else:
-            preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
-                                                                  allowAutapses=False, rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
+                                                         allowAutapses=False, rng=self.p['rng'])
             synapsesII.connect(i=preInds, j=postInds)
         synapsesII.qII = useQInh
 
@@ -2247,8 +2284,8 @@ class DestexheNetwork(object):
         if self.p['pEE'] == 1:
             synapsesEE.connect('i!=j', p=self.p['pEE'])
         else:
-            preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['pEE'],
-                                                                  allowAutapses=False, rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_within(self.p['nExc'], self.p['pEE'],
+                                                         allowAutapses=False, rng=self.p['rng'])
             synapsesEE.connect(i=preInds, j=postInds)
 
         # from E to I
@@ -2262,8 +2299,8 @@ class DestexheNetwork(object):
         if self.p['pIE'] == 1:
             synapsesIE.connect('i!=j', p=self.p['pIE'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['pIE'],
-                                                                   rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['pIE'],
+                                                          rng=self.p['rng'])
             synapsesIE.connect(i=preInds, j=postInds)
 
         # from I to E
@@ -2277,8 +2314,8 @@ class DestexheNetwork(object):
         if self.p['pEI'] == 1:
             synapsesEI.connect('i!=j', p=self.p['pEI'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['pEI'],
-                                                                   rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['pEI'],
+                                                          rng=self.p['rng'])
             synapsesEI.connect(i=preInds, j=postInds)
 
         # from I to I
@@ -2292,8 +2329,8 @@ class DestexheNetwork(object):
         if self.p['pII'] == 1:
             synapsesII.connect('i!=j', p=self.p['pII'])
         else:
-            preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['pII'],
-                                                                  allowAutapses=False, rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_within(self.p['nInh'], self.p['pII'],
+                                                         allowAutapses=False, rng=self.p['rng'])
             synapsesII.connect(i=preInds, j=postInds)
 
         self.synapsesEE = synapsesEE
@@ -2314,8 +2351,8 @@ class DestexheNetwork(object):
         if self.p['pEE'] == 1:
             synapsesEE.connect('i!=j', p=self.p['pEE'])
         else:
-            preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['pEE'],
-                                                                  allowAutapses=False, rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_within(self.p['nExc'], self.p['pEE'],
+                                                         allowAutapses=False, rng=self.p['rng'])
             synapsesEE.connect(i=preInds, j=postInds)
         self.p['nIncomingAvgEE'] = int(np.round(self.p['nExc'] * self.p['pEE']))
         print(self.p['qEE'], self.p['nIncomingAvgEE'])
@@ -2332,8 +2369,8 @@ class DestexheNetwork(object):
         if self.p['pIE'] == 1:
             synapsesIE.connect('i!=j', p=self.p['pIE'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['pIE'],
-                                                                   rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['pIE'],
+                                                          rng=self.p['rng'])
             synapsesIE.connect(i=preInds, j=postInds)
         self.p['nIncomingAvgIE'] = int(np.round(self.p['nExc'] * self.p['pIE']))
         print(self.p['qIE'], self.p['nIncomingAvgIE'])
@@ -2350,8 +2387,8 @@ class DestexheNetwork(object):
         if self.p['pEI'] == 1:
             synapsesEI.connect('i!=j', p=self.p['pEI'])
         else:
-            preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['pEI'],
-                                                                   rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['pEI'],
+                                                          rng=self.p['rng'])
             synapsesEI.connect(i=preInds, j=postInds)
         self.p['nIncomingAvgEI'] = int(np.round(self.p['nInh'] * self.p['pEI']))
         print(self.p['qEI'], self.p['nIncomingAvgEI'])
@@ -2368,8 +2405,8 @@ class DestexheNetwork(object):
         if self.p['pII'] == 1:
             synapsesII.connect('i!=j', p=self.p['pII'])
         else:
-            preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['pII'],
-                                                                  allowAutapses=False, rng=self.p['rng'])
+            preInds, postInds = adjacency_indices_within(self.p['nInh'], self.p['pII'],
+                                                         allowAutapses=False, rng=self.p['rng'])
             synapsesII.connect(i=preInds, j=postInds)
         self.p['nIncomingAvgII'] = int(np.round(self.p['nInh'] * self.p['pII']))
         print(self.p['qII'], self.p['nIncomingAvgII'])
@@ -2399,8 +2436,8 @@ class DestexheNetwork(object):
             target=self.unitsExc,
             on_pre='ge_post += wSyn * ' + str(useQExc / nS) + ' * nS',
         )
-        preInds, postInds = generate_adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
-                                                              allowAutapses=False, rng=self.p['rng'])
+        preInds, postInds = adjacency_indices_within(self.p['nExc'], self.p['propConnect'],
+                                                     allowAutapses=False, rng=self.p['rng'])
         synapsesEE.connect(i=preInds, j=postInds)
         weights = norm_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesEE.wSyn = weights
@@ -2415,8 +2452,8 @@ class DestexheNetwork(object):
             target=self.unitsInh,
             on_pre='ge_post += wSyn * ' + str(useQExc / nS) + ' * nS',
         )
-        preInds, postInds = generate_adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'],
-                                                               rng=self.p['rng'])
+        preInds, postInds = adjacency_indices_between(self.p['nExc'], self.p['nInh'], self.p['propConnect'],
+                                                      rng=self.p['rng'])
         synapsesIE.connect(i=preInds, j=postInds)
         weights = norm_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesIE.wSyn = weights
@@ -2431,8 +2468,8 @@ class DestexheNetwork(object):
             target=self.unitsExc,
             on_pre='gi_post += wSyn * ' + str(useQInh / nS) + ' * nS',
         )
-        preInds, postInds = generate_adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'],
-                                                               rng=self.p['rng'])
+        preInds, postInds = adjacency_indices_between(self.p['nInh'], self.p['nExc'], self.p['propConnect'],
+                                                      rng=self.p['rng'])
         synapsesEI.connect(i=preInds, j=postInds)
         weights = norm_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesEI.wSyn = weights
@@ -2447,8 +2484,8 @@ class DestexheNetwork(object):
             target=self.unitsInh,
             on_pre='gi_post += wSyn * ' + str(useQInh / nS) + ' * nS',
         )
-        preInds, postInds = generate_adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
-                                                              allowAutapses=False, rng=self.p['rng'])
+        preInds, postInds = adjacency_indices_within(self.p['nInh'], self.p['propConnect'],
+                                                     allowAutapses=False, rng=self.p['rng'])
         synapsesII.connect(i=preInds, j=postInds)
         weights = norm_weights(preInds.size, normalMean, normalSD, rng=self.p['rng'])
         synapsesII.wSyn = weights
@@ -2968,7 +3005,7 @@ class JercogEphysNetwork(object):
 
     def initialize_units(self):
         unitModel = '''
-        dv/dt = (gl * (eLeak - v) - iAdapt + iExt) / Cm: volt (unless refractory)
+        dv/dt = (gl * (eLeak - v) - iAdapt + iExt * iExtShape) / Cm: volt (unless refractory)
         diAdapt/dt = -iAdapt / tauAdapt : amp
 
         eLeak : volt
@@ -2976,6 +3013,7 @@ class JercogEphysNetwork(object):
         vThresh : volt
         betaAdapt : amp * second
         iExt : amp
+        iExtShape = iExtShapeRecorded(t) : 1
         gl : siemens
         Cm : farad
         '''
@@ -3165,7 +3203,14 @@ class JercogEphysNetwork(object):
         self.create_monitors()
 
     def run(self):
+        self.p['duration'] = self.p['baselineDur'] + self.p['iDur'] + self.p['afterDur']
+
         tauAdapt = self.p['adaptTau']
+        iExtShapeArray = np.zeros((int(self.p['duration'] / self.p['dt']),))
+        startCurrentIndex = int(self.p['baselineDur'] / self.p['dt'])
+        endCurrentIndex = int((self.p['baselineDur'] + self.p['iDur']) / self.p['dt'])
+        iExtShapeArray[startCurrentIndex:endCurrentIndex] = 1
+        iExtShapeRecorded = TimedArray(iExtShapeArray, dt=self.p['dt'])
 
         self.N.run(self.p['duration'],
                    report=self.p['reportType'],

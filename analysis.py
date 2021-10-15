@@ -4,11 +4,31 @@ analysing the results, particularly of the trainer
 
 from brian2 import pA, second, Hz
 import numpy as np
+from scipy.stats import mode
 import matplotlib.pyplot as plt
+
 from stats import moving_average, regress_linear, remove_outliers
 from generate import weight_matrix_from_flat_inds_weights
 from plot import weight_matrix
-from scipy.stats import mode
+from results import Results
+
+
+def combine_two_sessions(R1, R2):
+    # R will concatenate the "trials" dimension of R1 and R2 for all "trial-based" attributes...
+    # while inheriting all the rest of the attributes from R1
+
+    R = Results()
+    for attribute in dir(R1):
+        if attribute[0] == '_':
+            continue
+        if isinstance(getattr(R1, attribute), np.ndarray):
+            a = getattr(R1, attribute)
+            if R1.p['nTrials'] in a.shape:  # this is hacky and will fail when the number of trials matches something
+                useAxis = a.shape.index(R1.p['nTrials'])
+                setattr(R, attribute, np.concatenate((getattr(R1, attribute), getattr(R2, attribute),), axis=useAxis))
+                continue
+        setattr(R, attribute, getattr(R1, attribute))
+    return R
 
 
 def generate_description(R):
@@ -56,6 +76,19 @@ def FR_weights(R, startTrialInd=0, endTrialInd=-1):
     ax[1].set_ylabel('Weight (pA)')
 
     f.suptitle(R.importantInfoString)
+
+
+def calculate_convergence_index(R, movAvgWidth=31):
+    # algorithm for deciding when "FR convergence" took place
+
+    wEEDiffAbsMAvg = np.fabs(moving_average(np.ediff1d(R.trialwEE), movAvgWidth))
+    wEIDiffAbsMAvg = np.fabs(moving_average(np.ediff1d(R.trialwEI), movAvgWidth))
+    wIEDiffAbsMAvg = np.fabs(moving_average(np.ediff1d(R.trialwIE), movAvgWidth))
+    wIIDiffAbsMAvg = np.fabs(moving_average(np.ediff1d(R.trialwII), movAvgWidth))
+
+    wSum = wEEDiffAbsMAvg + wEIDiffAbsMAvg + wIEDiffAbsMAvg + wIIDiffAbsMAvg
+
+    return wSum
 
 
 def determine_first_convergent_trial(R, movAvgWidth=31, movUnderWidth=51):
@@ -348,3 +381,4 @@ def weights_matrix_compare(R):
                   clabel='Weight (pA)', limsMethod='custom', vlims=vlims)
     weight_matrix(ax7[1], wFullFinalPlot, xlabel='Post Index', ylabel='Pre Index',
                   clabel='Weight (pA)', limsMethod='custom', vlims=vlims)
+
