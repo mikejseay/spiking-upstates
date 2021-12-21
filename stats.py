@@ -11,6 +11,13 @@ def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'valid') / w
 
 
+def outlying(a, sd_thresh=5):
+    a_mean = np.nanmean(a)
+    a_std = np.nanstd(a)
+    a_outlying = np.logical_or(a > a_mean + sd_thresh * a_std, a < a_mean - sd_thresh * a_std)
+    return a_outlying
+
+
 def remove_outliers(a, sd_thresh=5):
     a_mean = np.nanmean(a)
     a_std = np.nanstd(a)

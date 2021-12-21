@@ -885,8 +885,8 @@ paramsJercogEphysBuono7InfUp = {
     'vThreshExc': -52 * mV,
     'vThreshExc2': -46 * mV,
     'adaptTau': 500 * ms,
-    'betaAdaptExc': 8 * nA * ms,  # 14.5 * nA * ms,
-    'betaAdaptExc2': 8 * nA * ms,  # 14.5 * nA * ms,
+    'betaAdaptExc': 7 * nA * ms,  # 14.5 * nA * ms,
+    'betaAdaptExc2': 7 * nA * ms,  # 14.5 * nA * ms,
     'refractoryPeriodExc': 2.5 * ms,
     'refractoryPeriodExc2': 2.5 * ms,
     'refractoryPeriod': 1 * ms,  # overridden by the above but necessary
@@ -904,7 +904,7 @@ paramsJercogEphysBuono7InfUp = {
     'eLeakInh': -65 * mV,
     'vResetInh': -58 * mV,
     'vThreshInh': -43 * mV,
-    'betaAdaptInh': 0 * nA * ms,
+    'betaAdaptInh': 1 * nA * ms,
     'refractoryPeriodInh': 1 * ms,
     'membraneCapacitanceInh': 120 * pF,  # so it's smaller for inhibitory neurons
     'gLeakInh': 8 * nS,  # so it's the same between the two

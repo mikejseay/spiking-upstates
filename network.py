@@ -859,16 +859,18 @@ class JercogNetwork(object):
 
         self.p['iKickRecorded'] = fixed_current_series(0, self.p['duration'], self.p['dt'])
 
-    def initialize_external_input_uncorrelated(self, excWeightMultiplier=1):
+    def initialize_external_input_uncorrelated(self, currentAmpExc=1, currentAmpInh=1):
 
         inputGroupUncorrelated = PoissonGroup(int(self.p['nPoissonUncorrInputUnits']), self.p['poissonUncorrInputRate'])
-        feedforwardSynapsesUncorr = Synapses(inputGroupUncorrelated, self.units,
-                                             on_pre='uE_post += ' + str(
-                                                 excWeightMultiplier / self.p['tauRiseExc'] * ms))
+        feedforwardSynapsesUncorrExc = Synapses(inputGroupUncorrelated, self.unitsExc,
+                                                on_pre='uExt_post += ' + str(currentAmpExc) + ' * pA')
+        feedforwardSynapsesUncorrInh = Synapses(inputGroupUncorrelated, self.unitsInh,
+                                                on_pre='uExt_post += ' + str(currentAmpInh) + ' * pA')
 
-        feedforwardSynapsesUncorr.connect('i==j')
+        feedforwardSynapsesUncorrExc.connect('i==j')
+        feedforwardSynapsesUncorrInh.connect('i==j')
 
-        self.N.add(inputGroupUncorrelated, feedforwardSynapsesUncorr)
+        self.N.add(inputGroupUncorrelated, feedforwardSynapsesUncorrExc, feedforwardSynapsesUncorrInh)
 
     def initialize_recurrent_synapses(self):
 
@@ -1907,6 +1909,73 @@ class DestexheNetwork(object):
         self.unitsInh = unitsInh
         self.N.add(units)
 
+    def initialize_units_kickable_iExt(self):
+        unitModel = '''
+            dv/dt = (gl * (El - v) + gl * delta * exp((v - vThresh) / delta) - w +
+                     gext * (Ee - v) + ge * (Ee - v) +  gi * (Ei - v) + kKick * iKick) / Cm: volt (unless refractory)
+            dw/dt = (a * (v - El) - w) / tau_w : amp
+            dge/dt = -ge / tau_e : siemens
+            dgi/dt = -gi / tau_i : siemens
+            dgext/dt = -gext / tau_e : siemens
+            kKick : amp
+            iKick = iKickRecorded(t) : 1
+            El : volt
+            delta: volt
+            a : siemens
+            b : amp
+            vThresh : volt
+            '''
+
+        resetCode = '''
+        v = El
+        w += b
+        '''
+
+        threshCode = 'v > vThresh + 5 * delta'
+        self.p['vThreshExc'] = self.p['vThresh'] + 5 * self.p['deltaVExc']
+        self.p['vThreshInh'] = self.p['vThresh'] + 5 * self.p['deltaVInh']
+
+        # threshCode = 'v > vThresh'
+        # self.p['vThreshExc'] = self.p['vThresh']
+        # self.p['vThreshInh'] = self.p['vThresh']
+
+        units = NeuronGroup(
+            N=self.p['nUnits'],
+            model=unitModel,
+            method=self.p['updateMethod'],
+            threshold=threshCode,
+            reset=resetCode,
+            refractory=self.p['refractoryPeriod'],
+            clock=defaultclock,
+        )
+
+        self.p['nInh'] = int(self.p['propInh'] * self.p['nUnits'])
+        self.p['nExc'] = int(self.p['nUnits'] - self.p['nInh'])
+        self.p['nExcSpikemon'] = int(self.p['nExc'] * self.p['propSpikemon'])
+        self.p['nInhSpikemon'] = int(self.p['nInh'] * self.p['propSpikemon'])
+
+        unitsExc = units[:self.p['nExc']]
+        unitsInh = units[self.p['nExc']:]
+
+        unitsExc.v = self.p['eLeakExc']
+        unitsExc.El = self.p['eLeakExc']
+        unitsExc.delta = self.p['deltaVExc']
+        unitsExc.a = self.p['aExc']
+        unitsExc.b = self.p['bExc']
+        unitsExc.vThresh = self.p['vThresh']
+
+        unitsInh.v = self.p['eLeakInh']
+        unitsInh.El = self.p['eLeakInh']
+        unitsInh.delta = self.p['deltaVInh']
+        unitsInh.a = self.p['aInh']
+        unitsInh.b = self.p['bInh']
+        unitsInh.vThresh = self.p['vThresh']
+
+        self.units = units
+        self.unitsExc = unitsExc
+        self.unitsInh = unitsInh
+        self.N.add(units)
+
     def initialize_units_iExt(self):
         unitModel = '''
         dv/dt = (gl * (El - v) + gl * delta * exp((v - vThresh) / delta) - w +
@@ -2700,15 +2769,39 @@ class DestexheNetwork(object):
         else:
             pass
 
+    def set_paradoxical_kicked(self):
+        unitsInhKicked = self.unitsInh[:int(self.p['nInh'] * self.p['propKicked'])]
+        unitsInhKicked.kKick = self.p['kickAmplitudeInh']
+
     def create_monitors(self):
 
         spikeMonExc = SpikeMonitor(self.unitsExc[:self.p['nExcSpikemon']])
         spikeMonInh = SpikeMonitor(self.unitsInh[:self.p['nInhSpikemon']])
 
         stateMonExc = StateMonitor(self.unitsExc, self.p['recordStateVariables'],
-                                   record=self.p['indsRecordStateExc'])
+                                   record=self.p['indsRecordStateExc'],
+                                   clock=defaultclock)
         stateMonInh = StateMonitor(self.unitsInh, self.p['recordStateVariables'],
-                                   record=self.p['indsRecordStateInh'])
+                                   record=self.p['indsRecordStateInh'],
+                                   clock=defaultclock)
+
+        self.spikeMonExc = spikeMonExc
+        self.spikeMonInh = spikeMonInh
+        self.stateMonExc = stateMonExc
+        self.stateMonInh = stateMonInh
+        self.N.add(spikeMonExc, spikeMonInh, stateMonExc, stateMonInh)
+
+    def create_monitors_allVoltage(self):
+
+        spikeMonExc = SpikeMonitor(self.unitsExc[:self.p['nExcSpikemon']])
+        spikeMonInh = SpikeMonitor(self.unitsInh[:self.p['nInhSpikemon']])
+
+        stateMonExc = StateMonitor(self.unitsExc, self.p['recordStateVariables'],
+                                   record=True,
+                                   dt=self.p['stateVariableDT'])
+        stateMonInh = StateMonitor(self.unitsInh, self.p['recordStateVariables'],
+                                   record=True,
+                                   dt=self.p['stateVariableDT'])
 
         self.spikeMonExc = spikeMonExc
         self.spikeMonInh = spikeMonInh
@@ -2727,6 +2820,7 @@ class DestexheNetwork(object):
     def run(self):
 
         # vThresh = self.p['vThresh']
+        iKickRecorded = self.p['iKickRecorded']
         Cm = self.p['membraneCapacitance']
         gl = self.p['gLeak']
         tau_w = self.p['adaptTau']

@@ -144,7 +144,7 @@ class Results(object):
         self.timeArray = np.arange(0, float(self.p['duration']), float(self.p['dt']))
 
     def calculate_PSTH(self):
-        dtHist = float(10 * ms)
+        dtHist = float(self.p['dtHistPSTH'])
         histBins = arange(0, float(self.p['duration']), dtHist)
         histCenters = arange(0 + dtHist / 2, float(self.p['duration']) - dtHist / 2, dtHist)
 
@@ -728,7 +728,7 @@ class ResultsEphys(object):
         self.stateMonInhV = npzObject['stateMonInhV']
         self.spikeTrainsInh = npzObject['spikeTrainsInh'][()]
 
-        if self.p['useSecondPopExc']:
+        if 'useSecondPopExc' in self.p and self.p['useSecondPopExc']:
             self.spikeMonExc2T = npzObject['spikeMonExc2T']
             self.spikeMonExc2I = npzObject['spikeMonExc2I']
             self.spikeMonExc2C = npzObject['spikeMonExc2C']
@@ -778,13 +778,15 @@ class ResultsEphys(object):
         useThresh = self.p['vThreshExc'] / mV
         ax[0, 0].plot(stateMonT, self.stateMonExcV[I_index_for_ISI, :], color='g')
         # ax[0, 0].vlines(self.spikeTrainsExc[()][I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
-        ax[0, 0].vlines(self.spikeTrainsExc[I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
+        # ax[0, 0].vlines(self.spikeTrainsExc[I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
+        ax[0, 0].vlines(self.spikeTrainsExc[I_index_for_ISI] / second, useThresh, useThresh + 40, color='g', lw=.3)
         ax[0, 0].set(xlim=(0., self.p['duration'] / second), ylabel='mV', xlabel='Time (s)')
 
         useThresh = self.p['vThreshInh'] / mV
         ax[0, 1].plot(stateMonT, self.stateMonInhV[I_index_for_ISI, :], color='r')
         # ax[0, 1].vlines(self.spikeTrainsInh[()][I_index_for_ISI], useThresh, useThresh + 40, color='g', lw=.3)
-        ax[0, 1].vlines(self.spikeTrainsInh[I_index_for_ISI], useThresh, useThresh + 40, color='r', lw=.3)
+        # ax[0, 1].vlines(self.spikeTrainsInh[I_index_for_ISI], useThresh, useThresh + 40, color='r', lw=.3)
+        ax[0, 1].vlines(self.spikeTrainsInh[I_index_for_ISI] / second, useThresh, useThresh + 40, color='r', lw=.3)
         ax[0, 1].set(xlim=(0., self.p['duration'] / second), ylabel='mV', xlabel='Time (s)')
 
         ax[1, 0].plot(I_ext_range * 1e9, ExcData, label='Exc')

@@ -1,3 +1,7 @@
+# results files
+*.csv
+*.npz
+
 # created movies
 *.mp4
 *.gif

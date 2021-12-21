@@ -36,6 +36,8 @@ p['simName'] = p['simName'] + 'Fan'
 # because the initialize_units defaultly sets the weights based on this number
 # but we want to initialize only 2 units (to test)
 # these represent the number of incoming excitatory / inhibtory synapses per unit
+p['nUnits'] = 2000
+p['propConnect'] = 0.25
 p['nIncInh'] = int(p['propConnect'] * p['propInh'] * p['nUnits'])
 p['nIncExc'] = int(p['propConnect'] * (1 - p['propInh']) * p['nUnits'])
 

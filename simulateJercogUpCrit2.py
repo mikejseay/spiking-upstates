@@ -20,11 +20,23 @@ p['addBackRemovedConns'] = True
 p['paradoxicalKickInh'] = True
 weightMult = 1
 
-paradoxicalKickProp = 0.5
-paradoxicalKickTimes = [1000 * ms]
+# PARADOXICAL EFFECT EXPERIMENT PARAMETERS
+paradoxicalKickProp = 1
+paradoxicalKickTimes = [3000 * ms]
 paradoxicalKickDurs = [1000 * ms]
 paradoxicalKickSizes = [1]
-paradoxicalKickAmp = 8 * pA
+paradoxicalKickAmp = 200 * pA
+
+comparisonStartTime = 2000 * ms
+comparisonEndTime = 3000 * ms
+
+p['propConnectFeedforwardProjectionUncorr'] = 0.05  # proportion of feedforward projections that are connected
+p['nPoissonUncorrInputUnits'] = 2000
+p['nUncorrFeedforwardSynapsesPerUnit'] = int(p['propConnectFeedforwardProjectionUncorr'] * 2000 * (1 - p['propInh']))
+p['poissonUncorrInputRate'] = 2 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
+p['poissonUncorrInputAmpExc'] = 70  # pA
+p['poissonUncorrInputAmpInh'] = 70  # pA
+p['duration'] = 5.1 * second
 
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
@@ -44,6 +56,7 @@ p['setMinimumBasedOnBalance'] = False
 p['recordMovieVariables'] = False
 p['downSampleVoltageTo'] = 1 * ms
 p['stateVariableDT'] = 1 * ms
+p['dtHistPSTH'] = 10 * ms
 p['recordAllVoltage'] = True
 
 # simulation params
@@ -52,12 +65,15 @@ p['propConnect'] = 0.25
 
 # p['initWeightMethod'] = 'guessBuono7Weights2e3p025'
 # p['initWeightMethod'] = 'guessBuono7Weights2e3p025SlightLowTuned'
+# p['initWeightMethod'] = 'normalAsynchronousIrregular'
+# p['initWeightMethod'] = 'identicalAsynchronousIrregular'
 p['initWeightMethod'] = 'resumePrior'
 p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_guessBuono7Weights2e3p025SlightLow__2021-09-04-08-20_results'
-p['kickType'] = 'spike'  # kick or spike
+# p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_guessBuono7Weights2e3p025SlightLow_2021-12-09-09-41-18_results'
+p['kickType'] = 'barrage'  # kick or spike or barrage
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
 p['timeToSpike'] = 100 * ms
-p['timeAfterSpiked'] = 3000 * ms
+p['timeAfterSpiked'] = paradoxicalKickTimes[-1] + paradoxicalKickDurs[-1] + 1000 * ms
 p['spikeInputAmplitude'] = 0.96  # in nA
 p['allowAutapses'] = False
 
@@ -134,8 +150,8 @@ if p['manipulateConnectivity']:
 
     if p['addBackRemovedConns']:
         nConnRemoved = removeInds.size
-        # propAddedConnToE2E2 = p['nUnitsSecondPopExc'] / (p['nExc'] - p['nUnitsToSpike'])
-        propAddedConnToE2E2 = (p['nUnitsSecondPopExc'] / (p['nExc'] - p['nUnitsToSpike'])) ** 2  # arguably should be this
+        propAddedConnToE2E2 = p['nUnitsSecondPopExc'] / (p['nExc'] - p['nUnitsToSpike'])
+        # propAddedConnToE2E2 = (p['nUnitsSecondPopExc'] / (p['nExc'] - p['nUnitsToSpike'])) ** 2  # arguably should be this
         nConnAddedToE2E2 = int(np.round(propAddedConnToE2E2 * nConnRemoved))
         nConnAddedToE1E1 = nConnRemoved - nConnAddedToE2E2
         E2E2Inds = np.where(np.logical_and(np.logical_and(PR.preEE >= startIndExc2, PR.preEE < endIndExc2),
@@ -234,13 +250,12 @@ R.calculate_PSTH()
 R.calculate_voltage_histogram(removeMode=True, useAllRecordedUnits=True)
 R.calculate_upstates()
 if len(R.ups) > 0:
-    R.reshape_upstates()
+    # R.reshape_upstates()
     R.calculate_FR_in_upstates()
     print('average FR in upstate for Exc: {:.2f}, Inh: {:.2f} '.format(R.upstateFRExcHist.mean(), R.upstateFRInhHist.mean()))
 
 
 R.calculate_voltage_histogram(removeMode=True)
-R.reshape_upstates()
 
 # calculate the best 2 E and single I units based on smallest STD during Up state
 if R.ups.size > 0:
@@ -274,10 +289,36 @@ R.plot_voltage_histogram_sideways(ax1[3], 'Inh')
 fig1.suptitle(R.p['simName'])
 uniqueSpikers = np.unique(R.spikeMonExcI).size
 totalSpikes = R.spikeMonExcI.size
-print(uniqueSpikers, 'neurons fired an average of', totalSpikes / uniqueSpikers, 'spikes')
+if uniqueSpikers > 0:
+    print(uniqueSpikers, 'neurons fired an average of', totalSpikes / uniqueSpikers, 'spikes')
 
-if p['paradoxicalKickInh']:
-    pass
+if p['paradoxicalKickInh']:  # plot the current injection region
+
+    # adorn plot with rectangular patches that show where the current injection took place
+    left = paradoxicalKickTimes[0] / second
+    width = paradoxicalKickDurs[0] / second
+    for anax1 in ax1:
+        anax1_ymin, anax1_ymax = anax1.get_ylim()
+        bottom = anax1_ymin
+        height = anax1_ymax - anax1_ymin
+        rect = plt.Rectangle((left, bottom), width, height,
+                             facecolor="blue", alpha=0.1)
+        anax1.add_patch(rect)
+
+    # print the FR during the paradoxical region vs before
+    paraStartInd = np.argmin(np.abs(R.histCenters - (paradoxicalKickTimes[0] / second)))
+    paraEndInd = np.argmin(np.abs(R.histCenters - ((paradoxicalKickTimes[0] + paradoxicalKickDurs[0]) / second)))
+
+    compStartInd = np.argmin(np.abs(R.histCenters - (comparisonStartTime / second)))
+    compEndInd = np.argmin(np.abs(R.histCenters - (comparisonEndTime / second)))
+
+    paraFRExc = R.FRExc[paraStartInd:paraEndInd].mean()
+    paraFRInh = R.FRInh[paraStartInd:paraEndInd].mean()
+    compFRExc = R.FRExc[compStartInd:compEndInd].mean()
+    compFRInh = R.FRInh[compStartInd:compEndInd].mean()
+
+    print('E / I FR during para = {:.2f} / {:.2f}, before para = {:.2f} / {:.2f}'.format(paraFRExc, paraFRInh,
+                                                                                         compFRExc, compFRInh))
 
 if p['useSecondPopExc']:
     fig2, ax2 = plt.subplots(6, 1, num=2, figsize=(6, 9),
@@ -303,15 +344,15 @@ if p['useSecondPopExc']:
     totalSpikes = R.spikeMonExcI.size
     print(uniqueSpikers, 'neurons fired an average of', totalSpikes / uniqueSpikers, 'spikes')
 
-# print the FR during the paradoxical region vs after
-paraStartInd = np.argmin(np.abs(R.histCenters - (paradoxicalKickTimes[0] / second)))
-paraMidInd = np.argmin(np.abs(R.histCenters - ((paradoxicalKickTimes[0] + paradoxicalKickDurs[0]) / second)))
-paraEndInd = np.argmin(np.abs(R.histCenters - ((paradoxicalKickTimes[0] + 2 * paradoxicalKickDurs[0]) / second)))
-
-paraFRExc = R.FRExc[paraStartInd:paraMidInd].mean()
-paraFRInh = R.FRInh[paraStartInd:paraMidInd].mean()
-nonparaFRExc = R.FRExc[paraMidInd:paraEndInd].mean()
-nonparaFRInh = R.FRInh[paraMidInd:paraEndInd].mean()
-
-print('E / I FR during para = {:.2f} / {:.2f}, after para = {:.2f} / {:.2f}'.format(paraFRExc, paraFRInh,
-                                                                                    nonparaFRExc, nonparaFRInh))
+useE = compFRExc
+useI = compFRInh
+ESet = 5
+ISet = 14
+dwEE = useE * (ISet - useI + ESet - useE)
+dwEI = -useI * (ISet - useI + ESet - useE)
+dwIE = useE * (ISet - useI - ESet + useE)
+dwII = useI * (ISet - useI + ESet - useE)
+print(dwEE)
+print(dwEI)
+print(dwIE)
+print(dwII)

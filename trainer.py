@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from brian2 import ms, nA, pA, Hz, second, mV
-from network import JercogEphysNetwork, JercogNetwork
+from network import JercogEphysNetwork, JercogNetwork, DestexheNetwork
 from results import ResultsEphys, Results
 from generate import lognorm_weights, norm_weights, adjacency_matrix_from_flat_inds, \
     weight_matrix_from_flat_inds_weights
@@ -23,7 +23,7 @@ class JercogTrainer(object):
 
     def __init__(self, p):
         self.p = p
-        self.p['initTime'] = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        self.p['initTime'] = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         # construct name from parameterSet, nUnits, propConnect, useRule, initWeightMethod, nameSuffix, initTime
         self.saveName = '_'.join((p['paramSet'], str(int(p['nUnits'])), str(p['propConnect']).replace('.', 'p'),
                                   p['useRule'], p['initWeightMethod'], p['nameSuffix'], p['initTime']))
@@ -100,6 +100,9 @@ class JercogTrainer(object):
                                           unitSpacing=5,  # unitSpacing is a useless input in this context
                                           timeSpacing=self.p['timeAfterSpiked'], startTime=self.p['timeToSpike'],
                                           currentAmp=self.p['spikeInputAmplitude'])
+        elif self.p['kickType'] == 'barrage':
+            JN.initialize_external_input_uncorrelated(currentAmpExc=self.p['poissonUncorrInputAmpExc'],
+                                                      currentAmpInh=self.p['poissonUncorrInputAmpInh'],)
 
         if priorResults is not None:
             JN.initialize_recurrent_synapses_4bundles_results(priorResults)
@@ -216,6 +219,24 @@ class JercogTrainer(object):
                                                                      rng=self.p['rng'])
             self.wII_init = self.JN.synapsesII.jII[:] * norm_weights(self.JN.synapsesII.jII[:].size, 1, 0.2,
                                                                      rng=self.p['rng'])
+        elif self.p['initWeightMethod'] == 'identicalAsynchronousIrregular':
+            wEE_mean = 80
+            wIE_mean = 130
+            wEI_mean = 65
+            wII_mean = 80
+            self.wEE_init = wEE_mean * np.ones(self.JN.synapsesEE.jEE[:].size) * pA
+            self.wIE_init = wIE_mean * np.ones(self.JN.synapsesIE.jIE[:].size) * pA
+            self.wEI_init = wEI_mean * np.ones(self.JN.synapsesEI.jEI[:].size) * pA
+            self.wII_init = wII_mean * np.ones(self.JN.synapsesII.jII[:].size) * pA
+        elif self.p['initWeightMethod'] == 'normalAsynchronousIrregular':
+            wEE_mean = 80
+            wIE_mean = 80
+            wEI_mean = 280
+            wII_mean = 280
+            self.wEE_init = wEE_mean * norm_weights(self.JN.synapsesEE.jEE[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wIE_init = wIE_mean * norm_weights(self.JN.synapsesIE.jIE[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wEI_init = wEI_mean * norm_weights(self.JN.synapsesEI.jEI[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wII_init = wII_mean * norm_weights(self.JN.synapsesII.jII[:].size, 1, 0.2, rng=self.p['rng']) * pA
         elif self.p['initWeightMethod'] == 'defaultNormalScaled':
             self.wEE_init = self.JN.synapsesEE.jEE[:] * norm_weights(self.JN.synapsesEE.jEE[:].size, 1, 0.2,
                                                                      rng=self.p['rng']) * self.p['jEEScaleRatio']
@@ -3034,6 +3055,68 @@ class JercogTrainer(object):
             'posIE': self.posIE,
             'posEI': self.posEI,
             'posII': self.posII,
+            'spikeMonExcT': spikeMonExcT,
+            'spikeMonExcI': spikeMonExcI,
+            'spikeMonInhT': spikeMonInhT,
+            'spikeMonInhI': spikeMonInhI,
+            'stateMonExcV': stateMonExcV,
+            'stateMonInhV': stateMonInhV,
+        }
+
+        np.savez(savePath, **saveDict)
+
+
+class DestexheTrainer(object):
+
+    def __init__(self, p):
+        self.p = p
+        self.p['initTime'] = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        # construct name from parameterSet, nUnits, propConnect, useRule, initWeightMethod, nameSuffix, initTime
+        self.saveName = '_'.join((p['paramSet'], str(int(p['nUnits'])), str(p['propConnect']).replace('.', 'p'),
+                                  p['useRule'], p['initWeightMethod'], p['nameSuffix'], p['initTime']))
+
+    def set_up_network_upCrit(self, priorResults=None, recordAllVoltage=False):
+        # set up network, experiment, and start recording
+        DN = DestexheNetwork(self.p)
+        DN.initialize_network()
+        DN.initialize_units_kickable_iExt()
+
+        if self.p['kickType'] == 'barrage':
+            DN.initialize_external_input_uncorrelated()
+
+        # create synapses!
+        DN.initialize_recurrent_synapses_4bundles()
+
+        if recordAllVoltage:
+            DN.create_monitors_allVoltage()
+        else:
+            DN.create_monitors()
+
+        self.DN = DN
+
+    def run_upCrit(self):
+
+        # run the simulation
+        self.DN.run()
+
+    def save_params(self):
+        savePath = os.path.join(self.p['saveFolder'], self.saveName + '_params.pkl')
+        with open(savePath, 'wb') as f:
+            dill.dump(self.p, f)
+
+    def save_results_upCrit(self):
+        savePath = os.path.join(self.p['saveFolder'], self.saveName + '_results.npz')
+
+        useDType = np.single
+
+        spikeMonExcT = np.array(self.DN.spikeMonExc.t, dtype=useDType)
+        spikeMonExcI = np.array(self.DN.spikeMonExc.i, dtype=useDType)
+        spikeMonInhT = np.array(self.DN.spikeMonInh.t, dtype=useDType)
+        spikeMonInhI = np.array(self.DN.spikeMonInh.i, dtype=useDType)
+        stateMonExcV = np.array(self.DN.stateMonExc.v / mV, dtype=useDType)
+        stateMonInhV = np.array(self.DN.stateMonInh.v / mV, dtype=useDType)
+
+        saveDict = {
             'spikeMonExcT': spikeMonExcT,
             'spikeMonExcI': spikeMonExcI,
             'spikeMonInhT': spikeMonInhT,

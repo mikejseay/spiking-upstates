@@ -4,14 +4,14 @@ from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV
 
 from params import paramsJercog as p
 from params import (paramsJercogEphysBuono22, paramsJercogEphysBuono4, paramsJercogEphysBuono5, paramsJercogEphysBuono6,
-                    paramsJercogEphysBuono7)
+                    paramsJercogEphysBuono7, paramsJercogEphysBuono7InfUp)
 from generate import convert_kicks_to_current_series
 from trainer import JercogTrainer
 from results import Results
 
-p['useNewEphysParams'] = False
+p['useNewEphysParams'] = True
 p['useSecondPopExc'] = False
-ephysParams = paramsJercogEphysBuono7.copy()
+ephysParams = paramsJercogEphysBuono7InfUp.copy()
 
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
@@ -33,6 +33,7 @@ p['applyLogToFR'] = False
 p['setMinimumBasedOnBalance'] = False
 p['recordMovieVariables'] = True
 p['downSampleVoltageTo'] = 1 * ms
+p['dtHistPSTH'] = 10 * ms
 
 # simulation params
 p['nUnits'] = 2e3
@@ -77,9 +78,12 @@ p['saveTermsSeparately'] = False
 # p['initWeightMethod'] = 'randomUniformSarayHigh'
 # p['initWeightMethod'] = 'randomUniformMidUnequal'
 
-p['initWeightMethod'] = 'resumePrior'  # note this completely overwrites ALL values of the p parameter
-p['saveFolder'] += 'cross-homeo-pre-outer-homeo/'
-p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed2_2021-09-03-10-23_results'
+# p['initWeightMethod'] = 'resumePrior'  # note this completely overwrites ALL values of the p parameter
+# p['saveFolder'] += 'cross-homeo-pre-outer-homeo/'
+# p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed2_2021-09-03-10-23_results'
+
+p['initWeightMethod'] = 'resumePrior'
+p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_guessBuono7Weights2e3p025SlightLow__2021-09-04-08-20_results'
 
 p['kickType'] = 'spike'  # kick or spike
 p['jEEScaleRatio'] = None
@@ -160,7 +164,9 @@ p['saveTrials'] = np.array(p['saveTrials']) - 1
 if p['initWeightMethod'] == 'resumePrior':
     PR = Results()
     PR.init_from_file(p['initWeightPrior'], p['saveFolder'])
-    p = PR.p.copy()  # note this completely overwrites all settings above
+    p = dict(list(p.items()) + list(PR.p.items()))
+    # p = PR.p.copy()  # note this completely overwrites all settings above
+    # p['betaAdaptExc'] = 3 * nA * ms  # i apologize for this horrible hack
     p['nameSuffix'] = p['initWeightMethod'] + p['nameSuffix']  # a way to remember what it was...
     if 'seed' in p['nameSuffix']:  # this will only work for single digit seeds...
         rngSeed = int(p['nameSuffix'][p['nameSuffix'].find('seed') + 4])

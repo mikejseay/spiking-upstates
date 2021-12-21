@@ -42,15 +42,15 @@ USE_DISTRIBUTED_WEIGHTS = False
 normalMean = 1
 normalSD = 0.2
 
-APPLY_UNCORRELATED_INPUTS = False
-APPLY_CORRELATED_INPUTS = True
+APPLY_UNCORRELATED_INPUTS = True
+APPLY_CORRELATED_INPUTS = False
 
 USE_PRIOR_CORRELATED_INPUT_PATTERN = False  # note this will overwrite several paramters below
 loadFolder = 'C:/Users/mikejseay/Documents/BrianResults/'
 targetSim = 'destexheEphysBuono_2021-03-29-16-24'
 
-MONITOR_CORRELATED_INPUTS = True
-CORRELATED_INPUTS_TARGET_EXC = True
+MONITOR_CORRELATED_INPUTS = False
+CORRELATED_INPUTS_TARGET_EXC = False
 APPLY_KICKS = False
 
 # uncorrelated Poisson inputs (one-to-one, rate is usually multiplied by # of feedforward synapses per unit)
