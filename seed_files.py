@@ -86,6 +86,50 @@ crossHomeoPreOuterHomeo = {
         'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed8_2021-09-02-07-04_results'),
 }
 
+crossHomeoPreOuterHomeoNoLims = {
+    'subfolder': 'cross-homeo-pre-outer-homeo-noLims',
+    0: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed0_noSensorLims_2022-01-11-12-18_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed0noSensorLims_2022-01-13-23-06_results'),
+    1: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed1_noSensorLims_2022-01-11-12-37_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed1noSensorLims_2022-01-13-23-06_results'),
+    2: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed2_noSensorLims_2022-01-11-12-37_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed2noSensorLims_2022-01-13-23-06_results'),
+    3: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed3_noSensorLims_2022-01-11-13-34_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed3noSensorLims_2022-01-14-22-33_results'),
+    4: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed4_noSensorLims_2022-01-11-12-38_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed4noSensorLims_2022-01-14-22-33_results'),
+    5: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed5_noSensorLims_2022-01-12-11-46_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed5noSensorLims_2022-01-14-22-32_results'),
+    6: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed6_noSensorLims_2022-01-12-11-47_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed6noSensorLims_2022-01-14-22-32_results'),
+    7: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed7_noSensorLims_2022-01-12-11-47_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed7noSensorLims_2022-01-14-22-32_results'),
+    8: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed8_noSensorLims_2022-01-12-11-47_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed8noSensorLims_2022-01-14-22-31_results'),
+}
+
+crossHomeoPreOuterHomeoNoUpperLims = {
+    'subfolder': 'cross-homeo-pre-outer-homeo-noUpperLims',
+    0: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_seed0_noSensorLims_2022-01-20-23-04_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_resumePrior_seed0noSensorLims_2022-01-23-13-13_results'),
+    1: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_seed1_noSensorLims_2022-01-20-23-04_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_resumePrior_seed1noSensorLims_2022-01-23-13-13_results'),
+    2: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_seed2_noSensorLims_2022-01-20-23-04_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_resumePrior_seed2noSensorLims_2022-01-23-13-13_results'),
+    3: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_seed3_noSensorLims_2022-01-20-23-05_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_resumePrior_seed3noSensorLims_2022-01-23-13-14_results'),
+    4: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_seed4_noSensorLims_2022-01-20-23-05_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_resumePrior_seed4noSensorLims_2022-01-23-13-14_results'),
+    5: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_seed5_noSensorLims_2022-01-20-23-05_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_resumePrior_seed5noSensorLims_2022-01-23-13-15_results'),
+    6: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_seed6_noSensorLims_2022-01-20-23-05_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_resumePrior_seed6noSensorLims_2022-01-23-13-15_results'),
+    7: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_seed7_noSensorLims_2022-01-20-23-05_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_resumePrior_seed7noSensorLims_2022-01-23-13-15_results'),
+    8: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_seed8_noSensorLims_2022-01-20-23-05_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_resumePrior_seed8noSensorLims_2022-01-23-13-59_results'),
+}
+
 crossHomeoPreOuter = {
     'subfolder': 'cross-homeo-pre-outer',
     0: ('classicJercog_2000_0p25_cross-homeo-pre-outer_seed0__2021-09-02-07-12_results',

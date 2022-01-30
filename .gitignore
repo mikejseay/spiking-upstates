@@ -2,10 +2,11 @@
 *.csv
 *.npz
 
-# created movies
+# created figures / movies
 *.mp4
 *.gif
 *.png
+*.pdf
 
 # GeNN things
 /GeNNworkspace/

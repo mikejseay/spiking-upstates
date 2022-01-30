@@ -16,9 +16,13 @@ rngSeed = 43
 defaultclock.dt = p['dt']
 
 p['useSecondPopExc'] = False
-p['manipulateConnectivity'] = False
-p['removePropConn'] = 0.2
-p['addBackRemovedConns'] = True
+p['manipulateConnectivity'] = True
+p['removePropConn'] = 0.25
+p['addBackRemovedConns'] = False
+p['addBackRemovedConnsE2E2'] = False
+p['compensateInhibition'] = False
+p['randomizeConnectivity'] = False
+weightMult = 0.85
 
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
@@ -28,7 +32,7 @@ if p['useNewEphysParams']:
     p.update(ephysParams)
 
 p['useRule'] = 'upPoisson'
-p['nameSuffix'] = ''
+p['nameSuffix'] = 'doubleEx2Rem25'
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
 p['useOldWeightMagnitude'] = True
@@ -37,6 +41,8 @@ p['applyLogToFR'] = False
 p['setMinimumBasedOnBalance'] = False
 p['recordMovieVariables'] = False
 p['downSampleVoltageTo'] = 1 * ms
+p['dtHistPSTH'] = 10 * ms
+p['recordAllVoltage'] = False
 
 # good ones
 # buonoEphys_2000_0p25_upPoisson_guessLowWeights2e3p025LogNormal2_test_2021-08-13-15-58_results
@@ -55,7 +61,7 @@ p['initWeightMethod'] = 'resumePrior'
 p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_guessBuono7Weights2e3p025SlightLow__2021-09-04-08-20_results'
 p['kickType'] = 'spike'  # kick or spike
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
-p['nUnitsSecondPopExc'] = int(np.round(0.05 * p['nUnits']))
+p['nUnitsSecondPopExc'] = int(np.round(0.1 * p['nUnits']))
 p['startIndSecondPopExc'] = p['nUnitsToSpike']
 
 # Poisson
@@ -127,6 +133,13 @@ if p['initWeightMethod'] == 'resumePrior':
 else:
     PR = None
 
+if p['randomizeConnectivity']:
+
+    PR.wEE_final = p['rng'].permutation(PR.wEE_final)
+    PR.wEI_final = p['rng'].permutation(PR.wEI_final)
+    PR.wIE_final = p['rng'].permutation(PR.wIE_final)
+    PR.wII_final = p['rng'].permutation(PR.wII_final)
+
 if p['manipulateConnectivity']:
 
     startIndExc2 = p['startIndSecondPopExc']
@@ -139,8 +152,8 @@ if p['manipulateConnectivity']:
         np.where(
             np.logical_and(PR.posEE >= endIndExc2, np.logical_and(PR.preEE >= startIndExc2, PR.preEE < endIndExc2)))[0]
 
-    removeE2E1Inds = np.random.choice(E2E1Inds, int(np.round(E2E1Inds.size * p['removePropConn'])), replace=False)
-    removeE1E2Inds = np.random.choice(E1E2Inds, int(np.round(E1E2Inds.size * p['removePropConn'])), replace=False)
+    removeE2E1Inds = p['rng'].choice(E2E1Inds, int(np.round(E2E1Inds.size * p['removePropConn'])), replace=False)
+    removeE1E2Inds = p['rng'].choice(E1E2Inds, int(np.round(E1E2Inds.size * p['removePropConn'])), replace=False)
 
     removeInds = np.concatenate((removeE2E1Inds, removeE1E2Inds))
 
@@ -153,65 +166,74 @@ if p['manipulateConnectivity']:
     PR.wEE_final = np.delete(PR.wEE_final, removeInds, None)
 
     if p['addBackRemovedConns']:
-        nConnRemoved = removeInds.size
-        propAddedConnToE2E2 = p['nUnitsSecondPopExc'] / (p['nExc'] - p['nUnitsToSpike'])
-        # propAddedConnToE2E2 = (p['nUnitsSecondPopExc'] / (p['nExc'] - p['nUnitsToSpike'])) ** 2  # arguably should be this
-        nConnAddedToE2E2 = int(np.round(propAddedConnToE2E2 * nConnRemoved))
-        nConnAddedToE1E1 = nConnRemoved - nConnAddedToE2E2
-        E2E2Inds = np.where(np.logical_and(np.logical_and(PR.preEE >= startIndExc2, PR.preEE < endIndExc2),
-                                           np.logical_and(PR.posEE >= startIndExc2, PR.posEE < endIndExc2)))[0]
-        E1E1Inds = np.where(np.logical_and(PR.preEE >= endIndExc2, PR.posEE >= endIndExc2))[0]
-
         # construct a probability array that is the shape of E2E2, fill it with the value of 1 / (nExc2*nExc2 - nExistingConns - nExc2)
         # in positions where there are not already connections... set existing connection and the diagonal to 0 (should sum to 1)
         # and same for E1E1
         # this will allow us to choose some number of new synapses to add, where there are not already connections, and not on the diag
 
+
+        nConnRemoved = removeInds.size
+        # propAddedConnToE2E2 = p['nUnitsSecondPopExc'] / (p['nExc'] - p['nUnitsToSpike'])
+        propAddedConnToE2E2 = (p['nUnitsSecondPopExc'] / (p['nExc'] - p['nUnitsToSpike'])) ** 2  # arguably should be this
+
+        nConnAddedToE2E2 = int(np.round(propAddedConnToE2E2 * nConnRemoved))
+        nConnAddedToE1E1 = nConnRemoved - nConnAddedToE2E2
+
         nExc1 = p['nExc'] - p['nUnitsSecondPopExc'] - p['nUnitsToSpike']
         nExc2 = p['nUnitsSecondPopExc']
-        probabilityArrayE2E2 = np.full((nExc2, nExc2), 1 / (nExc2 * nExc2 - E2E2Inds.size - nExc2))
-        probabilityArrayE2E2[PR.preEE[E2E2Inds] - p['nUnitsToSpike'], PR.posEE[E2E2Inds] - p['nUnitsToSpike']] = 0
-        probabilityArrayE2E2[np.diag_indices_from(probabilityArrayE2E2)] = 0
+
+        E1E1Inds = np.where(np.logical_and(PR.preEE >= endIndExc2, PR.posEE >= endIndExc2))[0]
         probabilityArrayE1E1 = np.full((nExc1, nExc1), 1 / (nExc1 * nExc1 - E1E1Inds.size - nExc1))
         probabilityArrayE1E1[
             PR.preEE[E1E1Inds] - nExc2 - p['nUnitsToSpike'], PR.posEE[E1E1Inds] - nExc2 - p['nUnitsToSpike']] = 0
         probabilityArrayE1E1[np.diag_indices_from(probabilityArrayE1E1)] = 0
+        indicesE1E1Flat = p['rng'].choice(nExc1 ** 2, nConnAddedToE1E1, replace=False, p=probabilityArrayE1E1.ravel())
 
-        indicesE2E2Flat = np.random.choice(nExc2 ** 2, nConnAddedToE2E2, replace=False, p=probabilityArrayE2E2.ravel())
-        indicesE1E1Flat = np.random.choice(nExc1 ** 2, nConnAddedToE1E1, replace=False, p=probabilityArrayE1E1.ravel())
+        E2E2Inds = np.where(np.logical_and(np.logical_and(PR.preEE >= startIndExc2, PR.preEE < endIndExc2),
+                                           np.logical_and(PR.posEE >= startIndExc2, PR.posEE < endIndExc2)))[0]
+        probabilityArrayE2E2 = np.full((nExc2, nExc2), 1 / (nExc2 * nExc2 - E2E2Inds.size - nExc2))
+        probabilityArrayE2E2[PR.preEE[E2E2Inds] - p['nUnitsToSpike'], PR.posEE[E2E2Inds] - p['nUnitsToSpike']] = 0
+        probabilityArrayE2E2[np.diag_indices_from(probabilityArrayE2E2)] = 0
+
+        indicesE2E2Flat = p['rng'].choice(nExc2 ** 2, nConnAddedToE2E2, replace=False, p=probabilityArrayE2E2.ravel())
 
         propConnE2E1 = (E2E1Inds.size - removeE2E1Inds.size) / (nExc2 * nExc1)
         propConnE1E2 = (E1E2Inds.size - removeE1E2Inds.size) / (nExc2 * nExc1)
         propConnE2E2 = (E2E2Inds.size + nConnAddedToE2E2) / (nExc2 * nExc2)
         propConnE1E1 = (E1E1Inds.size + nConnAddedToE1E1) / (nExc1 * nExc1)
 
-        print(propConnE2E1)
-        print(propConnE1E2)
-        print(propConnE2E2)
-        print(propConnE1E1)
+        print('E2E1 conn changed from {:.4f} to {:.4f}'.format(E2E1Inds.size / (nExc2 * nExc1), propConnE2E1))
+        print('E1E2 conn changed from {:.4f} to {:.4f}'.format(E1E2Inds.size / (nExc2 * nExc1), propConnE1E2))
+        print('E2E2 conn changed from {:.4f} to {:.4f}'.format(E2E2Inds.size / (nExc2 * nExc2), propConnE2E2))
+        print('E1E1 conn changed from {:.4f} to {:.4f}'.format(E1E1Inds.size / (nExc1 * nExc1), propConnE1E1))
+
+        preIndsE1E1, posIndsE1E1 = np.unravel_index(indicesE1E1Flat, (nExc1, nExc1))
+        preIndsE2E2, posIndsE2E2 = np.unravel_index(indicesE2E2Flat, (nExc2, nExc2))
 
         # must add  + p['nUnitsToSpike'] for E2E2 and  + p['nUnitsToSpike'] + nExc2 for E1E1
-        preIndsE2E2, posIndsE2E2 = np.unravel_index(indicesE2E2Flat, (nExc2, nExc2))
-        preIndsE1E1, posIndsE1E1 = np.unravel_index(indicesE1E1Flat, (nExc1, nExc1))
-        PR.preEE = np.concatenate((PR.preEE, preIndsE2E2 + p['nUnitsToSpike']))
-        PR.posEE = np.concatenate((PR.posEE, posIndsE2E2 + p['nUnitsToSpike']))
-        PR.wEE_final = np.concatenate((PR.wEE_final, weightsSaved[:preIndsE2E2.size]))
+        if p['addBackRemovedConnsE2E2']:
+            PR.preEE = np.concatenate((PR.preEE, preIndsE2E2 + p['nUnitsToSpike']))
+            PR.posEE = np.concatenate((PR.posEE, posIndsE2E2 + p['nUnitsToSpike']))
+            PR.wEE_final = np.concatenate((PR.wEE_final, weightsSaved[:preIndsE2E2.size]))
+
         PR.preEE = np.concatenate((PR.preEE, preIndsE1E1 + p['nUnitsToSpike'] + nExc2))
         PR.posEE = np.concatenate((PR.posEE, posIndsE1E1 + p['nUnitsToSpike'] + nExc2))
         PR.wEE_final = np.concatenate((PR.wEE_final, weightsSaved[preIndsE2E2.size:]))
 
-        # turn the final into a matrix also...
-        wEEFinal = weight_matrix_from_flat_inds_weights(PR.p['nExc'], PR.p['nExc'], PR.preEE, PR.posEE, PR.wEE_final)
+        if p['compensateInhibition']:
+            # turn the final into a matrix also...
+            wEEFinal = weight_matrix_from_flat_inds_weights(PR.p['nExc'], PR.p['nExc'], PR.preEE, PR.posEE,
+                                                            PR.wEE_final)
 
-        # make inhibition stronger/weaker to compensate
-        wEICompensate = weight_matrix_from_flat_inds_weights(PR.p['nInh'], PR.p['nExc'], PR.preEI, PR.posEI,
-                                                             PR.wEI_final)
-        wEICompensate[:, endIndExc2:] = wEICompensate[:, endIndExc2:] * propConnE1E1 / PR.p['propConnect']
+            # make inhibition stronger/weaker to compensate
+            wEICompensate = weight_matrix_from_flat_inds_weights(PR.p['nInh'], PR.p['nExc'], PR.preEI, PR.posEI,
+                                                                 PR.wEI_final)
+            wEICompensate[:, endIndExc2:] = wEICompensate[:, endIndExc2:] * propConnE1E1 / PR.p['propConnect']
 
-        # decreaseInhOntoE2Factor = np.nansum(wEEFinal[startIndExc2:endIndExc2, :], 0).mean() / np.nansum(wEEInit[startIndExc2:endIndExc2, :], 0).mean()
-        decreaseInhOntoE2Factor = np.nansum(wEEFinal[:, startIndExc2:endIndExc2], 1).mean() / np.nansum(wEEInit[:, startIndExc2:endIndExc2], 1).mean()
-        wEICompensate[:, startIndExc2:endIndExc2] = wEICompensate[:, startIndExc2:endIndExc2] * decreaseInhOntoE2Factor
-        PR.wEI_final = wEICompensate[PR.preEI, PR.posEI]
+            # decreaseInhOntoE2Factor = np.nansum(wEEFinal[startIndExc2:endIndExc2, :], 0).mean() / np.nansum(wEEInit[startIndExc2:endIndExc2, :], 0).mean()
+            decreaseInhOntoE2Factor = np.nansum(wEEFinal[:, startIndExc2:endIndExc2], 1).mean() / np.nansum(wEEInit[:, startIndExc2:endIndExc2], 1).mean()
+            wEICompensate[:, startIndExc2:endIndExc2] = wEICompensate[:, startIndExc2:endIndExc2] * decreaseInhOntoE2Factor
+            PR.wEI_final = wEICompensate[PR.preEI, PR.posEI]
 
 JT.set_up_network_Poisson(priorResults=PR)
 JT.initialize_weight_matrices()
@@ -229,11 +251,10 @@ JT.JN.create_monitors()
 # manipulate the weights to make things less stable
 # here i will do so by multiplying by normal noise
 # or by simply decreasing all the weights by a constant multiplier
-useMult = 0.85
-JT.wEE_init = JT.wEE_init * useMult
-JT.wEI_init = JT.wEI_init * useMult
-JT.wIE_init = JT.wIE_init * useMult
-JT.wII_init = JT.wII_init * useMult
+JT.wEE_init = JT.wEE_init * weightMult
+JT.wEI_init = JT.wEI_init * weightMult
+JT.wIE_init = JT.wIE_init * weightMult
+JT.wII_init = JT.wII_init * weightMult
 
 # JT.wEE_init = JT.wEE_init * norm_weights(JT.wEE_init.shape[0])
 # JT.wEI_init = JT.wEI_init * norm_weights(JT.wEI_init.shape[0])

@@ -247,66 +247,71 @@ class JercogTrainer(object):
             self.wII_init = self.JN.synapsesII.jII[:] * norm_weights(self.JN.synapsesII.jII[:].size, 1, 0.2,
                                                                      rng=self.p['rng']) * self.p['jIIScaleRatio']
         elif self.p['initWeightMethod'] == 'defaultUniform':
-            self.wEE_init = self.p['rng'].rand(self.JN.synapsesEE.jEE[:].size) * 2 * self.JN.synapsesEE.jEE[0]
-            self.wIE_init = self.p['rng'].rand(self.JN.synapsesIE.jIE[:].size) * 2 * self.JN.synapsesIE.jIE[0]
-            self.wEI_init = self.p['rng'].rand(self.JN.synapsesEI.jEI[:].size) * 2 * self.JN.synapsesEI.jEI[0]
-            self.wII_init = self.p['rng'].rand(self.JN.synapsesII.jII[:].size) * 2 * self.JN.synapsesII.jII[0]
+            self.wEE_init = self.p['rng'].random(self.JN.synapsesEE.jEE[:].size) * 2 * self.JN.synapsesEE.jEE[0]
+            self.wIE_init = self.p['rng'].random(self.JN.synapsesIE.jIE[:].size) * 2 * self.JN.synapsesIE.jIE[0]
+            self.wEI_init = self.p['rng'].random(self.JN.synapsesEI.jEI[:].size) * 2 * self.JN.synapsesEI.jEI[0]
+            self.wII_init = self.p['rng'].random(self.JN.synapsesII.jII[:].size) * 2 * self.JN.synapsesII.jII[0]
         elif self.p['initWeightMethod'] == 'randomUniform':
-            self.wEE_init = (100 + 100 * self.p['rng'].rand(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
-            self.wIE_init = (100 + 100 * self.p['rng'].rand(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
-            self.wEI_init = (100 + 100 * self.p['rng'].rand(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
-            self.wII_init = (100 + 100 * self.p['rng'].rand(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
+            self.wEE_init = (100 + 100 * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
+            self.wIE_init = (100 + 100 * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
+            self.wEI_init = (100 + 100 * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
+            self.wII_init = (100 + 100 * self.p['rng'].random(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
         elif self.p['initWeightMethod'] == 'randomUniformMid':
-            self.wEE_init = (80 + 80 * self.p['rng'].rand(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
-            self.wIE_init = (80 + 80 * self.p['rng'].rand(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
-            self.wEI_init = (80 + 80 * self.p['rng'].rand(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
-            self.wII_init = (80 + 80 * self.p['rng'].rand(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
+            self.wEE_init = (80 + 80 * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
+            self.wIE_init = (80 + 80 * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
+            self.wEI_init = (80 + 80 * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
+            self.wII_init = (80 + 80 * self.p['rng'].random(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
         elif self.p['initWeightMethod'] == 'randomUniformHighUnequal':
-            wEE_mean = 90 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            wIE_mean = 90 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            wEI_mean = 90 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            wII_mean = 90 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            wEE_std = 35 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            wIE_std = 35 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            wEI_std = 35 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            wII_std = 35 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            self.wEE_init = (wEE_mean + wEE_std * self.p['rng'].rand(self.JN.synapsesEE.jEE[:].size)) * pA
-            self.wIE_init = (wIE_mean + wIE_std * self.p['rng'].rand(self.JN.synapsesIE.jIE[:].size)) * pA
-            self.wEI_init = (wEI_mean + wEI_std * self.p['rng'].rand(self.JN.synapsesEI.jEI[:].size)) * pA
-            self.wII_init = (wII_mean + wII_std * self.p['rng'].rand(self.JN.synapsesII.jII[:].size)) * pA
+            wEE_mean = 90 + 20 * self.p['rng'].random() * netSizeConnNorm
+            wIE_mean = 90 + 20 * self.p['rng'].random() * netSizeConnNorm
+            wEI_mean = 90 + 20 * self.p['rng'].random() * netSizeConnNorm
+            wII_mean = 90 + 20 * self.p['rng'].random() * netSizeConnNorm
+            wEE_std = 35 + 20 * self.p['rng'].random() * netSizeConnNorm
+            wIE_std = 35 + 20 * self.p['rng'].random() * netSizeConnNorm
+            wEI_std = 35 + 20 * self.p['rng'].random() * netSizeConnNorm
+            wII_std = 35 + 20 * self.p['rng'].random() * netSizeConnNorm
+            self.wEE_init = (wEE_mean + wEE_std * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size)) * pA
+            self.wIE_init = (wIE_mean + wIE_std * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * pA
+            self.wEI_init = (wEI_mean + wEI_std * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size)) * pA
+            self.wII_init = (wII_mean + wII_std * self.p['rng'].random(self.JN.synapsesII.jII[:].size)) * pA
         elif self.p['initWeightMethod'] == 'randomUniformMidUnequal':
-            wEE_mean = 80 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            wIE_mean = 80 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            wEI_mean = 80 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            wII_mean = 80 + 20 * self.p['rng'].rand() * netSizeConnNorm
-            wEE_std = 20 + 10 * self.p['rng'].rand() * netSizeConnNorm
-            wIE_std = 20 + 10 * self.p['rng'].rand() * netSizeConnNorm
-            wEI_std = 20 + 10 * self.p['rng'].rand() * netSizeConnNorm
-            wII_std = 20 + 10 * self.p['rng'].rand() * netSizeConnNorm
-            self.wEE_init = (wEE_mean + wEE_std * self.p['rng'].rand(self.JN.synapsesEE.jEE[:].size)) * pA
-            self.wIE_init = (wIE_mean + wIE_std * self.p['rng'].rand(self.JN.synapsesIE.jIE[:].size)) * pA
-            self.wEI_init = (wEI_mean + wEI_std * self.p['rng'].rand(self.JN.synapsesEI.jEI[:].size)) * pA
-            self.wII_init = (wII_mean + wII_std * self.p['rng'].rand(self.JN.synapsesII.jII[:].size)) * pA
+            wEE_mean = 80 + 20 * self.p['rng'].random() * netSizeConnNorm
+            wIE_mean = 80 + 20 * self.p['rng'].random() * netSizeConnNorm
+            wEI_mean = 80 + 20 * self.p['rng'].random() * netSizeConnNorm
+            wII_mean = 80 + 20 * self.p['rng'].random() * netSizeConnNorm
+            wEE_std = 20 + 10 * self.p['rng'].random() * netSizeConnNorm
+            wIE_std = 20 + 10 * self.p['rng'].random() * netSizeConnNorm
+            wEI_std = 20 + 10 * self.p['rng'].random() * netSizeConnNorm
+            wII_std = 20 + 10 * self.p['rng'].random() * netSizeConnNorm
+            self.wEE_init = (wEE_mean + wEE_std * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size)) * pA
+            self.wIE_init = (wIE_mean + wIE_std * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * pA
+            self.wEI_init = (wEI_mean + wEI_std * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size)) * pA
+            self.wII_init = (wII_mean + wII_std * self.p['rng'].random(self.JN.synapsesII.jII[:].size)) * pA
         elif self.p['initWeightMethod'] == 'randomUniformLow':
-            self.wEE_init = (30 + 30 * self.p['rng'].rand(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
-            self.wIE_init = (30 + 30 * self.p['rng'].rand(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
-            self.wEI_init = (30 + 30 * self.p['rng'].rand(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
-            self.wII_init = (30 + 30 * self.p['rng'].rand(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
+            self.wEE_init = (30 + 30 * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
+            self.wIE_init = (30 + 30 * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
+            self.wEI_init = (30 + 30 * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
+            self.wII_init = (30 + 30 * self.p['rng'].random(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
         elif self.p['initWeightMethod'] == 'randomUniformSaray':
-            self.wEE_init = (30 + 30 * self.p['rng'].rand(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
-            self.wIE_init = (60 + 60 * self.p['rng'].rand(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
-            self.wEI_init = (30 + 30 * self.p['rng'].rand(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
-            self.wII_init = (30 + 30 * self.p['rng'].rand(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
+            self.wEE_init = (30 + 30 * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
+            self.wIE_init = (60 + 60 * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
+            self.wEI_init = (30 + 30 * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
+            self.wII_init = (30 + 30 * self.p['rng'].random(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
         elif self.p['initWeightMethod'] == 'randomUniformSarayMid':
-            self.wEE_init = (60 + 60 * self.p['rng'].rand(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
-            self.wIE_init = (90 + 90 * self.p['rng'].rand(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
-            self.wEI_init = (60 + 60 * self.p['rng'].rand(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
-            self.wII_init = (60 + 60 * self.p['rng'].rand(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
+            self.wEE_init = (60 + 60 * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
+            self.wIE_init = (90 + 90 * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
+            self.wEI_init = (60 + 60 * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
+            self.wII_init = (60 + 60 * self.p['rng'].random(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
         elif self.p['initWeightMethod'] == 'randomUniformSarayHigh':
-            self.wEE_init = (80 + 60 * self.p['rng'].rand(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
-            self.wIE_init = (100 + 60 * self.p['rng'].rand(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
-            self.wEI_init = (80 + 60 * self.p['rng'].rand(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
-            self.wII_init = (80 + 60 * self.p['rng'].rand(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
+            self.wEE_init = (80 + 60 * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
+            self.wIE_init = (100 + 60 * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
+            self.wEI_init = (80 + 60 * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
+            self.wII_init = (80 + 60 * self.p['rng'].random(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
+        elif self.p['initWeightMethod'] == 'randomUniformSarayHigher':
+            self.wEE_init = (80 + 60 * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
+            self.wIE_init = (120 + 80 * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
+            self.wEI_init = (80 + 60 * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
+            self.wII_init = (80 + 60 * self.p['rng'].random(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
         elif self.p['initWeightMethod'] == 'randomUniformSarayHigh5e3p02Converge':
             wEE_mean = 60  # 62  # 64  # 66  # 67
             wIE_mean = 45  # 50  # 58  # 54  # 60
@@ -418,6 +423,24 @@ class JercogTrainer(object):
             wIE_mean = 62
             wEI_mean = 250
             wII_mean = 250
+            self.wEE_init = wEE_mean * norm_weights(self.JN.synapsesEE.jEE[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wIE_init = wIE_mean * norm_weights(self.JN.synapsesIE.jIE[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wEI_init = wEI_mean * norm_weights(self.JN.synapsesEI.jEI[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wII_init = wII_mean * norm_weights(self.JN.synapsesII.jII[:].size, 1, 0.2, rng=self.p['rng']) * pA
+        elif self.p['initWeightMethod'] == 'goodCrossHomeoExamp':
+            wEE_mean = 80 * netSizeConnNorm
+            wIE_mean = 100 * netSizeConnNorm
+            wEI_mean = 350 * netSizeConnNorm
+            wII_mean = 225 * netSizeConnNorm
+            self.wEE_init = wEE_mean * norm_weights(self.JN.synapsesEE.jEE[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wIE_init = wIE_mean * norm_weights(self.JN.synapsesIE.jIE[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wEI_init = wEI_mean * norm_weights(self.JN.synapsesEI.jEI[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wII_init = wII_mean * norm_weights(self.JN.synapsesII.jII[:].size, 1, 0.2, rng=self.p['rng']) * pA
+        elif self.p['initWeightMethod'] == 'goodCrossHomeoExampBuono':
+            wEE_mean = 80 * 2.5
+            wIE_mean = 100 * 2
+            wEI_mean = 300 * 1.25
+            wII_mean = 200 * 1.3
             self.wEE_init = wEE_mean * norm_weights(self.JN.synapsesEE.jEE[:].size, 1, 0.2, rng=self.p['rng']) * pA
             self.wIE_init = wIE_mean * norm_weights(self.JN.synapsesIE.jIE[:].size, 1, 0.2, rng=self.p['rng']) * pA
             self.wEI_init = wEI_mean * norm_weights(self.JN.synapsesEI.jEI[:].size, 1, 0.2, rng=self.p['rng']) * pA
@@ -669,7 +692,6 @@ class JercogTrainer(object):
             self.wIE_init = wIE_mean * norm_weights(self.JN.synapsesIE.jIE[:].size, 1, 0.2, rng=self.p['rng']) * pA
             self.wEI_init = wEI_mean * norm_weights(self.JN.synapsesEI.jEI[:].size, 1, 0.2, rng=self.p['rng']) * pA
             self.wII_init = wII_mean * norm_weights(self.JN.synapsesII.jII[:].size, 1, 0.2, rng=self.p['rng']) * pA
-
         elif self.p['initWeightMethod'][:4] == 'seed':
             excMeanWeightsPossible = (75, 112.5, 150)
             inhMeanWeightsPossible = (700, 450, 200)
@@ -752,7 +774,7 @@ class JercogTrainer(object):
         saveTrialDummy = 0
         for trialInd in range(p['nTrials']):
 
-            print('starting trial {}'.format(trialInd + 1))
+            print('starting trial {}'.format(trialInd))
 
             # restore the initial network state
             JN.N.restore()
@@ -802,16 +824,35 @@ class JercogTrainer(object):
                 self.trialUpFRInhUnits[trialInd, :] = R.upstateFRInhUnits.mean(0)  # in Hz
                 self.trialUpDur[trialInd] = R.upDurs.mean()
             else:
-                # if there were no Up states, just take the avg FR (near 0 in this case)
+                # if there were no Up states, just take the avg FR within the time period
+                # of nonzero FR
                 print('there were no up states')
-                # R.calculate_avgFR_units()  # could be used...
-                self.trialUpFRExc[trialInd] = R.FRExc.mean()
-                self.trialUpFRInh[trialInd] = R.FRInh.mean()
-                self.trialUpDur[trialInd] = 0
+                spikesPerUnitExc = np.bincount(R.spikeMonExcI.astype(int), minlength=self.p['nExc'])
+                spikesPerUnitInh = np.bincount(R.spikeMonInhI.astype(int), minlength=self.p['nInh'])
+
+                # since we are not in the Up state range, this would be considered an event
+                # and this is mainly for situations in which WEE is too low to cause any recurrent firing
+                # (i.e. only the directly stimulated units fire, for a very short duration)
+                # however, it's possible to also have recurrent excitatory spikes but no Up state
+                # here, we consider the Up state duration to be the set of indices in which
+                # some spikes took place
+                # since it should be the same for both, we will take the max (although Exc will almost always win)
+                eventDuration = np.fmax((R.FRExc > 0).sum(), (R.FRInh > 0).sum()) * self.p['dtHistPSTH']
+
+                unstimFRExcUnits = spikesPerUnitExc / eventDuration
+                unstimFRInhUnits = spikesPerUnitInh / eventDuration
+
+                # here, we avoid using the directly stimulated Exc units
+                # and consider their FR to be the average of all others
+                unstimFRExcUnits[:p['nUnitsToSpike']] = unstimFRExcUnits[p['nUnitsToSpike']:].mean()
+
+                self.trialUpFRExc[trialInd] = unstimFRExcUnits.mean()
+                self.trialUpFRInh[trialInd] = unstimFRInhUnits.mean()
+                self.trialUpDur[trialInd] = eventDuration
                 # here we assign each unit FR to be the avg of all
                 # otherwise we may introduce a bias against the kicked units
-                self.trialUpFRExcUnits[trialInd, :] = R.FRExc.mean()  # in Hz
-                self.trialUpFRInhUnits[trialInd, :] = R.FRInh.mean()  # in Hz
+                self.trialUpFRExcUnits[trialInd, :] = unstimFRExcUnits  # in Hz
+                self.trialUpFRInhUnits[trialInd, :] = unstimFRInhUnits  # in Hz
 
             # if the currently assessed upstateFR was higher than the saturated FRs of the two types, reduce it
             # this also helps if the system exploded (FRs are maximal)
@@ -832,29 +873,30 @@ class JercogTrainer(object):
                 R.calculate_voltage_histogram(removeMode=True)
                 R.reshape_upstates()
 
-                fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(5, 9),
-                                         gridspec_kw={'height_ratios': [3, 2, 1, 1, 1]},
-                                         sharex=True)
-                R.plot_spike_raster(ax1[0])  # uses RNG but with a separate random seed
-                R.plot_firing_rate(ax1[1])
-                ax1[1].set_ylim(0, 30)
-                R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=0)
-                R.plot_updur_lines(ax1[2])
-                R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=0)
-                R.plot_updur_lines(ax1[3])
-                R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=1)
-                R.plot_updur_lines(ax1[4])
-                ax1[3].set(xlabel='Time (s)')
-                R.plot_voltage_histogram_sideways(ax1[2], 'Exc')
-                R.plot_voltage_histogram_sideways(ax1[3], 'Inh')
-                fig1.suptitle(R.p['simName'] + '_' + p['useRule'] + '_t' + str(trialInd + 1))
-                plt.savefig(pdfObject, format='pdf')
-                if pickleThisFigure:
-                    pickle.dump(fig1,
-                                open(
-                                    R.p['saveFolder'] + '/' + R.rID + '_' + p['useRule'] + '_t' + str(
-                                        trialInd + 1) + '.pickle',
-                                    'wb'))
+                # fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(5, 9),
+                #                          gridspec_kw={'height_ratios': [3, 2, 1, 1, 1]},
+                #                          sharex=True)
+                # R.plot_spike_raster(ax1[0])  # uses RNG but with a separate random seed
+                # R.plot_firing_rate(ax1[1])
+                # ax1[1].set_ylim(0, 30)
+                # R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=0)
+                # R.plot_updur_lines(ax1[2])
+                # R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=0)
+                # R.plot_updur_lines(ax1[3])
+                # R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=1)
+                # R.plot_updur_lines(ax1[4])
+                # ax1[3].set(xlabel='Time (s)')
+                # R.plot_voltage_histogram_sideways(ax1[2], 'Exc')
+                # R.plot_voltage_histogram_sideways(ax1[3], 'Inh')
+                # fig1.suptitle(R.p['simName'] + '_' + p['useRule'] + '_t' + str(trialInd + 1))
+                # plt.savefig(pdfObject, format='pdf')
+
+                # if pickleThisFigure:
+                #     pickle.dump(fig1,
+                #                 open(
+                #                     R.p['saveFolder'] + '/' + R.rID + '_' + p['useRule'] + '_t' + str(
+                #                         trialInd + 1) + '.pickle',
+                #                     'wb'))
 
                 if p['recordMovieVariables']:
                     self.selectTrialVExc[saveTrialDummy, :] = R.stateMonExcV[0, ::self.frameMult]
@@ -889,6 +931,8 @@ class JercogTrainer(object):
 
                 movAvgUpFRExcUnits = self.trialUpFRExcUnits[trialInd, :] * Hz  # initialize at the first measured
                 movAvgUpFRInhUnits = self.trialUpFRInhUnits[trialInd, :] * Hz
+
+            # decide whether to
 
             if p['useRule'] == 'cross-homeo':
 
@@ -960,13 +1004,13 @@ class JercogTrainer(object):
                 movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
                 movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
 
-                movAvgUpFRInhUnitsPreToPostExc[movAvgUpFRInhUnitsPreToPostExc > 2 * p['setUpFRInh']] = 2 * p[
-                    'setUpFRInh']
-                movAvgUpFRExcUnitsPreToPostInh[movAvgUpFRExcUnitsPreToPostInh > 2 * p['setUpFRExc']] = 2 * p[
-                    'setUpFRExc']
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > 2 * p['setUpFRExc']] = 2 * p['setUpFRExc']
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > 2 * p['setUpFRInh']] = 2 * p['setUpFRInh']
+                # movAvgUpFRInhUnitsPreToPostExc[movAvgUpFRInhUnitsPreToPostExc > 2 * p['setUpFRInh']] = 2 * p[
+                #     'setUpFRInh']
+                # movAvgUpFRExcUnitsPreToPostInh[movAvgUpFRExcUnitsPreToPostInh > 2 * p['setUpFRExc']] = 2 * p[
+                #     'setUpFRExc']
+                #
+                # movAvgUpFRExcUnits[movAvgUpFRExcUnits > 2 * p['setUpFRExc']] = 2 * p['setUpFRExc']
+                # movAvgUpFRInhUnits[movAvgUpFRInhUnits > 2 * p['setUpFRInh']] = 2 * p['setUpFRInh']
 
                 # convert flat weight arrays into matrices in units of pA
                 wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
@@ -1015,90 +1059,13 @@ class JercogTrainer(object):
                 wIE = wIEMat[JN.preIE, JN.posIE] * pA
                 wII = wIIMat[JN.preII, JN.posII] * pA
 
-            elif p['useRule'] == 'cross-homeo-pre-outer-careful':
-
-                movAvgUpFRInhUnitsPreToPostExc = np.matmul(movAvgUpFRInhUnits, aEI) / nIncomingInhOntoEachExc
-                movAvgUpFRExcUnitsPreToPostInh = np.matmul(movAvgUpFRExcUnits, aIE) / nIncomingExcOntoEachInh
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
-
-                movAvgUpFRInhUnitsPreToPostExc[movAvgUpFRInhUnitsPreToPostExc > 2 * p['setUpFRInh']] = 2 * p[
-                    'setUpFRInh']
-                movAvgUpFRExcUnitsPreToPostInh[movAvgUpFRExcUnitsPreToPostInh > 2 * p['setUpFRExc']] = 2 * p[
-                    'setUpFRExc']
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > 2 * p['setUpFRExc']] = 2 * p['setUpFRExc']
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > 2 * p['setUpFRInh']] = 2 * p['setUpFRInh']
-
-                # convert flat weight arrays into matrices in units of pA
-                wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
-                wEIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nExc'], JN.preEI, JN.posEI, wEI / pA)
-                wIEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nInh'], JN.preIE, JN.posIE, wIE / pA)
-                wIIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nInh'], JN.preII, JN.posII, wII / pA)
-
-                # outer product of pre Fr and average error of pre units in opposite pop
-                # outer strips units for some reason, but the unit should technically be Hz ^ 2
-                # given the units of alpha we multiply by Hz to convert to amps
-                # can interpret as each synapse changes according to the product of the presynaptic FR
-                # and the average error of the presynaptic units in the opposite pop (since it's cross-homeo)
-                # imagine there is a somatic sensor for each unit's FR (sensor 1, Ca++ based)
-                # and a separate somatic sensor that integrates from metabotropic sensors activated by the opposite pop
-                # (sensor 2: in Exc cells, a GABA-B based sensor, and in Inh cells, an mGluR based sensor)
-                dwEE2 = np.full(wEEMat.shape, np.nan, dtype=np.float32)
-                dwEI2 = np.full(wEIMat.shape, np.nan, dtype=np.float32)
-                dwIE2 = np.full(wIEMat.shape, np.nan, dtype=np.float32)
-                dwII2 = np.full(wIIMat.shape, np.nan, dtype=np.float32)
-                for preInd in range(wEEMat.shape[0]):
-                    for postInd in range(wEEMat.shape[1]):
-                        dwEE2[preInd, postInd] = p['alpha1'] * movAvgUpFRExcUnits[preInd] * (
-                                p['setUpFRInh'] - movAvgUpFRInhUnitsPreToPostExc[postInd])
-                for preInd in range(wEIMat.shape[0]):
-                    for postInd in range(wEIMat.shape[1]):
-                        dwEI2[preInd, postInd] = -p['alpha1'] * movAvgUpFRInhUnits[preInd] * (
-                                p['setUpFRInh'] - movAvgUpFRInhUnitsPreToPostExc[postInd])
-                for preInd in range(wIEMat.shape[0]):
-                    for postInd in range(wIEMat.shape[1]):
-                        dwIE2[preInd, postInd] = -p['alpha1'] * movAvgUpFRExcUnits[preInd] * (
-                                    p['setUpFRExc'] - movAvgUpFRExcUnitsPreToPostInh[postInd])
-                for preInd in range(wIIMat.shape[0]):
-                    for postInd in range(wIIMat.shape[1]):
-                        dwII2[preInd, postInd] = p['alpha1'] * movAvgUpFRInhUnits[preInd] * (
-                                    p['setUpFRExc'] - movAvgUpFRExcUnitsPreToPostInh[postInd])
-
-                dwEE = p['alpha1'] * np.outer(movAvgUpFRExcUnits,
-                                              (p['setUpFRInh'] - movAvgUpFRInhUnitsPreToPostExc)) * Hz
-                dwEI = -p['alpha1'] * np.outer(movAvgUpFRInhUnits,
-                                               (p['setUpFRInh'] - movAvgUpFRInhUnitsPreToPostExc)) * Hz
-                dwIE = -p['alpha1'] * np.outer(movAvgUpFRExcUnits,
-                                               (p['setUpFRExc'] - movAvgUpFRExcUnitsPreToPostInh)) * Hz
-                dwII = p['alpha1'] * np.outer(movAvgUpFRInhUnits,
-                                              (p['setUpFRExc'] - movAvgUpFRExcUnitsPreToPostInh)) * Hz
-
-                # save the proposed weight change in pA
-                self.trialdwEEUnits[trialInd, :] = dwEE.mean() / pA
-                self.trialdwEIUnits[trialInd, :] = dwEI.mean() / pA
-                self.trialdwIEUnits[trialInd, :] = dwIE.mean() / pA
-                self.trialdwIIUnits[trialInd, :] = dwII.mean() / pA
-
-                wEEMat += dwEE / pA * JN.p['wEEScale']
-                wEIMat += dwEI / pA * JN.p['wEIScale']
-                wIEMat += dwIE / pA * JN.p['wIEScale']
-                wIIMat += dwII / pA * JN.p['wIIScale']
-
-                # reshape back to a matrix
-                wEE = wEEMat[JN.preEE, JN.posEE] * pA
-                wEI = wEIMat[JN.preEI, JN.posEI] * pA
-                wIE = wIEMat[JN.preIE, JN.posIE] * pA
-                wII = wIIMat[JN.preII, JN.posII] * pA
-
             elif p['useRule'] == 'cross-homeo-pre-scalar':
 
                 movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
                 movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
 
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > 2 * p['setUpFRExc']] = 2 * p['setUpFRExc']
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > 2 * p['setUpFRInh']] = 2 * p['setUpFRInh']
+                # movAvgUpFRExcUnits[movAvgUpFRExcUnits > 2 * p['setUpFRExc']] = 2 * p['setUpFRExc']
+                # movAvgUpFRInhUnits[movAvgUpFRInhUnits > 2 * p['setUpFRInh']] = 2 * p['setUpFRInh']
 
                 # convert flat weight arrays into matrices in units of pA
                 wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
@@ -1310,13 +1277,13 @@ class JercogTrainer(object):
                 movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
                 movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
 
-                movAvgUpFRInhUnitsPreToPostExc[movAvgUpFRInhUnitsPreToPostExc > 2 * p['setUpFRInh']] = 2 * p[
-                    'setUpFRInh']
-                movAvgUpFRExcUnitsPreToPostInh[movAvgUpFRExcUnitsPreToPostInh > 2 * p['setUpFRExc']] = 2 * p[
-                    'setUpFRExc']
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > 2 * p['setUpFRExc']] = 2 * p['setUpFRExc']
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > 2 * p['setUpFRInh']] = 2 * p['setUpFRInh']
+                # movAvgUpFRInhUnitsPreToPostExc[movAvgUpFRInhUnitsPreToPostExc > 2 * p['setUpFRInh']] = 2 * p[
+                #     'setUpFRInh']
+                # movAvgUpFRExcUnitsPreToPostInh[movAvgUpFRExcUnitsPreToPostInh > 2 * p['setUpFRExc']] = 2 * p[
+                #     'setUpFRExc']
+                #
+                # movAvgUpFRExcUnits[movAvgUpFRExcUnits > 2 * p['setUpFRExc']] = 2 * p['setUpFRExc']
+                # movAvgUpFRInhUnits[movAvgUpFRInhUnits > 2 * p['setUpFRInh']] = 2 * p['setUpFRInh']
 
                 # convert flat weight arrays into matrices in units of pA
                 wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
@@ -1475,8 +1442,8 @@ class JercogTrainer(object):
                 movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
                 movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
 
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > (2 * p['setUpFRExc'] - 1 * Hz)] = (2 * p['setUpFRExc'] - 1 * Hz)
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > (2 * p['setUpFRInh'] - 1 * Hz)] = (2 * p['setUpFRInh'] - 1 * Hz)
+                # movAvgUpFRExcUnits[movAvgUpFRExcUnits > (2 * p['setUpFRExc'] - 1 * Hz)] = (2 * p['setUpFRExc'] - 1 * Hz)
+                # movAvgUpFRInhUnits[movAvgUpFRInhUnits > (2 * p['setUpFRInh'] - 1 * Hz)] = (2 * p['setUpFRInh'] - 1 * Hz)
 
                 # convert flat weight arrays into matrices in units of pA
                 wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
@@ -1700,653 +1667,6 @@ class JercogTrainer(object):
                 wIE = wIEMat[JN.preIE, JN.posIE] * pA
                 wII = wIIMat[JN.preII, JN.posII] * pA
 
-            elif p['useRule'] == 'cross-homeo-pre-scalar-homeo-normCH':
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > (2 * p['setUpFRExc'] - 1 * Hz)] = (2 * p['setUpFRExc'] - 1 * Hz)
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > (2 * p['setUpFRInh'] - 1 * Hz)] = (2 * p['setUpFRInh'] - 1 * Hz)
-
-                # convert flat weight arrays into matrices in units of pA
-                wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
-                wEIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nExc'], JN.preEI, JN.posEI, wEI / pA)
-                wIEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nInh'], JN.preIE, JN.posIE, wIE / pA)
-                wIIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nInh'], JN.preII, JN.posII, wII / pA)
-
-                # here we assume there is a global sensed value of the average FR of E or I units,
-                # so the error term is a scalar
-                # we divide by Hz because of the units of alpha to convert to amps
-                dwEECH1 = p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwEICH1 = -p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwIECH1 = -p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-                dwIICH1 = p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-
-                dwEECH = np.tile(dwEECH1.reshape(-1, 1), wEEMat.shape[1])
-                dwEICH = np.tile(dwEICH1.reshape(-1, 1), wEIMat.shape[1])
-                dwIECH = np.tile(dwIECH1.reshape(-1, 1), wIEMat.shape[1])
-                dwIICH = np.tile(dwIICH1.reshape(-1, 1), wIIMat.shape[1])
-
-                # normalize by incoming
-                dwEECH *= ((p['nExc'] * p['propConnect']) / nIncomingExcOntoEachExc).reshape(1, -1)
-                dwEICH *= ((p['nInh'] * p['propConnect']) / nIncomingInhOntoEachExc).reshape(1, -1)
-                dwIECH *= ((p['nExc'] * p['propConnect']) / nIncomingExcOntoEachInh).reshape(1, -1)
-                dwIICH *= ((p['nInh'] * p['propConnect']) / nIncomingInhOntoEachInh).reshape(1, -1)
-
-                # regular homeo (outer product)
-                # since outer strips units and because of alpha we multiply by Hz to convert to amps
-                dwEEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwEIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwIEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-                dwIIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEECHUnits'):
-                        self.trialdwEECHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEICHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIECHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIICHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                        self.trialdwEEHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save both the CH contribution and the H contribution
-                    self.trialdwEECHUnits[trialInd, :] = dwEECH / pA
-                    self.trialdwEICHUnits[trialInd, :] = dwEICH / pA
-                    self.trialdwIECHUnits[trialInd, :] = dwIECH / pA
-                    self.trialdwIICHUnits[trialInd, :] = dwIICH / pA
-
-                    dwEEH_tmp = dwEEH / pA
-                    dwEIH_tmp = dwEIH / pA
-                    dwIEH_tmp = dwIEH / pA
-                    dwIIH_tmp = dwIIH / pA
-
-                    dwEEH_tmp[np.isnan(wEEMat)] = np.nan
-                    dwEIH_tmp[np.isnan(wEIMat)] = np.nan
-                    dwIEH_tmp[np.isnan(wIEMat)] = np.nan
-                    dwIIH_tmp[np.isnan(wIIMat)] = np.nan
-
-                    self.trialdwEEHUnits[trialInd, :] = np.nanmean(dwEEH_tmp, 1)  # 1 for outgoing
-                    self.trialdwEIHUnits[trialInd, :] = np.nanmean(dwEIH_tmp, 1)
-                    self.trialdwIEHUnits[trialInd, :] = np.nanmean(dwIEH_tmp, 1)
-                    self.trialdwIIHUnits[trialInd, :] = np.nanmean(dwIIH_tmp, 1)
-
-                # this broadcasts the addition across the COLUMNS (the 1d dw arrays are column vectors)
-                # this applies the same weight change to all OUTGOING synapses from a single unit
-                # but it's a different value for each unit
-                dwEE = dwEECH + dwEEH
-                dwEI = dwEICH + dwEIH
-                dwIE = dwIECH + dwIEH
-                dwII = dwIICH + dwIIH
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEEOUnits'):
-                        self.trialdwEEOUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIOUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEOUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIOUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save the proposed weight change in pA
-                    self.trialdwEEOUnits[trialInd, :] = np.nanmean(dwEE / pA, 1)
-                    self.trialdwEIOUnits[trialInd, :] = np.nanmean(dwEI / pA, 1)
-                    self.trialdwIEOUnits[trialInd, :] = np.nanmean(dwIE / pA, 1)
-                    self.trialdwIIOUnits[trialInd, :] = np.nanmean(dwII / pA, 1)
-
-                # save the proposed weight change in pA
-                self.trialdwEEUnits[trialInd, :] = np.nanmean(dwEE / pA, 0)
-                self.trialdwEIUnits[trialInd, :] = np.nanmean(dwEI / pA, 0)
-                self.trialdwIEUnits[trialInd, :] = np.nanmean(dwIE / pA, 0)
-                self.trialdwIIUnits[trialInd, :] = np.nanmean(dwII / pA, 0)
-
-                wEEMat += dwEE / pA * JN.p['wEEScale']
-                wEIMat += dwEI / pA * JN.p['wEIScale']
-                wIEMat += dwIE / pA * JN.p['wIEScale']
-                wIIMat += dwII / pA * JN.p['wIIScale']
-
-                # reshape back to a matrix
-                wEE = wEEMat[JN.preEE, JN.posEE] * pA
-                wEI = wEIMat[JN.preEI, JN.posEI] * pA
-                wIE = wIEMat[JN.preIE, JN.posIE] * pA
-                wII = wIIMat[JN.preII, JN.posII] * pA
-
-            elif p['useRule'] == 'cross-homeo-pre-scalar-homeo-normSum':
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > (2 * p['setUpFRExc'] - 1 * Hz)] = (2 * p['setUpFRExc'] - 1 * Hz)
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > (2 * p['setUpFRInh'] - 1 * Hz)] = (2 * p['setUpFRInh'] - 1 * Hz)
-
-                # convert flat weight arrays into matrices in units of pA
-                wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
-                wEIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nExc'], JN.preEI, JN.posEI, wEI / pA)
-                wIEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nInh'], JN.preIE, JN.posIE, wIE / pA)
-                wIIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nInh'], JN.preII, JN.posII, wII / pA)
-
-                # here we assume there is a global sensed value of the average FR of E or I units,
-                # so the error term is a scalar
-                # we divide by Hz because of the units of alpha to convert to amps
-                dwEECH = p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwEICH = -p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwIECH = -p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-                dwIICH = p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-
-                # regular homeo (outer product)
-                # since outer strips units and because of alpha we multiply by Hz to convert to amps
-                dwEEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwEIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwIEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-                dwIIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEECHUnits'):
-                        self.trialdwEECHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEICHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIECHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIICHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                        self.trialdwEEHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save both the CH contribution and the H contribution
-                    self.trialdwEECHUnits[trialInd, :] = dwEECH / pA
-                    self.trialdwEICHUnits[trialInd, :] = dwEICH / pA
-                    self.trialdwIECHUnits[trialInd, :] = dwIECH / pA
-                    self.trialdwIICHUnits[trialInd, :] = dwIICH / pA
-
-                    dwEEH_tmp = dwEEH / pA
-                    dwEIH_tmp = dwEIH / pA
-                    dwIEH_tmp = dwIEH / pA
-                    dwIIH_tmp = dwIIH / pA
-
-                    dwEEH_tmp[np.isnan(wEEMat)] = np.nan
-                    dwEIH_tmp[np.isnan(wEIMat)] = np.nan
-                    dwIEH_tmp[np.isnan(wIEMat)] = np.nan
-                    dwIIH_tmp[np.isnan(wIIMat)] = np.nan
-
-                    self.trialdwEEHUnits[trialInd, :] = np.nanmean(dwEEH_tmp, 1)  # 1 for outgoing
-                    self.trialdwEIHUnits[trialInd, :] = np.nanmean(dwEIH_tmp, 1)
-                    self.trialdwIEHUnits[trialInd, :] = np.nanmean(dwIEH_tmp, 1)
-                    self.trialdwIIHUnits[trialInd, :] = np.nanmean(dwIIH_tmp, 1)
-
-                # this broadcasts the addition across the COLUMNS (the 1d dw arrays are column vectors)
-                # this applies the same weight change to all OUTGOING synapses from a single unit
-                # but it's a different value for each unit
-                dwEE = (dwEECH.reshape(-1, 1) + dwEEH) * normMatEE
-                dwEI = (dwEICH.reshape(-1, 1) + dwEIH) * normMatEI
-                dwIE = (dwIECH.reshape(-1, 1) + dwIEH) * normMatIE
-                dwII = (dwIICH.reshape(-1, 1) + dwIIH) * normMatII
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEEOUnits'):
-                        self.trialdwEEOUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIOUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEOUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIOUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save the proposed weight change in pA
-                    self.trialdwEEOUnits[trialInd, :] = np.nanmean(dwEE / pA, 1)
-                    self.trialdwEIOUnits[trialInd, :] = np.nanmean(dwEI / pA, 1)
-                    self.trialdwIEOUnits[trialInd, :] = np.nanmean(dwIE / pA, 1)
-                    self.trialdwIIOUnits[trialInd, :] = np.nanmean(dwII / pA, 1)
-
-                # save the proposed weight change in pA
-                self.trialdwEEUnits[trialInd, :] = np.nanmean(dwEE / pA, 0)
-                self.trialdwEIUnits[trialInd, :] = np.nanmean(dwEI / pA, 0)
-                self.trialdwIEUnits[trialInd, :] = np.nanmean(dwIE / pA, 0)
-                self.trialdwIIUnits[trialInd, :] = np.nanmean(dwII / pA, 0)
-
-                wEEMat += dwEE / pA * JN.p['wEEScale']
-                wEIMat += dwEI / pA * JN.p['wEIScale']
-                wIEMat += dwIE / pA * JN.p['wIEScale']
-                wIIMat += dwII / pA * JN.p['wIIScale']
-
-                # reshape back to a matrix
-                wEE = wEEMat[JN.preEE, JN.posEE] * pA
-                wEI = wEIMat[JN.preEI, JN.posEI] * pA
-                wIE = wIEMat[JN.preIE, JN.posIE] * pA
-                wII = wIIMat[JN.preII, JN.posII] * pA
-
-            elif p['useRule'] == 'cross-homeo-pre-scalar-homeo-noCap':
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
-
-                # movAvgUpFRExcUnits[movAvgUpFRExcUnits > (2 * p['setUpFRExc'] - 1 * Hz)] = (2 * p['setUpFRExc'] - 1 * Hz)
-                # movAvgUpFRInhUnits[movAvgUpFRInhUnits > (2 * p['setUpFRInh'] - 1 * Hz)] = (2 * p['setUpFRInh'] - 1 * Hz)
-
-                # convert flat weight arrays into matrices in units of pA
-                wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
-                wEIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nExc'], JN.preEI, JN.posEI, wEI / pA)
-                wIEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nInh'], JN.preIE, JN.posIE, wIE / pA)
-                wIIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nInh'], JN.preII, JN.posII, wII / pA)
-
-                # here we assume there is a global sensed value of the average FR of E or I units,
-                # so the error term is a scalar
-                # we divide by Hz because of the units of alpha to convert to amps
-                dwEECH = p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwEICH = -p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwIECH = -p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-                dwIICH = p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-
-                # regular homeo (outer product)
-                # since outer strips units and because of alpha we multiply by Hz to convert to amps
-                dwEEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwEIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwIEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-                dwIIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEECHUnits'):
-                        self.trialdwEECHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEICHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIECHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIICHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                        self.trialdwEEHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save both the CH contribution and the H contribution
-                    self.trialdwEECHUnits[trialInd, :] = dwEECH / pA
-                    self.trialdwEICHUnits[trialInd, :] = dwEICH / pA
-                    self.trialdwIECHUnits[trialInd, :] = dwIECH / pA
-                    self.trialdwIICHUnits[trialInd, :] = dwIICH / pA
-
-                    dwEEH_tmp = dwEEH / pA
-                    dwEIH_tmp = dwEIH / pA
-                    dwIEH_tmp = dwIEH / pA
-                    dwIIH_tmp = dwIIH / pA
-
-                    dwEEH_tmp[np.isnan(wEEMat)] = np.nan
-                    dwEIH_tmp[np.isnan(wEIMat)] = np.nan
-                    dwIEH_tmp[np.isnan(wIEMat)] = np.nan
-                    dwIIH_tmp[np.isnan(wIIMat)] = np.nan
-
-                    self.trialdwEEHUnits[trialInd, :] = np.nanmean(dwEEH_tmp, 1)  # 1 for outgoing
-                    self.trialdwEIHUnits[trialInd, :] = np.nanmean(dwEIH_tmp, 1)
-                    self.trialdwIEHUnits[trialInd, :] = np.nanmean(dwIEH_tmp, 1)
-                    self.trialdwIIHUnits[trialInd, :] = np.nanmean(dwIIH_tmp, 1)
-
-                # this broadcasts the addition across the COLUMNS (the 1d dw arrays are column vectors)
-                # this applies the same weight change to all OUTGOING synapses from a single unit
-                # but it's a different value for each unit
-                dwEE = dwEECH.reshape(-1, 1) + dwEEH
-                dwEI = dwEICH.reshape(-1, 1) + dwEIH
-                dwIE = dwIECH.reshape(-1, 1) + dwIEH
-                dwII = dwIICH.reshape(-1, 1) + dwIIH
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEEOUnits'):
-                        self.trialdwEEOUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIOUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEOUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIOUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save the proposed weight change in pA
-                    self.trialdwEEOUnits[trialInd, :] = np.nanmean(dwEE / pA, 1)
-                    self.trialdwEIOUnits[trialInd, :] = np.nanmean(dwEI / pA, 1)
-                    self.trialdwIEOUnits[trialInd, :] = np.nanmean(dwIE / pA, 1)
-                    self.trialdwIIOUnits[trialInd, :] = np.nanmean(dwII / pA, 1)
-
-                # save the proposed weight change in pA
-                self.trialdwEEUnits[trialInd, :] = np.nanmean(dwEE / pA, 0)
-                self.trialdwEIUnits[trialInd, :] = np.nanmean(dwEI / pA, 0)
-                self.trialdwIEUnits[trialInd, :] = np.nanmean(dwIE / pA, 0)
-                self.trialdwIIUnits[trialInd, :] = np.nanmean(dwII / pA, 0)
-
-                wEEMat += dwEE / pA * JN.p['wEEScale']
-                wEIMat += dwEI / pA * JN.p['wEIScale']
-                wIEMat += dwIE / pA * JN.p['wIEScale']
-                wIIMat += dwII / pA * JN.p['wIIScale']
-
-                # reshape back to a matrix
-                wEE = wEEMat[JN.preEE, JN.posEE] * pA
-                wEI = wEIMat[JN.preEI, JN.posEI] * pA
-                wIE = wIEMat[JN.preIE, JN.posIE] * pA
-                wII = wIIMat[JN.preII, JN.posII] * pA
-
-            elif p['useRule'] == 'cross-homeo-pre-scalar-homeo-flip':
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > (2 * p['setUpFRExc'] - 1 * Hz)] = (2 * p['setUpFRExc'] - 1 * Hz)
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > (2 * p['setUpFRInh'] - 1 * Hz)] = (2 * p['setUpFRInh'] - 1 * Hz)
-
-                # convert flat weight arrays into matrices in units of pA
-                wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
-                wEIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nExc'], JN.preEI, JN.posEI, wEI / pA)
-                wIEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nInh'], JN.preIE, JN.posIE, wIE / pA)
-                wIIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nInh'], JN.preII, JN.posII, wII / pA)
-
-                # here we assume there is a global sensed value of the average FR of E or I units,
-                # so the error term is a scalar
-                # we divide by Hz because of the units of alpha to convert to amps
-                dwEECH = p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwEICH = -p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwIECH = p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-                dwIICH = -p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-
-                # regular homeo (outer product)
-                # since outer strips units and because of alpha we multiply by Hz to convert to amps
-                dwEEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwEIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwIEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-                dwIIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEECHUnits'):
-                        self.trialdwEECHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEICHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIECHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIICHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                        self.trialdwEEHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save both the CH contribution and the H contribution
-                    self.trialdwEECHUnits[trialInd, :] = dwEECH / pA
-                    self.trialdwEICHUnits[trialInd, :] = dwEICH / pA
-                    self.trialdwIECHUnits[trialInd, :] = dwIECH / pA
-                    self.trialdwIICHUnits[trialInd, :] = dwIICH / pA
-
-                    dwEEH_tmp = dwEEH / pA
-                    dwEIH_tmp = dwEIH / pA
-                    dwIEH_tmp = dwIEH / pA
-                    dwIIH_tmp = dwIIH / pA
-
-                    dwEEH_tmp[np.isnan(wEEMat)] = np.nan
-                    dwEIH_tmp[np.isnan(wEIMat)] = np.nan
-                    dwIEH_tmp[np.isnan(wIEMat)] = np.nan
-                    dwIIH_tmp[np.isnan(wIIMat)] = np.nan
-
-                    self.trialdwEEHUnits[trialInd, :] = np.nanmean(dwEEH_tmp, 1)  # 1 for outgoing
-                    self.trialdwEIHUnits[trialInd, :] = np.nanmean(dwEIH_tmp, 1)
-                    self.trialdwIEHUnits[trialInd, :] = np.nanmean(dwIEH_tmp, 1)
-                    self.trialdwIIHUnits[trialInd, :] = np.nanmean(dwIIH_tmp, 1)
-
-                # this broadcasts the addition across the COLUMNS (the 1d dw arrays are column vectors)
-                # this applies the same weight change to all OUTGOING synapses from a single unit
-                # but it's a different value for each unit
-                dwEE = dwEECH.reshape(-1, 1) + dwEEH
-                dwEI = dwEICH.reshape(-1, 1) + dwEIH
-                dwIE = dwIECH.reshape(-1, 1) + dwIEH
-                dwII = dwIICH.reshape(-1, 1) + dwIIH
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEEOUnits'):
-                        self.trialdwEEOUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIOUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEOUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIOUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save the proposed weight change in pA
-                    self.trialdwEEOUnits[trialInd, :] = np.nanmean(dwEE / pA, 1)
-                    self.trialdwEIOUnits[trialInd, :] = np.nanmean(dwEI / pA, 1)
-                    self.trialdwIEOUnits[trialInd, :] = np.nanmean(dwIE / pA, 1)
-                    self.trialdwIIOUnits[trialInd, :] = np.nanmean(dwII / pA, 1)
-
-                # save the proposed weight change in pA
-                self.trialdwEEUnits[trialInd, :] = np.nanmean(dwEE / pA, 0)
-                self.trialdwEIUnits[trialInd, :] = np.nanmean(dwEI / pA, 0)
-                self.trialdwIEUnits[trialInd, :] = np.nanmean(dwIE / pA, 0)
-                self.trialdwIIUnits[trialInd, :] = np.nanmean(dwII / pA, 0)
-
-                wEEMat += dwEE / pA * JN.p['wEEScale']
-                wEIMat += dwEI / pA * JN.p['wEIScale']
-                wIEMat += dwIE / pA * JN.p['wIEScale']
-                wIIMat += dwII / pA * JN.p['wIIScale']
-
-                # reshape back to a matrix
-                wEE = wEEMat[JN.preEE, JN.posEE] * pA
-                wEI = wEIMat[JN.preEI, JN.posEI] * pA
-                wIE = wIEMat[JN.preIE, JN.posIE] * pA
-                wII = wIIMat[JN.preII, JN.posII] * pA
-
-            elif p['useRule'] == 'cross-homeo-pre-scalar-homeo-flipCH':
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > (2 * p['setUpFRExc'] - 1 * Hz)] = (2 * p['setUpFRExc'] - 1 * Hz)
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > (2 * p['setUpFRInh'] - 1 * Hz)] = (2 * p['setUpFRInh'] - 1 * Hz)
-
-                # convert flat weight arrays into matrices in units of pA
-                wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
-                wEIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nExc'], JN.preEI, JN.posEI, wEI / pA)
-                wIEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nInh'], JN.preIE, JN.posIE, wIE / pA)
-                wIIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nInh'], JN.preII, JN.posII, wII / pA)
-
-                # here we assume there is a global sensed value of the average FR of E or I units,
-                # so the error term is a scalar
-                # we divide by Hz because of the units of alpha to convert to amps
-                dwEECH = -p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwEICH = p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwIECH = -p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-                dwIICH = p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-
-                # regular homeo (outer product)
-                # since outer strips units and because of alpha we multiply by Hz to convert to amps
-                dwEEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwEIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwIEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-                dwIIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEECHUnits'):
-                        self.trialdwEECHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEICHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIECHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIICHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                        self.trialdwEEHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save both the CH contribution and the H contribution
-                    self.trialdwEECHUnits[trialInd, :] = dwEECH / pA
-                    self.trialdwEICHUnits[trialInd, :] = dwEICH / pA
-                    self.trialdwIECHUnits[trialInd, :] = dwIECH / pA
-                    self.trialdwIICHUnits[trialInd, :] = dwIICH / pA
-
-                    dwEEH_tmp = dwEEH / pA
-                    dwEIH_tmp = dwEIH / pA
-                    dwIEH_tmp = dwIEH / pA
-                    dwIIH_tmp = dwIIH / pA
-
-                    dwEEH_tmp[np.isnan(wEEMat)] = np.nan
-                    dwEIH_tmp[np.isnan(wEIMat)] = np.nan
-                    dwIEH_tmp[np.isnan(wIEMat)] = np.nan
-                    dwIIH_tmp[np.isnan(wIIMat)] = np.nan
-
-                    self.trialdwEEHUnits[trialInd, :] = np.nanmean(dwEEH_tmp, 1)  # 1 for outgoing
-                    self.trialdwEIHUnits[trialInd, :] = np.nanmean(dwEIH_tmp, 1)
-                    self.trialdwIEHUnits[trialInd, :] = np.nanmean(dwIEH_tmp, 1)
-                    self.trialdwIIHUnits[trialInd, :] = np.nanmean(dwIIH_tmp, 1)
-
-                # this broadcasts the addition across the COLUMNS (the 1d dw arrays are column vectors)
-                # this applies the same weight change to all OUTGOING synapses from a single unit
-                # but it's a different value for each unit
-                dwEE = dwEECH.reshape(-1, 1) + dwEEH
-                dwEI = dwEICH.reshape(-1, 1) + dwEIH
-                dwIE = dwIECH.reshape(-1, 1) + dwIEH
-                dwII = dwIICH.reshape(-1, 1) + dwIIH
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEEOUnits'):
-                        self.trialdwEEOUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIOUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEOUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIOUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save the proposed weight change in pA
-                    self.trialdwEEOUnits[trialInd, :] = np.nanmean(dwEE / pA, 1)
-                    self.trialdwEIOUnits[trialInd, :] = np.nanmean(dwEI / pA, 1)
-                    self.trialdwIEOUnits[trialInd, :] = np.nanmean(dwIE / pA, 1)
-                    self.trialdwIIOUnits[trialInd, :] = np.nanmean(dwII / pA, 1)
-
-                # save the proposed weight change in pA
-                self.trialdwEEUnits[trialInd, :] = np.nanmean(dwEE / pA, 0)
-                self.trialdwEIUnits[trialInd, :] = np.nanmean(dwEI / pA, 0)
-                self.trialdwIEUnits[trialInd, :] = np.nanmean(dwIE / pA, 0)
-                self.trialdwIIUnits[trialInd, :] = np.nanmean(dwII / pA, 0)
-
-                wEEMat += dwEE / pA * JN.p['wEEScale']
-                wEIMat += dwEI / pA * JN.p['wEIScale']
-                wIEMat += dwIE / pA * JN.p['wIEScale']
-                wIIMat += dwII / pA * JN.p['wIIScale']
-
-                # reshape back to a matrix
-                wEE = wEEMat[JN.preEE, JN.posEE] * pA
-                wEI = wEIMat[JN.preEI, JN.posEI] * pA
-                wIE = wIEMat[JN.preIE, JN.posIE] * pA
-                wII = wIIMat[JN.preII, JN.posII] * pA
-
-            elif p['useRule'] == 'cross-homeo-pre-scalar-homeo-flipH':
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > (2 * p['setUpFRExc'] - 1 * Hz)] = (2 * p['setUpFRExc'] - 1 * Hz)
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > (2 * p['setUpFRInh'] - 1 * Hz)] = (2 * p['setUpFRInh'] - 1 * Hz)
-
-                # convert flat weight arrays into matrices in units of pA
-                wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
-                wEIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nExc'], JN.preEI, JN.posEI, wEI / pA)
-                wIEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nInh'], JN.preIE, JN.posIE, wIE / pA)
-                wIIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nInh'], JN.preII, JN.posII, wII / pA)
-
-                # here we assume there is a global sensed value of the average FR of E or I units,
-                # so the error term is a scalar
-                # we divide by Hz because of the units of alpha to convert to amps
-                dwEECH = p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwEICH = -p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / Hz
-                dwIECH = -p['alpha1'] * movAvgUpFRExcUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-                dwIICH = p['alpha1'] * movAvgUpFRInhUnits * (p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / Hz
-
-                # regular homeo (outer product)
-                # since outer strips units and because of alpha we multiply by Hz to convert to amps
-                dwEEH = -p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwEIH = p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRExc'] - movAvgUpFRExcUnits)) * Hz
-                dwIEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-                dwIIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits, (p['setUpFRInh'] - movAvgUpFRInhUnits)) * Hz
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEECHUnits'):
-                        self.trialdwEECHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEICHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIECHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                         dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIICHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                        self.trialdwEEHUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIHUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEHUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIHUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save both the CH contribution and the H contribution
-                    self.trialdwEECHUnits[trialInd, :] = dwEECH / pA
-                    self.trialdwEICHUnits[trialInd, :] = dwEICH / pA
-                    self.trialdwIECHUnits[trialInd, :] = dwIECH / pA
-                    self.trialdwIICHUnits[trialInd, :] = dwIICH / pA
-
-                    dwEEH_tmp = dwEEH / pA
-                    dwEIH_tmp = dwEIH / pA
-                    dwIEH_tmp = dwIEH / pA
-                    dwIIH_tmp = dwIIH / pA
-
-                    dwEEH_tmp[np.isnan(wEEMat)] = np.nan
-                    dwEIH_tmp[np.isnan(wEIMat)] = np.nan
-                    dwIEH_tmp[np.isnan(wIEMat)] = np.nan
-                    dwIIH_tmp[np.isnan(wIIMat)] = np.nan
-
-                    self.trialdwEEHUnits[trialInd, :] = np.nanmean(dwEEH_tmp, 1)  # 1 for outgoing
-                    self.trialdwEIHUnits[trialInd, :] = np.nanmean(dwEIH_tmp, 1)
-                    self.trialdwIEHUnits[trialInd, :] = np.nanmean(dwIEH_tmp, 1)
-                    self.trialdwIIHUnits[trialInd, :] = np.nanmean(dwIIH_tmp, 1)
-
-                # this broadcasts the addition across the COLUMNS (the 1d dw arrays are column vectors)
-                # this applies the same weight change to all OUTGOING synapses from a single unit
-                # but it's a different value for each unit
-                dwEE = dwEECH.reshape(-1, 1) + dwEEH
-                dwEI = dwEICH.reshape(-1, 1) + dwEIH
-                dwIE = dwIECH.reshape(-1, 1) + dwIEH
-                dwII = dwIICH.reshape(-1, 1) + dwIIH
-
-                if self.p['saveTermsSeparately']:
-                    if not hasattr(self, 'trialdwEEOUnits'):
-                        self.trialdwEEOUnits = np.empty((self.p['nTrials'], self.p['nExc']), dtype='float32')
-                        self.trialdwEIOUnits = np.empty((self.p['nTrials'], self.p['nInh']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIEOUnits = np.empty((self.p['nTrials'], self.p['nExc']),
-                                                        dtype='float32')  # SWAPPED SINCE IT'S OUTGOING
-                        self.trialdwIIOUnits = np.empty((self.p['nTrials'], self.p['nInh']), dtype='float32')
-
-                    # save the proposed weight change in pA
-                    self.trialdwEEOUnits[trialInd, :] = np.nanmean(dwEE / pA, 1)
-                    self.trialdwEIOUnits[trialInd, :] = np.nanmean(dwEI / pA, 1)
-                    self.trialdwIEOUnits[trialInd, :] = np.nanmean(dwIE / pA, 1)
-                    self.trialdwIIOUnits[trialInd, :] = np.nanmean(dwII / pA, 1)
-
-                # save the proposed weight change in pA
-                self.trialdwEEUnits[trialInd, :] = np.nanmean(dwEE / pA, 0)
-                self.trialdwEIUnits[trialInd, :] = np.nanmean(dwEI / pA, 0)
-                self.trialdwIEUnits[trialInd, :] = np.nanmean(dwIE / pA, 0)
-                self.trialdwIIUnits[trialInd, :] = np.nanmean(dwII / pA, 0)
-
-                wEEMat += dwEE / pA * JN.p['wEEScale']
-                wEIMat += dwEI / pA * JN.p['wEIScale']
-                wIEMat += dwIE / pA * JN.p['wIEScale']
-                wIIMat += dwII / pA * JN.p['wIIScale']
-
-                # reshape back to a matrix
-                wEE = wEEMat[JN.preEE, JN.posEE] * pA
-                wEI = wEIMat[JN.preEI, JN.posEI] * pA
-                wIE = wIEMat[JN.preIE, JN.posIE] * pA
-                wII = wIIMat[JN.preII, JN.posII] * pA
-
             elif p['useRule'] == 'cross-homeo-pre-scalar-homeo-corrected':
 
                 movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
@@ -2450,71 +1770,6 @@ class JercogTrainer(object):
                 self.trialdwEIUnits[trialInd, :] = np.nanmean(dwEI / pA, 0)
                 self.trialdwIEUnits[trialInd, :] = np.nanmean(dwIE / pA, 0)
                 self.trialdwIIUnits[trialInd, :] = np.nanmean(dwII / pA, 0)
-
-                wEEMat += dwEE / pA * JN.p['wEEScale']
-                wEIMat += dwEI / pA * JN.p['wEIScale']
-                wIEMat += dwIE / pA * JN.p['wIEScale']
-                wIIMat += dwII / pA * JN.p['wIIScale']
-
-                # reshape back to a matrix
-                wEE = wEEMat[JN.preEE, JN.posEE] * pA
-                wEI = wEIMat[JN.preEI, JN.posEI] * pA
-                wIE = wIEMat[JN.preIE, JN.posIE] * pA
-                wII = wIIMat[JN.preII, JN.posII] * pA
-
-            elif p['useRule'] == 'cross-homeo-pre-scalar-homeo-norm':
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
-
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > 2 * p['setUpFRExc']] = 2 * p['setUpFRExc']
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > 2 * p['setUpFRInh']] = 2 * p['setUpFRInh']
-
-                # convert flat weight arrays into matrices in units of pA
-                wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
-                wEIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nExc'], JN.preEI, JN.posEI, wEI / pA)
-                wIEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nInh'], JN.preIE, JN.posIE, wIE / pA)
-                wIIMat = weight_matrix_from_flat_inds_weights(p['nInh'], p['nInh'], JN.preII, JN.posII, wII / pA)
-
-                # here we assume there is a global sensed value of the average FR of E or I units,
-                # so the error term is a scalar
-                # we divide by Hz because of the units of alpha to convert to amps
-                setUpE = p['setUpFRExc'] / Hz
-                setUpI = p['setUpFRInh'] / Hz
-
-                dwEECH = p['alpha1'] * movAvgUpFRExcUnits / setUpE * (
-                            p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / setUpI / Hz
-                dwEICH = -p['alpha1'] * movAvgUpFRInhUnits / setUpI * (
-                            p['setUpFRInh'] - movAvgUpFRInhUnits.mean()) / setUpI / Hz
-                dwIECH = -p['alpha1'] * movAvgUpFRExcUnits / setUpE * (
-                            p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / setUpE / Hz
-                dwIICH = p['alpha1'] * movAvgUpFRInhUnits / setUpI * (
-                            p['setUpFRExc'] - movAvgUpFRExcUnits.mean()) / setUpE / Hz
-
-                # regular homeo (outer product)
-                # since outer strips units and because of alpha we multiply by Hz to convert to amps
-                dwEEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits / setUpE,
-                                               (p['setUpFRExc'] - movAvgUpFRExcUnits) / setUpE) * Hz
-                dwEIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits / setUpI,
-                                                (p['setUpFRExc'] - movAvgUpFRExcUnits) / setUpE) * Hz
-                dwIEH = p['alpha1'] * np.outer(movAvgUpFRExcUnits / setUpE,
-                                               (p['setUpFRInh'] - movAvgUpFRInhUnits) / setUpI) * Hz
-                dwIIH = -p['alpha1'] * np.outer(movAvgUpFRInhUnits / setUpI,
-                                                (p['setUpFRInh'] - movAvgUpFRInhUnits) / setUpI) * Hz
-
-                # this broadcasts the addition across the COLUMNS (the 1d dw arrays are column vectors)
-                # this applies the same weight change to all OUTGOING synapses from a single unit
-                # but it's a different value for each unit
-                dwEE = dwEECH.reshape(-1, 1) + dwEEH
-                dwEI = dwEICH.reshape(-1, 1) + dwEIH
-                dwIE = dwIECH.reshape(-1, 1) + dwIEH
-                dwII = dwIICH.reshape(-1, 1) + dwIIH
-
-                # save the proposed weight change in pA
-                self.trialdwEEUnits[trialInd, :] = dwEE.mean() / pA
-                self.trialdwEIUnits[trialInd, :] = dwEI.mean() / pA
-                self.trialdwIEUnits[trialInd, :] = dwIE.mean() / pA
-                self.trialdwIIUnits[trialInd, :] = dwII.mean() / pA
 
                 wEEMat += dwEE / pA * JN.p['wEEScale']
                 wEIMat += dwEI / pA * JN.p['wEIScale']

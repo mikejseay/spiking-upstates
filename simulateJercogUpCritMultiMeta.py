@@ -34,7 +34,9 @@ paradoxicalKickSizes = [1]
 # paradoxicalKickAmps = np.arange(0, 21, 5) * pA
 # paradoxicalKickAmps = np.array([0, 8]) * pA
 # paradoxicalKickAmps = np.arange(0, 81, 16) * pA
-paradoxicalKickAmps = np.arange(0, 201, 20) * pA
+# paradoxicalKickAmps = np.arange(0, 201, 20) * pA
+# paradoxicalKickAmps = np.arange(-70, 1, 10) * pA
+paradoxicalKickAmps = np.arange(-200, 1, 20) * pA
 # paradoxicalKickAmps = np.arange(0, 21, 4) * pA
 
 comparisonStartTime = 2000 * ms
@@ -56,7 +58,7 @@ if p['useNewEphysParams']:
     p.update(ephysParams)
 
 p['useRule'] = 'upCrit'
-p['nameSuffix'] = 'multiMetaUpWeightsPoissonInput1'
+p['nameSuffix'] = 'multiMetaHypAI1'
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
 p['useOldWeightMagnitude'] = True

@@ -53,13 +53,20 @@ def generate_description(R):
     R.importantInfoString = R.importantInfoString
 
 
-def FR_weights(R, startTrialInd=0, endTrialInd=-1):
+def FR_weights(R, startTrialInd=0, endTrialInd=-1, movAvgWidth=None):
     # FR and weights... certain trials
 
     f, ax = plt.subplots(2, 1, sharex=True, figsize=(5, 9))
 
-    ax[0].plot(R.trialUpFRExc[startTrialInd:endTrialInd], label='E', color='g')
-    ax[0].plot(R.trialUpFRInh[startTrialInd:endTrialInd], label='I', color='r', alpha=.5)
+    if movAvgWidth:
+        useFRExc = moving_average(R.trialUpFRExc[startTrialInd:endTrialInd], movAvgWidth)
+        useFRInh = moving_average(R.trialUpFRInh[startTrialInd:endTrialInd], movAvgWidth)
+    else:
+        useFRExc = R.trialUpFRExc[startTrialInd:endTrialInd]
+        useFRInh = R.trialUpFRInh[startTrialInd:endTrialInd]
+
+    ax[0].plot(useFRExc, label='E', color='g')
+    ax[0].plot(useFRInh, label='I', color='r', alpha=.5)
     ax[0].legend()
     ax[0].hlines(R.p['setUpFRExc'], 0, len(R.trialUpFRExc[startTrialInd:endTrialInd]), ls='--', color='g')
     ax[0].hlines(R.p['setUpFRInh'], 0, len(R.trialUpFRInh[startTrialInd:endTrialInd]), ls='--', color='r')
@@ -76,6 +83,8 @@ def FR_weights(R, startTrialInd=0, endTrialInd=-1):
     ax[1].set_ylabel('Weight (pA)')
 
     f.suptitle(R.importantInfoString)
+
+    return f, ax
 
 
 def calculate_convergence_index(R, movAvgWidth=31):
@@ -162,6 +171,8 @@ def FR_scatter(R, startTrialInd=0, endTrialInd=-1, removeOutliers=False):
     cb = plt.colorbar(s, ax=ax)
     cb.ax.set_ylabel('Trial Index', rotation=270)
 
+    return f, ax
+
 
 def FR_hist2d(R, startTrialInd=0, endTrialInd=-1, removeOutliers=False):
     # goal: 2d hist of the average E firing rate vs. I firing rate for each trial
@@ -190,6 +201,8 @@ def FR_hist2d(R, startTrialInd=0, endTrialInd=-1, removeOutliers=False):
 
     f.colorbar(h[3], ax=ax)
 
+    return f, ax
+
 
 def FR_hist1d_compare(R, startTrialInd=0, endTrialInd=-1):
     # FRs at time points as a histogram (before and after)
@@ -206,6 +219,8 @@ def FR_hist1d_compare(R, startTrialInd=0, endTrialInd=-1):
         anax.set(xlabel='Firing Rate (Hz)', ylabel='# of occurences')
 
     f.suptitle(R.importantInfoString)
+
+    return f, ax
 
 
 def FR_weights_std(R, startTrialInd=0, endTrialInd=-1):
@@ -280,6 +295,8 @@ def FR_weights_std(R, startTrialInd=0, endTrialInd=-1):
 
     f.suptitle(R.importantInfoString)
 
+    return f, ax
+
 
 def weights_scatter_matrix(R, startTrialInd=0, endTrialInd=-1):
     # it looks like the E weights and I weights are correlated with each other... let's take a look at the wEE vs. wEI
@@ -302,6 +319,8 @@ def weights_scatter_matrix(R, startTrialInd=0, endTrialInd=-1):
                 ax[rowInd, colInd].set_xlabel(weightMatrixLabels[colInd] + ' (pA)')
             if colInd == 0:
                 ax[rowInd, colInd].set_ylabel(weightMatrixLabels[rowInd] + ' (pA)')
+
+    return f, ax
 
 
 def weights_hist1d_compare(R):
@@ -336,11 +355,13 @@ def weights_hist1d_compare(R):
     wFullFinalPlot[wFullFinalPlot < vlims[0]] = np.nan
     wFullFinalPlot[wFullFinalPlot > vlims[1]] = np.nan
 
-    fig8, ax8 = plt.subplots(1, 2, figsize=(17, 8))
-    ax8[0].hist(wFullInitPlot.ravel(), bins=40)
-    ax8[0].set(xlabel='Weight (pA)', ylabel='# of occurences')
-    ax8[1].hist(wFullFinalPlot.ravel(), bins=40)
-    ax8[1].set(xlabel='Weight (pA)', ylabel='# of occurences')
+    f, ax = plt.subplots(1, 2, figsize=(17, 8))
+    ax[0].hist(wFullInitPlot.ravel(), bins=40)
+    ax[0].set(xlabel='Weight (pA)', ylabel='# of occurences')
+    ax[1].hist(wFullFinalPlot.ravel(), bins=40)
+    ax[1].set(xlabel='Weight (pA)', ylabel='# of occurences')
+
+    return f, ax
 
 
 def weights_matrix_compare(R):
@@ -376,9 +397,24 @@ def weights_matrix_compare(R):
     wFullInitPlot[np.isnan(wFullInitPlot)] = 0
     wFullFinalPlot[np.isnan(wFullFinalPlot)] = 0
 
-    fig7, ax7 = plt.subplots(1, 2, figsize=(17, 8))
-    weight_matrix(ax7[0], wFullInitPlot, xlabel='Post Index', ylabel='Pre Index',
+    f, ax = plt.subplots(1, 2, figsize=(17, 8))
+    weight_matrix(ax[0], wFullInitPlot, xlabel='Post Index', ylabel='Pre Index',
                   clabel='Weight (pA)', limsMethod='custom', vlims=vlims)
-    weight_matrix(ax7[1], wFullFinalPlot, xlabel='Post Index', ylabel='Pre Index',
+    weight_matrix(ax[1], wFullFinalPlot, xlabel='Post Index', ylabel='Pre Index',
                   clabel='Weight (pA)', limsMethod='custom', vlims=vlims)
 
+    return f, ax
+
+
+def calculate_net_current_units(R):
+    wEEMat = weight_matrix_from_flat_inds_weights(R.p['nExc'], R.p['nExc'], R.preEE, R.posEE, R.wEE_final)
+    wEIMat = weight_matrix_from_flat_inds_weights(R.p['nInh'], R.p['nExc'], R.preEI, R.posEI, R.wEI_final)
+    wIEMat = weight_matrix_from_flat_inds_weights(R.p['nExc'], R.p['nInh'], R.preIE, R.posIE, R.wIE_final)
+    wIIMat = weight_matrix_from_flat_inds_weights(R.p['nInh'], R.p['nInh'], R.preII, R.posII, R.wII_final)
+    totExcOntoExc = np.nansum(wEEMat, 0)
+    totInhOntoExc = np.nansum(wEIMat, 0)
+    totExcOntoInh = np.nansum(wIEMat, 0)
+    totInhOntoInh = np.nansum(wIIMat, 0)
+    netCurrentExc = totExcOntoExc - totInhOntoExc
+    netCurrentInh = totExcOntoInh - totInhOntoInh
+    return netCurrentExc, netCurrentInh

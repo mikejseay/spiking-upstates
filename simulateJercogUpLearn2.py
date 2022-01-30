@@ -9,9 +9,9 @@ from generate import convert_kicks_to_current_series
 from trainer import JercogTrainer
 from results import Results
 
-p['useNewEphysParams'] = True
+p['useNewEphysParams'] = False
 p['useSecondPopExc'] = False
-ephysParams = paramsJercogEphysBuono7InfUp.copy()
+ephysParams = paramsJercogEphysBuono7.copy()
 
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
@@ -36,15 +36,15 @@ p['downSampleVoltageTo'] = 1 * ms
 p['dtHistPSTH'] = 10 * ms
 
 # simulation params
-p['nUnits'] = 2e3
-p['propConnect'] = 0.25
+p['nUnits'] = 5e3
+p['propConnect'] = 0.1
 # p['noiseSigma'] = 2.5 * mV  # 2.5 * mV
 
 # define parameters
 p['setUpFRExc'] = 5 * Hz
 p['setUpFRInh'] = 14 * Hz
-p['tauUpFRTrials'] = 1
-p['useRule'] = 'cross-homeo-pre-outer-homeo'  # cross-homeo or balance
+p['tauUpFRTrials'] = 2
+p['useRule'] = 'cross-homeo-pre-scalar'  # cross-homeo or balance
 rngSeed = None
 p['allowAutapses'] = False
 p['nameSuffix'] = ''
@@ -59,6 +59,8 @@ p['saveTermsSeparately'] = False
 # p['betaAdaptInh'] = 0 * nA * ms
 
 # p['initWeightMethod'] = 'seed' + str(rngSeed)
+p['initWeightMethod'] = 'goodCrossHomeoExamp'
+# p['initWeightMethod'] = 'goodCrossHomeoExampBuono'
 # p['initWeightMethod'] = 'guessLowWeights2e3p025LogNormal2'
 # p['initWeightMethod'] = 'guessBuono2Weights2e3p025LogNormal2'
 # p['initWeightMethod'] = 'guessGoodWeights2e3p1LogNormal'
@@ -68,6 +70,7 @@ p['saveTermsSeparately'] = False
 # p['initWeightMethod'] = 'guessBuono6Weights2e3p025Beta10'
 # p['initWeightMethod'] = 'guessBuono7Weights2e3p025SlightLow'
 # p['initWeightMethod'] = 'guessBuono4Weights2e3p025LogNormal'
+# p['initWeightMethod'] = 'randomUniformSarayHigher'
 # p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessHighActivityWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessUpperLeftWeights2e3p025LogNormal'
@@ -82,8 +85,8 @@ p['saveTermsSeparately'] = False
 # p['saveFolder'] += 'cross-homeo-pre-outer-homeo/'
 # p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed2_2021-09-03-10-23_results'
 
-p['initWeightMethod'] = 'resumePrior'
-p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_guessBuono7Weights2e3p025SlightLow__2021-09-04-08-20_results'
+# p['initWeightMethod'] = 'resumePrior'
+# p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_guessBuono7Weights2e3p025SlightLow__2021-09-04-08-20_results'
 
 p['kickType'] = 'spike'  # kick or spike
 p['jEEScaleRatio'] = None
@@ -94,10 +97,10 @@ p['jIIScaleRatio'] = None
 p['maxAllowedFRExc'] = 2 * p['setUpFRExc'] / Hz
 p['maxAllowedFRInh'] = 2 * p['setUpFRInh'] / Hz
 
-p['nTrials'] = 6765  # 6765
+p['nTrials'] = 3000  # 6765
 # p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597]  # 1-indexed
 # p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181]  # 1-indexed
-p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181, 6765]  # 1-indexed
+p['saveTrials'] = np.arange(0, p['nTrials'], 100)
 
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
 p['timeToSpike'] = 100 * ms
@@ -108,14 +111,14 @@ else:
     p['spikeInputAmplitude'] = 0.98  # 0.95  # 1.34  # 1.03  # nA
 
 if p['useRule'][:5] == 'cross' or p['useRule'] == 'homeo':
-    p['alpha1'] = 0.002 * pA / Hz / p['propConnect']  # 0.005
+    p['alpha1'] = 0.008 * pA / Hz
     p['alpha2'] = None
     p['tauPlasticityTrials'] = None
     p['alphaBalance'] = None
-    p['minAllowedWEE'] = 0.1 * pA / p['propConnect']
-    p['minAllowedWEI'] = 0.1 * pA / p['propConnect']
-    p['minAllowedWIE'] = 0.1 * pA / p['propConnect']
-    p['minAllowedWII'] = 0.1 * pA / p['propConnect']
+    p['minAllowedWEE'] = 0.4 * pA
+    p['minAllowedWEI'] = 0.4 * pA
+    p['minAllowedWIE'] = 0.4 * pA
+    p['minAllowedWII'] = 0.4 * pA
 elif p['useRule'][:7] == 'balance':
     # monolithic change version
     # p['alpha1'] = 0.05 * pA * pA / Hz / Hz / Hz / p['propConnect']
@@ -151,6 +154,13 @@ p['kickSizes'] = [1]
 iKickRecorded = convert_kicks_to_current_series(p['kickDur'], p['kickTau'],
                                                 p['kickTimes'], p['kickSizes'], p['duration'], p['dt'])
 p['iKickRecorded'] = iKickRecorded
+
+# ephys measurement params
+p['baselineDur'] = 100 * ms
+p['iDur'] = 250 * ms
+p['afterDur'] = 100 * ms
+p['iExtRange'] = np.linspace(0, .3, 301) * nA
+
 
 # boring params
 p['nIncInh'] = int(p['propConnect'] * p['propInh'] * p['nUnits'])

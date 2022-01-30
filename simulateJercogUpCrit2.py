@@ -7,17 +7,20 @@ from generate import convert_kicks_to_current_series, norm_weights, weight_matri
 from trainer import JercogTrainer
 from results import Results
 import matplotlib.pyplot as plt
+from analysis import calculate_net_current_units
 
 rngSeed = None
 defaultclock.dt = p['dt']
 
 p['useNewEphysParams'] = True
-ephysParams = paramsJercogEphysBuono7InfUp.copy()
+ephysParams = paramsJercogEphysBuono7.copy()
+# ephysParams = paramsJercogEphysBuono7InfUp.copy()
 p['useSecondPopExc'] = False
+p['randomizeConnectivity'] = False
 p['manipulateConnectivity'] = False
 p['removePropConn'] = 0.2
-p['addBackRemovedConns'] = True
-p['paradoxicalKickInh'] = True
+p['addBackRemovedConns'] = False
+p['paradoxicalKickInh'] = False
 weightMult = 1
 
 # PARADOXICAL EFFECT EXPERIMENT PARAMETERS
@@ -25,7 +28,7 @@ paradoxicalKickProp = 1
 paradoxicalKickTimes = [3000 * ms]
 paradoxicalKickDurs = [1000 * ms]
 paradoxicalKickSizes = [1]
-paradoxicalKickAmp = 200 * pA
+paradoxicalKickAmp = -70 * pA
 
 comparisonStartTime = 2000 * ms
 comparisonEndTime = 3000 * ms
@@ -70,7 +73,7 @@ p['propConnect'] = 0.25
 p['initWeightMethod'] = 'resumePrior'
 p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_guessBuono7Weights2e3p025SlightLow__2021-09-04-08-20_results'
 # p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_guessBuono7Weights2e3p025SlightLow_2021-12-09-09-41-18_results'
-p['kickType'] = 'barrage'  # kick or spike or barrage
+p['kickType'] = 'spike'  # kick or spike or barrage
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
 p['timeToSpike'] = 100 * ms
 p['timeAfterSpiked'] = paradoxicalKickTimes[-1] + paradoxicalKickDurs[-1] + 1000 * ms
@@ -123,6 +126,25 @@ if p['initWeightMethod'] == 'resumePrior':
 else:
     PR = None
 
+if p['randomizeConnectivity']:
+    netCurrentExcPre, netCurrentInhPre = calculate_net_current_units(PR)
+
+    PR.wEE_final = p['rng'].permutation(PR.wEE_final)
+    PR.wEI_final = p['rng'].permutation(PR.wEI_final)
+    PR.wIE_final = p['rng'].permutation(PR.wIE_final)
+    PR.wII_final = p['rng'].permutation(PR.wII_final)
+
+    netCurrentExcPost, netCurrentInhPost = calculate_net_current_units(PR)
+
+    f, ax = plt.subplots(2, 1)
+    ax[0].hist(netCurrentExcPre, histtype='step', label='original E')
+    ax[0].hist(netCurrentExcPost, histtype='step', label='shuffled E')
+    ax[0].legend()
+
+    ax[1].hist(netCurrentInhPre, histtype='step', label='original I')
+    ax[1].hist(netCurrentInhPost, histtype='step', label='shuffled I')
+    ax[1].legend()
+
 if p['manipulateConnectivity']:
 
     startIndExc2 = p['startIndSecondPopExc']
@@ -135,8 +157,8 @@ if p['manipulateConnectivity']:
         np.where(
             np.logical_and(PR.posEE >= endIndExc2, np.logical_and(PR.preEE >= startIndExc2, PR.preEE < endIndExc2)))[0]
 
-    removeE2E1Inds = np.random.choice(E2E1Inds, int(np.round(E2E1Inds.size * p['removePropConn'])), replace=False)
-    removeE1E2Inds = np.random.choice(E1E2Inds, int(np.round(E1E2Inds.size * p['removePropConn'])), replace=False)
+    removeE2E1Inds = p['rng'].choice(E2E1Inds, int(np.round(E2E1Inds.size * p['removePropConn'])), replace=False)
+    removeE1E2Inds = p['rng'].choice(E1E2Inds, int(np.round(E1E2Inds.size * p['removePropConn'])), replace=False)
 
     removeInds = np.concatenate((removeE2E1Inds, removeE1E2Inds))
 
@@ -173,8 +195,8 @@ if p['manipulateConnectivity']:
             PR.preEE[E1E1Inds] - nExc2 - p['nUnitsToSpike'], PR.posEE[E1E1Inds] - nExc2 - p['nUnitsToSpike']] = 0
         probabilityArrayE1E1[np.diag_indices_from(probabilityArrayE1E1)] = 0
 
-        indicesE2E2Flat = np.random.choice(nExc2 ** 2, nConnAddedToE2E2, replace=False, p=probabilityArrayE2E2.ravel())
-        indicesE1E1Flat = np.random.choice(nExc1 ** 2, nConnAddedToE1E1, replace=False, p=probabilityArrayE1E1.ravel())
+        indicesE2E2Flat = p['rng'].choice(nExc2 ** 2, nConnAddedToE2E2, replace=False, p=probabilityArrayE2E2.ravel())
+        indicesE1E1Flat = p['rng'].choice(nExc1 ** 2, nConnAddedToE1E1, replace=False, p=probabilityArrayE1E1.ravel())
 
         propConnE2E1 = (E2E1Inds.size - removeE2E1Inds.size) / (nExc2 * nExc1)
         propConnE1E2 = (E1E2Inds.size - removeE1E2Inds.size) / (nExc2 * nExc1)
@@ -196,18 +218,16 @@ if p['manipulateConnectivity']:
         PR.posEE = np.concatenate((PR.posEE, posIndsE1E1 + p['nUnitsToSpike'] + nExc2))
         PR.wEE_final = np.concatenate((PR.wEE_final, weightsSaved[preIndsE2E2.size:]))
 
-        # turn the final into a matrix also...
-        wEEFinal = weight_matrix_from_flat_inds_weights(PR.p['nExc'], PR.p['nExc'], PR.preEE, PR.posEE, PR.wEE_final)
-
         # make inhibition stronger/weaker to compensate
-        # wEICompensate = weight_matrix_from_flat_inds_weights(PR.p['nInh'], PR.p['nExc'], PR.preEI, PR.posEI,
-        #                                                      PR.wEI_final)
-        # wEICompensate[:, endIndExc2:] = wEICompensate[:, endIndExc2:] * propConnE1E1 / PR.p['propConnect']
-        #
-        # # decreaseInhOntoE2Factor = np.nansum(wEEFinal[startIndExc2:endIndExc2, :], 0).mean() / np.nansum(wEEInit[startIndExc2:endIndExc2, :], 0).mean()
-        # decreaseInhOntoE2Factor = np.nansum(wEEFinal[:, startIndExc2:endIndExc2], 1).mean() / np.nansum(wEEInit[:, startIndExc2:endIndExc2], 1).mean()
-        # wEICompensate[:, startIndExc2:endIndExc2] = wEICompensate[:, startIndExc2:endIndExc2] * decreaseInhOntoE2Factor
-        # PR.wEI_final = wEICompensate[PR.preEI, PR.posEI]
+        wEEFinal = weight_matrix_from_flat_inds_weights(PR.p['nExc'], PR.p['nExc'], PR.preEE, PR.posEE, PR.wEE_final)
+        wEICompensate = weight_matrix_from_flat_inds_weights(PR.p['nInh'], PR.p['nExc'], PR.preEI, PR.posEI,
+                                                             PR.wEI_final)
+        wEICompensate[:, endIndExc2:] = wEICompensate[:, endIndExc2:] * propConnE1E1 / PR.p['propConnect']
+
+        # decreaseInhOntoE2Factor = np.nansum(wEEFinal[startIndExc2:endIndExc2, :], 0).mean() / np.nansum(wEEInit[startIndExc2:endIndExc2, :], 0).mean()
+        decreaseInhOntoE2Factor = np.nansum(wEEFinal[:, startIndExc2:endIndExc2], 1).mean() / np.nansum(wEEInit[:, startIndExc2:endIndExc2], 1).mean()
+        wEICompensate[:, startIndExc2:endIndExc2] = wEICompensate[:, startIndExc2:endIndExc2] * decreaseInhOntoE2Factor
+        PR.wEI_final = wEICompensate[PR.preEI, PR.posEI]
 
 JT.set_up_network_upCrit(priorResults=PR, recordAllVoltage=p['recordAllVoltage'])
 
@@ -320,6 +340,20 @@ if p['paradoxicalKickInh']:  # plot the current injection region
     print('E / I FR during para = {:.2f} / {:.2f}, before para = {:.2f} / {:.2f}'.format(paraFRExc, paraFRInh,
                                                                                          compFRExc, compFRInh))
 
+    # this is some weird hack i thought might work but it didn't
+    useE = compFRExc
+    useI = compFRInh
+    ESet = 5
+    ISet = 14
+    dwEE = useE * (ISet - useI + ESet - useE)
+    dwEI = -useI * (ISet - useI + ESet - useE)
+    dwIE = useE * (ISet - useI - ESet + useE)
+    dwII = useI * (ISet - useI + ESet - useE)
+    print(dwEE)
+    print(dwEI)
+    print(dwIE)
+    print(dwII)
+
 if p['useSecondPopExc']:
     fig2, ax2 = plt.subplots(6, 1, num=2, figsize=(6, 9),
                              gridspec_kw={'height_ratios': [3, 2, 1, 1, 1, 1]},
@@ -343,16 +377,3 @@ if p['useSecondPopExc']:
     uniqueSpikers = np.unique(R.spikeMonExcI).size
     totalSpikes = R.spikeMonExcI.size
     print(uniqueSpikers, 'neurons fired an average of', totalSpikes / uniqueSpikers, 'spikes')
-
-useE = compFRExc
-useI = compFRInh
-ESet = 5
-ISet = 14
-dwEE = useE * (ISet - useI + ESet - useE)
-dwEI = -useI * (ISet - useI + ESet - useE)
-dwIE = useE * (ISet - useI - ESet + useE)
-dwII = useI * (ISet - useI + ESet - useE)
-print(dwEE)
-print(dwEI)
-print(dwIE)
-print(dwII)
