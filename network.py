@@ -1565,6 +1565,16 @@ class JercogNetwork(object):
             target=self.unitsInh,
             on_pre='uE_post += ' + str(1 / tauRiseE * ms),
         )
+        # feedforwardFanExc = Synapses(
+        #     source=Fanners,
+        #     target=self.unitsExc,
+        #     on_pre='uI_post += ' + str(1 / tauRiseI * ms),
+        # )
+        # feedforwardFanInh = Synapses(
+        #     source=Fanners,
+        #     target=self.unitsInh,
+        #     on_pre='uI_post += ' + str(1 / tauRiseI * ms),
+        # )
         feedforwardFanExc.connect(p=1)
         feedforwardFanInh.connect(p=1)
 
@@ -1572,6 +1582,12 @@ class JercogNetwork(object):
         self.N.add(Fanners, feedforwardFanExc, feedforwardFanInh)
         self.p['duration'] = (np.array(times).max() * second + timeSpacing)
         iKickRecorded = fixed_current_series(0, self.p['duration'], self.p['dt'])
+
+        # set the weights
+        self.unitsExc.jE = 7840 / 4 * pA  # jEE
+        self.unitsExc.jI = 7840 / 4 * pA  # jEI
+        self.unitsInh.jE = 7840 / 4 * pA  # jIE
+        self.unitsInh.jI = 7840 / 4 * pA  # jII
 
         # all that's left is to monitor and run
         self.create_monitors()

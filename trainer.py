@@ -693,18 +693,35 @@ class JercogTrainer(object):
             self.wEI_init = wEI_mean * norm_weights(self.JN.synapsesEI.jEI[:].size, 1, 0.2, rng=self.p['rng']) * pA
             self.wII_init = wII_mean * norm_weights(self.JN.synapsesII.jII[:].size, 1, 0.2, rng=self.p['rng']) * pA
         elif self.p['initWeightMethod'][:4] == 'seed':
-            excMeanWeightsPossible = (75, 112.5, 150)
-            inhMeanWeightsPossible = (700, 450, 200)
+            # excMeanWeightsPossible = (75, 112.5, 150)
+            excMeanWeightsPossible = (75, 100, 125)
+            # inhMeanWeightsPossible = (700, 450, 200)
+            # inhMeanWeightsPossible = (350, 225, 100)
+            inhMeanWeightsPossible = (300, 200, 100)
+            # inhMeanWeightsPossible = (140, 90, 40)
             # mappingStringSeq = (('wIE', 'wEE'), ('wII', 'wEI'),)
             excWeightTupleList = list(product(excMeanWeightsPossible, excMeanWeightsPossible))
             inhWeightTupleList = list(product(inhMeanWeightsPossible, inhMeanWeightsPossible))
             useSeed = int(self.p['initWeightMethod'][-1])  # should be a value 0-8
             wIE_mean, wEE_mean = excWeightTupleList[useSeed]
             wII_mean, wEI_mean = inhWeightTupleList[useSeed]
-            self.wEE_init = wEE_mean * lognorm_weights(self.JN.synapsesEE.jEE[:].size, rng=self.p['rng']) * pA
-            self.wIE_init = wIE_mean * lognorm_weights(self.JN.synapsesIE.jIE[:].size, rng=self.p['rng']) * pA
-            self.wEI_init = wEI_mean * lognorm_weights(self.JN.synapsesEI.jEI[:].size, rng=self.p['rng']) * pA
-            self.wII_init = wII_mean * lognorm_weights(self.JN.synapsesII.jII[:].size, rng=self.p['rng']) * pA
+
+            # hack to prevent explosions
+            if useSeed == 1:
+                wEI_mean = 400
+            elif useSeed == 2:
+                wEI_mean = 500
+            elif useSeed == 5:
+                wEI_mean = 300
+
+            # self.wEE_init = wEE_mean * lognorm_weights(self.JN.synapsesEE.jEE[:].size, rng=self.p['rng']) * pA
+            # self.wIE_init = wIE_mean * lognorm_weights(self.JN.synapsesIE.jIE[:].size, rng=self.p['rng']) * pA
+            # self.wEI_init = wEI_mean * lognorm_weights(self.JN.synapsesEI.jEI[:].size, rng=self.p['rng']) * pA
+            # self.wII_init = wII_mean * lognorm_weights(self.JN.synapsesII.jII[:].size, rng=self.p['rng']) * pA
+            self.wEE_init = wEE_mean * norm_weights(self.JN.synapsesEE.jEE[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wIE_init = wIE_mean * norm_weights(self.JN.synapsesIE.jIE[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wEI_init = wEI_mean * norm_weights(self.JN.synapsesEI.jEI[:].size, 1, 0.2, rng=self.p['rng']) * pA
+            self.wII_init = wII_mean * norm_weights(self.JN.synapsesII.jII[:].size, 1, 0.2, rng=self.p['rng']) * pA
 
     def run(self):
 
@@ -2128,6 +2145,23 @@ class JercogTrainer(object):
             if wIITooSmall.any():
                 print('at least one weight was below the minimum allowed')
                 wII[wIITooSmall] = p['minAllowedWII']
+
+            wEETooBig = wEE > p['maxAllowedWEE']
+            wIETooBig = wIE > p['maxAllowedWIE']
+            wEITooBig = wEI > p['maxAllowedWEI']
+            wIITooBig = wII > p['maxAllowedWII']
+            if wEETooBig.any():
+                print('at least one weight was above the maximum allowed')
+                wEE[wEETooBig] = p['maxAllowedWEE']
+            if wIETooBig.any():
+                print('at least one weight was above the maximum allowed')
+                wIE[wIETooBig] = p['maxAllowedWIE']
+            if wEITooBig.any():
+                print('at least one weight was above the maximum allowed')
+                wEI[wEITooBig] = p['maxAllowedWEI']
+            if wIITooBig.any():
+                print('at least one weight was above the maximum allowed')
+                wII[wIITooBig] = p['maxAllowedWII']
 
             if p['useRule'][:5] == 'cross' or p['useRule'] == 'homeo':
                 print(sumWeightMsgFormatter.format(movAvgUpFRExc, movAvgUpFRInh, dwEE.sum() * JN.p['wEEScale'] / pA,

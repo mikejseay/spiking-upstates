@@ -36,8 +36,8 @@ p['downSampleVoltageTo'] = 1 * ms
 p['dtHistPSTH'] = 10 * ms
 
 # simulation params
-p['nUnits'] = 5e3
-p['propConnect'] = 0.1
+p['nUnits'] = 2e3
+p['propConnect'] = 0.25
 # p['noiseSigma'] = 2.5 * mV  # 2.5 * mV
 
 # define parameters
@@ -45,9 +45,9 @@ p['setUpFRExc'] = 5 * Hz
 p['setUpFRInh'] = 14 * Hz
 p['tauUpFRTrials'] = 2
 p['useRule'] = 'cross-homeo-pre-scalar'  # cross-homeo or balance
-rngSeed = None
+rngSeed = 8
 p['allowAutapses'] = False
-p['nameSuffix'] = ''
+p['nameSuffix'] = 'explodeDealTest'
 # cross-homeo-scalar and cross-homeo-scalar-homeo are the new ones
 p['saveTermsSeparately'] = False
 # defaultEqual, defaultNormal, defaultNormalScaled, defaultUniform,
@@ -58,8 +58,8 @@ p['saveTermsSeparately'] = False
 # p['betaAdaptExc2'] = 0 * nA * ms
 # p['betaAdaptInh'] = 0 * nA * ms
 
-# p['initWeightMethod'] = 'seed' + str(rngSeed)
-p['initWeightMethod'] = 'goodCrossHomeoExamp'
+p['initWeightMethod'] = 'seed' + str(rngSeed)
+# p['initWeightMethod'] = 'goodCrossHomeoExamp'
 # p['initWeightMethod'] = 'goodCrossHomeoExampBuono'
 # p['initWeightMethod'] = 'guessLowWeights2e3p025LogNormal2'
 # p['initWeightMethod'] = 'guessBuono2Weights2e3p025LogNormal2'
@@ -111,14 +111,18 @@ else:
     p['spikeInputAmplitude'] = 0.98  # 0.95  # 1.34  # 1.03  # nA
 
 if p['useRule'][:5] == 'cross' or p['useRule'] == 'homeo':
-    p['alpha1'] = 0.008 * pA / Hz
+    p['alpha1'] = 0.001 * pA / Hz
     p['alpha2'] = None
     p['tauPlasticityTrials'] = None
     p['alphaBalance'] = None
-    p['minAllowedWEE'] = 0.4 * pA
-    p['minAllowedWEI'] = 0.4 * pA
-    p['minAllowedWIE'] = 0.4 * pA
-    p['minAllowedWII'] = 0.4 * pA
+    p['minAllowedWEE'] = 5 * pA
+    p['minAllowedWEI'] = 5 * pA
+    p['minAllowedWIE'] = 5 * pA
+    p['minAllowedWII'] = 5 * pA
+    p['maxAllowedWEE'] = 750 * pA
+    p['maxAllowedWEI'] = 750 * pA
+    p['maxAllowedWIE'] = 750 * pA
+    p['maxAllowedWII'] = 750 * pA
 elif p['useRule'][:7] == 'balance':
     # monolithic change version
     # p['alpha1'] = 0.05 * pA * pA / Hz / Hz / Hz / p['propConnect']

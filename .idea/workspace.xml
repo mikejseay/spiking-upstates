@@ -3,16 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="c50fe96e-73b6-429f-aab6-173e82858304" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/analysis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021-movie.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021-movie.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021-seed-analysis.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021-seed-analysis.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/up-poisson-plotting.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/up-poisson-plotting.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/seed_files.py" beforeDir="false" afterPath="$PROJECT_DIR$/seed_files.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpCrit2.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpCrit2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpCritMultiMeta.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpCritMultiMeta.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/params.py" beforeDir="false" afterPath="$PROJECT_DIR$/params.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulateJercogFanIn.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogFanIn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulateJercogUpLearn2.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpLearn2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpPoisson.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulateJercogUpPoisson.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -81,27 +76,6 @@
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/compare_results.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="results" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="spiking-upstates" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/results.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -234,6 +208,24 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="simulateJercogFanIn" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="spiking-upstates" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulateJercogFanIn.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="simulateJercogUpCrit2" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="spiking-upstates" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -326,16 +318,16 @@
       <item itemvalue="Python.simulateJercogUpCrit2" />
       <item itemvalue="Python.simulateDestexheUpCritMultiMeta" />
       <item itemvalue="Python.simulateDestexheEphys" />
-      <item itemvalue="Python.results" />
       <item itemvalue="Python.simulateDestexheUpCrit2" />
+      <item itemvalue="Python.simulateJercogFanIn" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.simulateJercogFanIn" />
         <item itemvalue="Python.simulateJercogUpCrit2" />
         <item itemvalue="Python.simulateDestexheUpCritMultiMeta" />
         <item itemvalue="Python.simulateDestexheUpCrit2" />
         <item itemvalue="Python.simulateDestexheEphys" />
-        <item itemvalue="Python.results" />
       </list>
     </recent_temporary>
   </component>
@@ -365,6 +357,10 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="679" y="146" key="#simulateDestexheUpCritMultiMeta/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1639426605452" />
+    <state x="679" y="146" key="#simulateJercogFanIn" timestamp="1643818871354">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="679" y="146" key="#simulateJercogFanIn/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1643818871354" />
     <state x="679" y="146" key="#simulateJercogUpCrit2" timestamp="1638980927754">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -381,22 +377,22 @@
       <screen x="1920" y="0" width="1920" height="1040" />
     </state>
     <state x="2232" y="313" width="960" height="442" key="#xdebugger.evaluate/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1643236837674" />
-    <state width="1921" height="361" key="GridCell.Tab.0.bottom" timestamp="1643237020513">
+    <state width="1921" height="361" key="GridCell.Tab.0.bottom" timestamp="1643830216213">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="361" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1643237020513" />
-    <state width="1921" height="361" key="GridCell.Tab.0.center" timestamp="1643237020513">
+    <state width="1921" height="361" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1643830216213" />
+    <state width="1921" height="361" key="GridCell.Tab.0.center" timestamp="1643830216213">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="361" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1643237020513" />
-    <state width="1921" height="361" key="GridCell.Tab.0.left" timestamp="1643237020513">
+    <state width="1921" height="361" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1643830216213" />
+    <state width="1921" height="361" key="GridCell.Tab.0.left" timestamp="1643830216213">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="361" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1643237020513" />
-    <state width="1921" height="361" key="GridCell.Tab.0.right" timestamp="1643237020513">
+    <state width="1921" height="361" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1643830216213" />
+    <state width="1921" height="361" key="GridCell.Tab.0.right" timestamp="1643830216213">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="361" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1643237020513" />
+    <state width="1921" height="361" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1643830216213" />
     <state x="461" y="162" key="SettingsEditor" timestamp="1641918079204">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -439,22 +435,22 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>2899</line>
+          <line>2915</line>
           <option name="timeStamp" value="122" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>2404</line>
+          <line>2420</line>
           <option name="timeStamp" value="144" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>2352</line>
+          <line>2368</line>
           <option name="timeStamp" value="146" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>2246</line>
+          <line>2262</line>
           <option name="timeStamp" value="150" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -494,7 +490,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1869</line>
+          <line>1886</line>
           <option name="timeStamp" value="325" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -504,42 +500,42 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2267</line>
+          <line>2301</line>
           <option name="timeStamp" value="357" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2079</line>
+          <line>2096</line>
           <option name="timeStamp" value="365" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2086</line>
+          <line>2103</line>
           <option name="timeStamp" value="366" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1822</line>
+          <line>1839</line>
           <option name="timeStamp" value="380" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>983</line>
+          <line>1000</line>
           <option name="timeStamp" value="382" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1313</line>
+          <line>1330</line>
           <option name="timeStamp" value="415" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1413</line>
+          <line>1430</line>
           <option name="timeStamp" value="425" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1525</line>
+          <line>1542</line>
           <option name="timeStamp" value="427" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -549,37 +545,37 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1987</line>
+          <line>2004</line>
           <option name="timeStamp" value="460" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2119</line>
+          <line>2136</line>
           <option name="timeStamp" value="462" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2122</line>
+          <line>2139</line>
           <option name="timeStamp" value="463" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>2125</line>
+          <line>2142</line>
           <option name="timeStamp" value="464" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1660</line>
+          <line>1677</line>
           <option name="timeStamp" value="468" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1653</line>
+          <line>1670</line>
           <option name="timeStamp" value="469" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>784</line>
+          <line>801</line>
           <option name="timeStamp" value="478" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -589,22 +585,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1504</line>
+          <line>1521</line>
           <option name="timeStamp" value="500" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>1307</line>
+          <line>1324</line>
           <option name="timeStamp" value="501" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/network.py</url>
-          <line>1024</line>
-          <option name="timeStamp" value="510" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/network.py</url>
-          <line>3191</line>
+          <line>3207</line>
           <option name="timeStamp" value="513" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -629,7 +620,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/simulateJercogUpLearn2.py</url>
-          <line>179</line>
+          <line>183</line>
           <option name="timeStamp" value="543" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -646,11 +637,6 @@
           <url>file://$PROJECT_DIR$/results.py</url>
           <line>299</line>
           <option name="timeStamp" value="546" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/network.py</url>
-          <line>1695</line>
-          <option name="timeStamp" value="552" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/results.py</url>
@@ -699,7 +685,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/trainer.py</url>
-          <line>812</line>
+          <line>829</line>
           <option name="timeStamp" value="580" />
         </line-breakpoint>
       </breakpoints>

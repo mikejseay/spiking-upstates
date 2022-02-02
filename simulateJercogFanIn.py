@@ -2,15 +2,27 @@ from brian2 import *
 from params import paramsJercog as p
 from params import paramsJercogEphysBuono
 from network import JercogNetwork
+from results import Results
 
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
+
+p['useOldWeightMagnitude'] = True
+p['disableWeightScaling'] = True
+p['setMinimumBasedOnBalance'] = False
+p['allowAutapses'] = False
+
+p['dtHistPSTH'] = 10 * ms
+p['nUnits'] = 2e3
+p['propConnect'] = 0.25
+p['initWeightMethod'] = 'maxWeightTest'
+
 
 defaultclock.dt = p['dt']
 
 # determine 'fan in' empirically
 
-USE_NEW_EPHYS_PARAMS = True
+USE_NEW_EPHYS_PARAMS = False
 
 # remove protected keys from the dict whose params are being imported
 ephysParams = paramsJercogEphysBuono.copy()
@@ -56,7 +68,15 @@ JN.initialize_units()
 
 # JN.determine_fan_in(minUnits=100, maxUnits=1000, unitSpacing=100, timeSpacing=250 * ms)  # *** perfect
 # JN.determine_fan_in(minUnits=800, maxUnits=900, unitSpacing=10, timeSpacing=250 * ms)  # *** perfect
-JN.determine_fan_in(minUnits=800, maxUnits=810, unitSpacing=1, timeSpacing=250 * ms)  # *** perfect
+JN.determine_fan_in(minUnits=1, maxUnits=4, unitSpacing=1, timeSpacing=250 * ms)  # *** perfect
 # JN.determine_fan_in(minUnits=20, maxUnits=30, unitSpacing=1, timeSpacing=250 * ms)  # *** perfect
-JN.save_results_to_file()
-JN.save_params_to_file()
+# JN.save_results_to_file()
+# JN.save_params_to_file()
+
+R = Results()
+R.init_from_network_object(JN)
+
+f, ax = plt.subplots(2, 1, num=1, sharex=True)
+R.plot_voltage_detail(ax[0], unitType='Exc', useStateInd=0)
+R.plot_voltage_detail(ax[1], unitType='Inh', useStateInd=0)
+ax[1].set(xlabel='Time (s)', ylabel='Voltage (mV)')

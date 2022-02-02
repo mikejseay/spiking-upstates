@@ -59,8 +59,8 @@ paramsJercog = {
     'adaptTau': 500 * ms,
     'adaptStrengthExc': 15 * mV,
     'adaptStrengthInh': 0 * mV,
-    'refractoryPeriodExc': 2.5 * ms,
-    'refractoryPeriodInh': 1 * ms,
+    'refractoryPeriodExc': 5 * ms,
+    'refractoryPeriodInh': 2 * ms,
     'refractoryPeriod': 1 * ms,  # overridden by the above but necessary
     'membraneCapacitanceExc': 200 * pF,
     'membraneCapacitanceInh': 100 * pF,
