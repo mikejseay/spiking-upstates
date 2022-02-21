@@ -17,11 +17,30 @@ p['useNewEphysParams'] = True
 ephysParams = paramsJercogEphysBuono7InfUp.copy()
 p['useSecondPopExc'] = False
 p['randomizeConnectivity'] = False
-p['manipulateConnectivity'] = True
+p['manipulateConnectivity'] = False
 p['removePropConn'] = 0.2
 p['addBackRemovedConns'] = False
-p['paradoxicalKickInh'] = False
-weightMult = 0.8
+p['paradoxicalKickInh'] = True
+weightMult = 1
+
+# PARADOXICAL EFFECT EXPERIMENT PARAMETERS
+paradoxicalKickProp = 1
+paradoxicalKickTimes = [3000 * ms]
+paradoxicalKickDurs = [1000 * ms]
+paradoxicalKickSizes = [1]
+paradoxicalKickAmpInh = 0 * pA
+paradoxicalKickAmpExc = 10 * pA
+
+comparisonStartTime = 2000 * ms
+comparisonEndTime = 3000 * ms
+
+p['propConnectFeedforwardProjectionUncorr'] = 0.05  # proportion of feedforward projections that are connected
+p['nPoissonUncorrInputUnits'] = 2000
+p['nUncorrFeedforwardSynapsesPerUnit'] = int(p['propConnectFeedforwardProjectionUncorr'] * 2000 * (1 - p['propInh']))
+p['poissonUncorrInputRate'] = 2 * p['nUncorrFeedforwardSynapsesPerUnit'] * Hz
+p['poissonUncorrInputAmpExc'] = 70  # pA
+p['poissonUncorrInputAmpInh'] = 70  # pA
+p['duration'] = 5.1 * second
 
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
@@ -42,12 +61,11 @@ p['recordMovieVariables'] = False
 p['downSampleVoltageTo'] = 1 * ms
 p['stateVariableDT'] = 1 * ms
 p['dtHistPSTH'] = 10 * ms
-p['recordAllVoltage'] = False
+p['recordAllVoltage'] = True
 
 # simulation params
 p['nUnits'] = 2e3
 p['propConnect'] = 0.25
-p['allowAutapses'] = False
 
 # p['initWeightMethod'] = 'guessBuono7Weights2e3p025'
 # p['initWeightMethod'] = 'guessBuono7Weights2e3p025SlightLowTuned'
@@ -59,20 +77,18 @@ p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_res
 p['kickType'] = 'spike'  # kick or spike or barrage
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
 p['timeToSpike'] = 100 * ms
-p['timeAfterSpiked'] = 2000 * ms
+p['timeAfterSpiked'] = paradoxicalKickTimes[-1] + paradoxicalKickDurs[-1] + 1000 * ms
 p['spikeInputAmplitude'] = 0.96  # in nA
+p['allowAutapses'] = False
 
-p['nUnitsSecondPopExc'] = int(np.round(0.1 * p['nUnits']))
+p['nUnitsSecondPopExc'] = int(np.round(0.05 * p['nUnits']))
 p['startIndSecondPopExc'] = p['nUnitsToSpike']
 
 # boring params
 p['nIncInh'] = int(p['propConnect'] * p['propInh'] * p['nUnits'])
 p['nIncExc'] = int(p['propConnect'] * (1 - p['propInh']) * p['nUnits'])
 indUnkickedExc = int(p['nUnits'] - (p['propInh'] * p['nUnits']) - 1)
-indSecondPopExc = p['nUnitsToSpike']
 p['indsRecordStateExc'].append(indUnkickedExc)
-p['indsRecordStateExc'].append(indSecondPopExc)
-
 p['nExc'] = int(p['nUnits'] * (1 - p['propInh']))
 p['nInh'] = int(p['nUnits'] * p['propInh'])
 
@@ -215,6 +231,22 @@ if p['manipulateConnectivity']:
         PR.wEI_final = wEICompensate[PR.preEI, PR.posEI]
 
 JT.set_up_network_upCrit(priorResults=PR, recordAllVoltage=p['recordAllVoltage'])
+
+if p['paradoxicalKickInh']:
+    JT.p['propKicked'] = paradoxicalKickProp
+    JT.p['kickTimes'] = paradoxicalKickTimes
+    JT.p['kickDurs'] = paradoxicalKickDurs
+    JT.p['kickSizes'] = paradoxicalKickSizes
+    JT.p['kickAmplitudeInh'] = paradoxicalKickAmpInh
+    JT.p['kickAmplitudeExc'] = paradoxicalKickAmpExc
+    iKickRecorded = square_bumps(JT.p['kickTimes'],
+                                 JT.p['kickDurs'],
+                                 JT.p['kickSizes'],
+                                 JT.p['duration'],
+                                 JT.p['dt'])
+    JT.p['iKickRecorded'] = iKickRecorded
+    JT.JN.set_paradoxical_kicked()
+
 JT.initialize_weight_matrices()
 
 # here i will do so by multiplying by normal noise
@@ -282,6 +314,47 @@ totalSpikes = R.spikeMonExcI.size
 if uniqueSpikers > 0:
     print(uniqueSpikers, 'neurons fired an average of', totalSpikes / uniqueSpikers, 'spikes')
 
+if p['paradoxicalKickInh']:  # plot the current injection region
+
+    # adorn plot with rectangular patches that show where the current injection took place
+    left = paradoxicalKickTimes[0] / second
+    width = paradoxicalKickDurs[0] / second
+    for anax1 in ax1:
+        anax1_ymin, anax1_ymax = anax1.get_ylim()
+        bottom = anax1_ymin
+        height = anax1_ymax - anax1_ymin
+        rect = plt.Rectangle((left, bottom), width, height,
+                             facecolor="blue", alpha=0.1)
+        anax1.add_patch(rect)
+
+    # print the FR during the paradoxical region vs before
+    paraStartInd = np.argmin(np.abs(R.histCenters - (paradoxicalKickTimes[0] / second)))
+    paraEndInd = np.argmin(np.abs(R.histCenters - ((paradoxicalKickTimes[0] + paradoxicalKickDurs[0]) / second)))
+
+    compStartInd = np.argmin(np.abs(R.histCenters - (comparisonStartTime / second)))
+    compEndInd = np.argmin(np.abs(R.histCenters - (comparisonEndTime / second)))
+
+    paraFRExc = R.FRExc[paraStartInd:paraEndInd].mean()
+    paraFRInh = R.FRInh[paraStartInd:paraEndInd].mean()
+    compFRExc = R.FRExc[compStartInd:compEndInd].mean()
+    compFRInh = R.FRInh[compStartInd:compEndInd].mean()
+
+    print('E / I FR during para = {:.2f} / {:.2f}, before para = {:.2f} / {:.2f}'.format(paraFRExc, paraFRInh,
+                                                                                         compFRExc, compFRInh))
+
+    # this is some weird hack i thought might work but it didn't
+    useE = compFRExc
+    useI = compFRInh
+    ESet = 5
+    ISet = 14
+    dwEE = useE * (ISet - useI + ESet - useE)
+    dwEI = -useI * (ISet - useI + ESet - useE)
+    dwIE = useE * (ISet - useI - ESet + useE)
+    dwII = useI * (ISet - useI + ESet - useE)
+    print(dwEE)
+    print(dwEI)
+    print(dwIE)
+    print(dwII)
 
 if p['useSecondPopExc']:
     fig2, ax2 = plt.subplots(6, 1, num=2, figsize=(6, 9),

@@ -66,6 +66,8 @@ class JercogTrainer(object):
                                           unitSpacing=5,  # unitSpacing is a useless input in this context
                                           timeSpacing=self.p['timeAfterSpiked'], startTime=self.p['timeToSpike'],
                                           currentAmp=self.p['spikeInputAmplitude'])
+            # JN.prepare_upCrit_random(nUnits=self.p['nUnitsToSpike'], timeSpacing=self.p['timeAfterSpiked'],
+            #                          startTime=self.p['timeToSpike'], currentAmp=self.p['spikeInputAmplitude'])
         if priorResults is not None:
             JN.initialize_recurrent_synapses_4bundles_results(priorResults)
         else:
@@ -256,6 +258,16 @@ class JercogTrainer(object):
             self.wIE_init = (100 + 100 * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
             self.wEI_init = (100 + 100 * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size)) * netSizeConnNorm * pA
             self.wII_init = (100 + 100 * self.p['rng'].random(self.JN.synapsesII.jII[:].size)) * netSizeConnNorm * pA
+        elif self.p['initWeightMethod'] == 'uniformMinMax':
+            self.wEE_init = (self.p['minAllowedWEE'] + (self.p['maxAllowedWEE'] / 3 - self.p['minAllowedWEE']) * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size))
+            self.wIE_init = (self.p['minAllowedWIE'] + (self.p['maxAllowedWIE'] / 3 - self.p['minAllowedWIE']) * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size))
+            self.wEI_init = (self.p['minAllowedWEI'] + (self.p['maxAllowedWEI'] / 3 - self.p['minAllowedWEI']) * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size))
+            self.wII_init = (self.p['minAllowedWII'] + (self.p['maxAllowedWII'] / 3 - self.p['minAllowedWII']) * self.p['rng'].random(self.JN.synapsesII.jII[:].size))
+        elif self.p['initWeightMethod'] == 'uniformSlightLow':
+            self.wEE_init = (50 + 100 * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size)) * pA
+            self.wIE_init = (50 + 100 * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * pA
+            self.wEI_init = (50 + 100 * self.p['rng'].random(self.JN.synapsesEI.jEI[:].size)) * pA
+            self.wII_init = (50 + 100 * self.p['rng'].random(self.JN.synapsesII.jII[:].size)) * pA
         elif self.p['initWeightMethod'] == 'randomUniformMid':
             self.wEE_init = (80 + 80 * self.p['rng'].random(self.JN.synapsesEE.jEE[:].size)) * netSizeConnNorm * pA
             self.wIE_init = (80 + 80 * self.p['rng'].random(self.JN.synapsesIE.jIE[:].size)) * netSizeConnNorm * pA
@@ -757,10 +769,10 @@ class JercogTrainer(object):
         nIncomingExcOntoEachInh = aIE.sum(0)
         nIncomingInhOntoEachInh = aII.sum(0)
 
-        nOutgoingToExcFromEachExc = aEE.sum(1)
-        nOutgoingToExcFromEachInh = aEI.sum(1)
-        nOutgoingToInhFromEachExc = aIE.sum(1)
-        nOutgoingToInhFromEachInh = aII.sum(1)
+        # nOutgoingToExcFromEachExc = aEE.sum(1)
+        # nOutgoingToExcFromEachInh = aEI.sum(1)
+        # nOutgoingToInhFromEachExc = aIE.sum(1)
+        # nOutgoingToInhFromEachInh = aII.sum(1)
 
         # norm by incoming and outgoing
         # normMatEE = (p['nExc'] * p['nExc'] * p['propConnect'] ** 2) / np.outer(nOutgoingToExcFromEachExc,
@@ -773,10 +785,10 @@ class JercogTrainer(object):
         #                                                                        nIncomingInhOntoEachInh)
 
         # norm by incoming
-        normMatEE = ((p['nExc'] * p['propConnect']) / nIncomingExcOntoEachExc).reshape(1, -1)
-        normMatEI = ((p['nInh'] * p['propConnect']) / nIncomingInhOntoEachExc).reshape(1, -1)
-        normMatIE = ((p['nExc'] * p['propConnect']) / nIncomingExcOntoEachInh).reshape(1, -1)
-        normMatII = ((p['nInh'] * p['propConnect']) / nIncomingInhOntoEachInh).reshape(1, -1)
+        # normMatEE = ((p['nExc'] * p['propConnect']) / nIncomingExcOntoEachExc).reshape(1, -1)
+        # normMatEI = ((p['nInh'] * p['propConnect']) / nIncomingInhOntoEachExc).reshape(1, -1)
+        # normMatIE = ((p['nExc'] * p['propConnect']) / nIncomingExcOntoEachInh).reshape(1, -1)
+        # normMatII = ((p['nInh'] * p['propConnect']) / nIncomingInhOntoEachInh).reshape(1, -1)
 
         # initialize the pdf
         pdfObject = PdfPages(p['saveFolder'] + self.saveName + '_trials.pdf')
@@ -785,8 +797,8 @@ class JercogTrainer(object):
         meanWeightMsgFormatter = ('upstateFRExc: {:.2f} Hz, upstateFRInh: {:.2f}'
                                   ' Hz, wEE: {:.2f} pA, wIE: {:.2f} pA, wEI: {:.2f} pA, wII: {:.2f} pA')
         sumWeightMsgFormatter = ('movAvgUpFRExc: {:.2f} Hz, movAvgUpFRInh: {:.2f} Hz, '
-                                 'dwEE: {:.2f} pA, dwIE: {:.2f} pA, dwEI: {:.2f} pA, dwII: {:.2f} pA')
-        meanWeightChangeMsgFormatter = 'mean dwEE: {:.2f} pA, dwIE: {:.2f} pA, dwEI: {:.2f} pA, dwII: {:.2f} pA'
+                                 'dwEE: {:.2f} pA, dwEI: {:.2f} pA, dwIE: {:.2f} pA, dwII: {:.2f} pA')
+        meanWeightChangeMsgFormatter = 'mean dwEE: {:.2f} pA, dwEI: {:.2f} pA, dwIE: {:.2f} pA, dwII: {:.2f} pA'
 
         saveTrialDummy = 0
         for trialInd in range(p['nTrials']):
@@ -807,6 +819,10 @@ class JercogTrainer(object):
             JN.synapsesEI.jEI = wEI
             JN.synapsesIE.jIE = wIE
             JN.synapsesII.jII = wII
+
+            # this is where you would alter the Uppers and feedforwardUpExc
+            # if you want to randomize the input population
+            # JN.rerandomize_upCrit_random()
 
             # run the simulation
             t0 = datetime.now()
@@ -866,8 +882,6 @@ class JercogTrainer(object):
                 self.trialUpFRExc[trialInd] = unstimFRExcUnits.mean()
                 self.trialUpFRInh[trialInd] = unstimFRInhUnits.mean()
                 self.trialUpDur[trialInd] = eventDuration
-                # here we assign each unit FR to be the avg of all
-                # otherwise we may introduce a bias against the kicked units
                 self.trialUpFRExcUnits[trialInd, :] = unstimFRExcUnits  # in Hz
                 self.trialUpFRInhUnits[trialInd, :] = unstimFRInhUnits  # in Hz
 
@@ -951,7 +965,7 @@ class JercogTrainer(object):
 
             # decide whether to
 
-            if p['useRule'] == 'cross-homeo':
+            if p['useRule'] == 'cross-homeo':  # aka cross-homeo-outer
 
                 # separately by synapse...
                 # must create a vector in which each element represents the average FR
@@ -961,10 +975,10 @@ class JercogTrainer(object):
                 movAvgUpFRInhUnitsPreToPostExc = np.matmul(movAvgUpFRInhUnits, aEI) / nIncomingInhOntoEachExc
                 movAvgUpFRExcUnitsPreToPostInh = np.matmul(movAvgUpFRExcUnits, aIE) / nIncomingExcOntoEachInh
 
-                movAvgUpFRInhUnitsPreToPostExc[movAvgUpFRInhUnitsPreToPostExc > 2 * p['setUpFRInh']] = \
-                    2 * p['setUpFRInh']
-                movAvgUpFRExcUnitsPreToPostInh[movAvgUpFRExcUnitsPreToPostInh > 2 * p['setUpFRExc']] = \
-                    2 * p['setUpFRExc']
+                # movAvgUpFRInhUnitsPreToPostExc[movAvgUpFRInhUnitsPreToPostExc > 2 * p['setUpFRInh']] = \
+                #     2 * p['setUpFRInh']
+                # movAvgUpFRExcUnitsPreToPostInh[movAvgUpFRExcUnitsPreToPostInh > 2 * p['setUpFRExc']] = \
+                #     2 * p['setUpFRExc']
                 # movAvgUpFRExcUnits[movAvgUpFRExcUnits > 2 * p['setUpFRExc']] = 2 * p['setUpFRExc']
                 # movAvgUpFRInhUnits[movAvgUpFRInhUnits > 2 * p['setUpFRInh']] = 2 * p['setUpFRInh']
 
@@ -1195,8 +1209,8 @@ class JercogTrainer(object):
                 movAvgUpFRExcUnits[movAvgUpFRExcUnits < 1 * Hz] = 1 * Hz
                 movAvgUpFRInhUnits[movAvgUpFRInhUnits < 1 * Hz] = 1 * Hz
 
-                movAvgUpFRExcUnits[movAvgUpFRExcUnits > 2 * p['setUpFRExc']] = 2 * p['setUpFRExc']
-                movAvgUpFRInhUnits[movAvgUpFRInhUnits > 2 * p['setUpFRInh']] = 2 * p['setUpFRInh']
+                # movAvgUpFRExcUnits[movAvgUpFRExcUnits > 2 * p['setUpFRExc']] = 2 * p['setUpFRExc']
+                # movAvgUpFRInhUnits[movAvgUpFRInhUnits > 2 * p['setUpFRInh']] = 2 * p['setUpFRInh']
 
                 # convert flat weight arrays into matrices in units of pA
                 wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JN.preEE, JN.posEE, wEE / pA)
@@ -2165,12 +2179,12 @@ class JercogTrainer(object):
 
             if p['useRule'][:5] == 'cross' or p['useRule'] == 'homeo':
                 print(sumWeightMsgFormatter.format(movAvgUpFRExc, movAvgUpFRInh, dwEE.sum() * JN.p['wEEScale'] / pA,
-                                                   dwIE.sum() * JN.p['wIEScale'] / pA,
                                                    dwEI.sum() * JN.p['wEIScale'] / pA,
+                                                   dwIE.sum() * JN.p['wIEScale'] / pA,
                                                    dwII.sum() * JN.p['wIIScale'] / pA))
                 print(meanWeightChangeMsgFormatter.format(dwEE.mean() * JN.p['wEEScale'] / pA,
-                                                          dwIE.mean() * JN.p['wIEScale'] / pA,
                                                           dwEI.mean() * JN.p['wEIScale'] / pA,
+                                                          dwIE.mean() * JN.p['wIEScale'] / pA,
                                                           dwII.mean() * JN.p['wIIScale'] / pA))
             elif p['useRule'][:7] == 'balance':
                 print(sumWeightMsgFormatter.format(movAvgUpFRExc, movAvgUpFRInh,
@@ -2256,6 +2270,10 @@ class JercogTrainer(object):
             'trialdwEIUnits': self.trialdwEIUnits,
             'trialdwIEUnits': self.trialdwIEUnits,
             'trialdwIIUnits': self.trialdwIIUnits,
+            'trialMAdwEE': self.trialMAdwEE,
+            'trialMAdwEI': self.trialMAdwEI,
+            'trialMAdwIE': self.trialMAdwIE,
+            'trialMAdwII': self.trialMAdwII,
             'trialUpFRExcUnits': self.trialUpFRExcUnits,
             'trialUpFRInhUnits': self.trialUpFRInhUnits,
             'wEE_init': self.wEE_init / pA,

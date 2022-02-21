@@ -84,7 +84,7 @@ def voltage_detail(params, stateMonExcT, stateMonInhT, stateMonExcV, stateMonInh
 def weight_matrix(ax, values,
                   useCmap='RdBu_r', limsMethod='absmax',
                   xlabel='', ylabel='', clabel='',
-                  vlims=None):
+                  vlims=None, fontproperties=None, removeFrame=True):
     """ given an axis handle, an array of values, and some optional params,
         visualize a weight matrix in a heat map using imshow
     """
@@ -93,7 +93,17 @@ def weight_matrix(ax, values,
                   cmap=getattr(plt.cm, useCmap),
                   aspect='auto',
                   interpolation='none')
-    ax.set(xlabel=xlabel, ylabel=ylabel)
+    ax.set_xlabel(xlabel, fontproperties=fontproperties)
+    ax.set_ylabel(ylabel, fontproperties=fontproperties)
+    for xtl in ax.get_xticklabels():
+        xtl.set_fontproperties(fontproperties)
+    for ytl in ax.get_yticklabels():
+        ytl.set_fontproperties(fontproperties)
+    if removeFrame:
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+        ax.spines['left'].set_visible(False)
 
     if limsMethod == 'absmax':
         vmax = np.nanmax(np.fabs(values))
@@ -103,7 +113,7 @@ def weight_matrix(ax, values,
     elif limsMethod == 'custom':
         vmin, vmax = vlims
 
-    if vmin != -vmax:
+    if vmin != -vmax and vmin < 0 and vmax > 0:
         norm = MidpointNormalize(vmin, vmax, 0)
     else:
         norm = False
@@ -113,7 +123,10 @@ def weight_matrix(ax, values,
         i.set_norm(norm)
 
     cb = plt.colorbar(i, ax=ax)
-    cb.ax.set_ylabel(clabel, rotation=270)
+    cb.ax.set_ylabel(clabel, rotation=270, fontproperties=fontproperties, labelpad=20)
+    for ytl in cb.ax.get_yticklabels():
+        ytl.set_fontproperties(fontProp)
+    cb.outline.set_visible((not removeFrame))
 
 
 def remove_axes_less(axs):

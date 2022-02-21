@@ -130,6 +130,67 @@ crossHomeoPreOuterHomeoNoUpperLims = {
         'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo-noUpperLims_resumePrior_seed8noSensorLims_2022-01-23-13-59_results'),
 }
 
+crossHomeoPreScalarExplodeSolve = {
+    'subfolder': 'cross-homeo-pre-scalar-explodeDealTest',
+    0: 'classicJercog_2000_0p25_cross-homeo-pre-scalar_seed0_explodeDealTestLowAlpha_2022-02-09-07-24-41_results',
+    1: 'classicJercog_2000_0p25_cross-homeo-pre-scalar_seed1_explodeDealTestLowAlpha_2022-02-09-07-28-31_results',
+    2: 'classicJercog_2000_0p25_cross-homeo-pre-scalar_seed2_explodeDealTestLowAlpha_2022-02-09-07-28-45_results',
+    3: 'classicJercog_2000_0p25_cross-homeo-pre-scalar_seed3_explodeDealTestLowAlpha_2022-02-09-07-41-03_results',
+    4: 'classicJercog_2000_0p25_cross-homeo-pre-scalar_seed4_explodeDealTestLowAlpha_2022-02-09-07-41-19_results',
+    5: 'classicJercog_2000_0p25_cross-homeo-pre-scalar_seed5_explodeDealTestLowAlpha_2022-02-09-07-41-34_results',
+    6: 'classicJercog_2000_0p25_cross-homeo-pre-scalar_seed6_explodeDealTestLowAlpha_2022-02-09-07-42-01_results',
+    7: 'classicJercog_2000_0p25_cross-homeo-pre-scalar_seed7_explodeDealTestLowAlpha_2022-02-09-07-42-17_results',
+    8: 'classicJercog_2000_0p25_cross-homeo-pre-scalar_seed8_explodeDealTestLowAlpha_2022-02-09-07-42-28_results',
+}
+
+crossHomeoPreScalarHomeoExplodeSolve = {
+    'subfolder': 'cross-homeo-pre-scalar-homeo-explodeDealTest',
+    0: 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed0_explodeDealTestLowAlpha_2022-02-10-07-29-59_results',
+    1: 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed1_explodeDealTestLowAlpha_2022-02-10-07-30-16_results',
+    2: 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed2_explodeDealTestLowAlpha_2022-02-10-07-30-29_results',
+    3: 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed3_explodeDealTestLowAlpha_2022-02-10-07-30-39_results',
+    4: 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed4_explodeDealTestLowAlpha_2022-02-10-07-30-51_results',
+    5: 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed5_explodeDealTestLowAlpha_2022-02-10-07-31-03_results',
+    6: 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed6_explodeDealTestLowAlpha_2022-02-10-07-31-13_results',
+    7: 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed7_explodeDealTestLowAlpha_2022-02-10-07-31-22_results',
+    8: 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed8_explodeDealTestLowAlpha_2022-02-10-07-31-31_results',
+}
+
+crossHomeoPreOuterExplodeSolve = {
+    'subfolder': 'cross-homeo-pre-outer-explodeDealTest',
+    0: 'classicJercog_2000_0p25_cross-homeo-pre-outer_seed0_explodeDealTest_2022-02-08-10-00-43_results',
+    1: 'classicJercog_2000_0p25_cross-homeo-pre-outer_seed1_explodeDealTest_2022-02-08-10-00-57_results',
+    2: 'classicJercog_2000_0p25_cross-homeo-pre-outer_seed2_explodeDealTest_2022-02-10-07-29-19_results',
+    3: 'classicJercog_2000_0p25_cross-homeo-pre-outer_seed3_explodeDealTest_2022-02-09-08-22-44_results',
+    4: 'classicJercog_2000_0p25_cross-homeo-pre-outer_seed4_explodeDealTest_2022-02-08-10-01-07_results',
+    5: 'classicJercog_2000_0p25_cross-homeo-pre-outer_seed5_explodeDealTest_2022-02-08-10-01-09_results',
+    6: 'classicJercog_2000_0p25_cross-homeo-pre-outer_seed6_explodeDealTest_2022-02-09-08-22-23_results',
+    7: 'classicJercog_2000_0p25_cross-homeo-pre-outer_seed7_explodeDealTest_2022-02-09-08-22-17_results',
+    8: 'classicJercog_2000_0p25_cross-homeo-pre-outer_seed8_explodeDealTest_2022-02-09-08-22-14_results',
+}
+
+crossHomeoPreOuterHomeoExplodeSolve = {
+    'subfolder': 'cross-homeo-pre-outer-homeo-explodeDealTest',
+    0: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed0_explodeDealTestLowAlpha_2022-02-02-23-07-49_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed0explodeDealTestLowAlpha_2022-02-03-07-54-40_results'),
+    1: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed1_explodeDealTestLowAlpha_2022-02-02-23-08-08_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed1explodeDealTestLowAlpha_2022-02-03-08-02-37_results'),
+    2: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed2_explodeDealTestLowAlpha_2022-02-02-23-08-23_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed2explodeDealTestLowAlpha_2022-02-03-08-02-51_results'),
+    3: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed3_explodeDealTestLowAlpha_2022-02-02-23-08-37_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed3explodeDealTestLowAlpha_2022-02-03-08-03-10_results'),
+    4: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed4_explodeDealTestLowAlpha_2022-02-02-23-08-47_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed4explodeDealTestLowAlpha_2022-02-03-07-56-56_results'),
+    5: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed5_explodeDealTestLowAlpha_2022-02-02-23-09-04_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed5explodeDealTestLowAlpha_2022-02-03-08-03-25_results'),
+    6: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed6_explodeDealTestLowAlpha_2022-02-02-23-09-17_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed6explodeDealTestLowAlpha_2022-02-03-07-57-29_results'),
+    7: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed7_explodeDealTestLowAlpha_2022-02-02-23-09-39_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed7explodeDealTestLowAlpha_2022-02-03-07-58-29_results'),
+    8: ('classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_seed8_explodeDealTestLowAlpha_2022-02-02-23-09-50_results',
+        'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed8explodeDealTestLowAlpha_2022-02-03-07-59-08_results'),
+}
+
 crossHomeoPreOuter = {
     'subfolder': 'cross-homeo-pre-outer',
     0: ('classicJercog_2000_0p25_cross-homeo-pre-outer_seed0__2021-09-02-07-12_results',

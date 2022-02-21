@@ -814,6 +814,8 @@ class JercogNetwork(object):
     def set_paradoxical_kicked(self):
         unitsInhKicked = self.unitsInh[:int(self.p['nInh'] * self.p['propKicked'])]
         unitsInhKicked.kKick = self.p['kickAmplitudeInh']
+        unitsExcKicked = self.unitsExc[:int(self.p['nExc'] * self.p['propKicked'])]
+        unitsExcKicked.kKick = self.p['kickAmplitudeExc']
 
     def set_spiked_units(self, onlySpikeExc=True, critExc=0.784 * volt, critInh=0.67625 * volt):
 
@@ -1746,6 +1748,39 @@ class JercogNetwork(object):
 
         self.p['duration'] = (np.array(times).max() * second + timeSpacing)
         self.p['iKickRecorded'] = fixed_current_series(0, self.p['duration'], self.p['dt'])
+
+    def prepare_upCrit_random(self, nUnits=100, timeSpacing=3000 * ms, startTime=100 * ms, currentAmp=0.98):
+
+        indices = np.arange(nUnits)
+        times = np.ones_like(indices) * startTime
+
+        self.Uppers = SpikeGeneratorGroup(nUnits, np.array(indices), np.array(times) * second)
+        self.feedforwardUpExc = Synapses(
+            source=self.Uppers,
+            target=self.unitsExc,
+            on_pre='uExt_post += ' + str(currentAmp) + ' * nA'
+        )
+        self.feedforwardUpExc.connect(i=indices, j=self.p['rng'].choice(self.p['nExc'], nUnits))
+        self.N.add(self.Uppers, self.feedforwardUpExc)
+
+        self.p['duration'] = (np.array(times).max() * second + timeSpacing)
+        self.p['iKickRecorded'] = fixed_current_series(0, self.p['duration'], self.p['dt'])
+
+    def rerandomize_upCrit_random(self, nUnits=100, timeSpacing=3000 * ms, startTime=100 * ms, currentAmp=0.98):
+
+        self.N.remove(self.Uppers, self.feedforwardUpExc)
+
+        indices = np.arange(nUnits)
+        times = np.ones_like(indices) * startTime
+
+        self.Uppers = SpikeGeneratorGroup(nUnits, np.array(indices), np.array(times) * second)
+        self.feedforwardUpExc = Synapses(
+            source=self.Uppers,
+            target=self.unitsExc,
+            on_pre='uExt_post += ' + str(currentAmp) + ' * nA'
+        )
+        self.feedforwardUpExc.connect(i=indices, j=self.p['rng'].choice(self.p['nExc'], nUnits))
+        self.N.add(self.Uppers, self.feedforwardUpExc)
 
     def prepare_upPoisson_experiment(self, poissonLambda=0.025 * Hz, duration=30 * second, spikeUnits=100, rng=None):
 

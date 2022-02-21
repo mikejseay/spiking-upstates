@@ -119,8 +119,7 @@ seed(rngSeed)  # for Brian... will insert code to set the random number generato
 p['rng'] = rng
 
 JT = JercogTrainer(p)
-# JT.calculate_unit_thresh_and_gain()
-# JT.set_up_network()
+
 if p['initWeightMethod'] == 'resumePrior':
     PR = Results()
     PR.init_from_file(p['initWeightPrior'], p['saveFolder'])

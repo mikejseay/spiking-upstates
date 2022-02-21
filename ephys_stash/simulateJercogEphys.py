@@ -1,6 +1,6 @@
 from params import (paramsJercog, paramsJercogEphysOrig, paramsJercogEphysBuono, paramsJercogEphysBuono2,
                     paramsJercogEphysBuono3, paramsJercogEphysBuono4, paramsJercogEphysBuono5, paramsJercogEphysBuono6,
-                    paramsJercogEphysBuono7,
+                    paramsJercogEphysBuono7, paramsJercogEphysBuono8,
                     paramsJercogEphysBuonoBen11, paramsJercogEphysBuonoBen21,
                     paramsJercogEphysBuono22, paramsJercogBen)
 from network import JercogEphysNetwork
@@ -23,7 +23,7 @@ useParams = paramsJercog.copy()
 # ephysParams = paramsJercogEphysBuono2.copy()
 # ephysParams = paramsJercogEphysBuono3.copy()
 # ephysParams = paramsJercogEphysBuono6.copy()
-ephysParams = paramsJercogEphysBuono7.copy()
+ephysParams = paramsJercogEphysBuono8.copy()
 # ephysParams = paramsJercogEphysBuonoBen11.copy()
 # ephysParams = paramsJercogEphysBuonoBen21.copy()
 # ephysParams = paramsJercogEphysBuono22.copy()
