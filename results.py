@@ -3,66 +3,12 @@ classes for representing the results of simulations.
 i.e. spikes and unit state variables (membrane voltage, synaptic variables, etc)
 """
 
-from brian2 import *
+from functions import find_upstates, bins_to_centers
+from brian2 import mV, second, ms, nA
 import dill
 import numpy as np
+import matplotlib.pyplot as plt
 import os
-from functions import find_upstates
-from stats import regress_linear
-from scipy.stats import mode
-from generate import convert_indices_times_to_dict
-
-
-def bins_to_centers(bins):
-    return (bins[:-1] + bins[1:]) / 2
-
-
-def convert_sNMDA_to_current_exc_Jercog_CellNotSyn(JN, ind):
-    v = JN.stateMonExc.v[ind, :]
-    sE_NMDA = JN.stateMonExc.sE_NMDA[ind, :]
-    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
-    NMDACurrent = JN.unitsExc.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * sE_NMDA
-    return hardGatePart * NMDACurrent
-
-
-def convert_sNMDA_to_current_inh_Jercog_CellNotSyn(JN, ind):
-    v = JN.stateMonInh.v[ind, :]
-    sE_NMDA = JN.stateMonInh.sE_NMDA[ind, :]
-    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
-    NMDACurrent = JN.unitsInh.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * sE_NMDA
-    return hardGatePart * NMDACurrent
-
-
-def convert_sNMDA_to_current_exc_Jercog(JN, ind):
-    v = JN.stateMonExc.v[ind, :]
-    s_NMDA_tot = JN.stateMonExc.s_NMDA_tot[ind, :]
-    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
-    NMDACurrent = JN.unitsExc.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
-    return hardGatePart * NMDACurrent
-
-
-def convert_sNMDA_to_current_inh_Jercog(JN, ind):
-    v = JN.stateMonInh.v[ind, :]
-    s_NMDA_tot = JN.stateMonInh.s_NMDA_tot[ind, :]
-    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
-    NMDACurrent = JN.unitsInh.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
-    return hardGatePart * NMDACurrent
-
-
-def convert_sNMDA_to_current_exc_Destexhe(DN, ind):
-    v = DN.stateMonExc.v[ind, :]
-    s_NMDA_tot = DN.stateMonExc.s_NMDA_tot[ind, :]
-    hardGatePart = np.round(v > DN.p['vStepSigmoid'])
-    NMDACurrent = DN.unitsExc.ge_NMDA[0] / (1 + exp(-DN.p['kSigmoid'] * (v - DN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
-    return hardGatePart * NMDACurrent
-
-
-def convert_sNMDA_to_current_inh_Destexhe(DN, ind):
-    v = DN.stateMonInh.v[ind, :]
-    s_NMDA_tot = DN.stateMonInh.s_NMDA_tot[ind, :]
-    hardGatePart = np.round(v > DN.p['vStepSigmoid'])
-    NMDACurrent = DN.unitsInh.ge_NMDA[0] / (1 + exp(-DN.p['kSigmoid'] * (v - DN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
-    return hardGatePart * NMDACurrent
 
 
 class Results(object):
@@ -145,11 +91,11 @@ class Results(object):
 
     def calculate_PSTH(self):
         dtHist = float(self.p['dtHistPSTH'])
-        histBins = arange(0, float(self.p['duration']), dtHist)
-        histCenters = arange(0 + dtHist / 2, float(self.p['duration']) - dtHist / 2, dtHist)
+        histBins = np.arange(0, float(self.p['duration']), dtHist)
+        histCenters = np.arange(0 + dtHist / 2, float(self.p['duration']) - dtHist / 2, dtHist)
 
-        FRExc, _ = histogram(self.spikeMonExcT, histBins)
-        FRInh, _ = histogram(self.spikeMonInhT, histBins)
+        FRExc, _ = np.histogram(self.spikeMonExcT, histBins)
+        FRInh, _ = np.histogram(self.spikeMonInhT, histBins)
 
         FRExc = FRExc / dtHist / self.p['nExc']
         FRInh = FRInh / dtHist / self.p['nInh']
@@ -160,41 +106,13 @@ class Results(object):
         self.FRExc = FRExc
         self.FRInh = FRInh
 
-    def calculate_avgFR_units(self):
-
-        spikesPerUnitExc = np.bincount(self.spikeMonExcI.astype(int), minlength=self.p['nExc'])
-        spikesPerUnitInh = np.bincount(self.spikeMonInhI.astype(int), minlength=self.p['nInh'])
-
-        self.avgFRExcUnits = spikesPerUnitExc / self.p['duration'] / second
-        self.avgFRInhUnits = spikesPerUnitInh / self.p['duration'] / second
-
-    def calculate_voltage_histogram(self, removeMode=False, removeReset=False, useAllRecordedUnits=False, useExcUnits=0, useInhUnits=0):
+    def calculate_voltage_histogram(self, useAllRecordedUnits=False, useExcUnits=0, useInhUnits=0):
         if useAllRecordedUnits:
             voltageNumpyExc = self.stateMonExcV[:].ravel()
             voltageNumpyInh = self.stateMonInhV[:].ravel()
         else:
             voltageNumpyExc = self.stateMonExcV[useExcUnits, :]
             voltageNumpyInh = self.stateMonInhV[useInhUnits, :]
-
-        if removeMode:
-            voltageNumpyExcMode, _ = mode(voltageNumpyExc)
-            voltageNumpyInhMode, _ = mode(voltageNumpyInh)
-            # keepBoolExc = voltageNumpyExc != voltageNumpyExcMode[0]
-            # keepBoolInh = voltageNumpyInh != voltageNumpyInhMode[0]
-            keepBoolExc = ~np.isclose(voltageNumpyExc, voltageNumpyExcMode[0])
-            keepBoolInh = ~np.isclose(voltageNumpyInh, voltageNumpyInhMode[0])
-            voltageNumpyExc = voltageNumpyExc[keepBoolExc]
-            voltageNumpyInh = voltageNumpyInh[keepBoolInh]
-
-        if removeReset:
-            voltageNumpyExcReset = self.p['vResetExc'] / mV
-            voltageNumpyInhReset = self.p['vResetInh'] / mV
-            # keepBoolExc = voltageNumpyExc != voltageNumpyExcReset[0]
-            # keepBoolInh = voltageNumpyInh != voltageNumpyInhReset[0]
-            keepBoolExc = ~np.isclose(voltageNumpyExc, voltageNumpyExcReset, rtol=1e-04, atol=1e-07)
-            keepBoolInh = ~np.isclose(voltageNumpyInh, voltageNumpyInhReset, rtol=1e-04, atol=1e-07)
-            voltageNumpyExc = voltageNumpyExc[keepBoolExc]
-            voltageNumpyInh = voltageNumpyInh[keepBoolInh]
 
         allVoltageNumpy = np.concatenate((voltageNumpyExc, voltageNumpyInh))
 
@@ -203,8 +121,8 @@ class Results(object):
         voltageHistBins = np.arange(allVoltageNumpy.min(), useMax, .1)
         voltageHistCenters = bins_to_centers(voltageHistBins)
 
-        voltageHistExc, _ = histogram(voltageNumpyExc, voltageHistBins)
-        voltageHistInh, _ = histogram(voltageNumpyInh, voltageHistBins)
+        voltageHistExc, _ = np.histogram(voltageNumpyExc, voltageHistBins)
+        voltageHistInh, _ = np.histogram(voltageNumpyInh, voltageHistBins)
 
         self.voltageHistBins = voltageHistBins
         self.voltageHistCenters = voltageHistCenters
@@ -232,11 +150,11 @@ class Results(object):
             histMaxUDStateDurs = allDurs.max() + dtHistUDStateDurs
         else:
             histMaxUDStateDurs = 5
-        histBinsUDStateDurs = arange(0, histMaxUDStateDurs, dtHistUDStateDurs)
+        histBinsUDStateDurs = np.arange(0, histMaxUDStateDurs, dtHistUDStateDurs)
         histCentersUDStateDurs = bins_to_centers(histBinsUDStateDurs)
 
-        upDurHist, _ = histogram(upDurs, histBinsUDStateDurs)
-        downDurHist, _ = histogram(downDurs, histBinsUDStateDurs)
+        upDurHist, _ = np.histogram(upDurs, histBinsUDStateDurs)
+        downDurHist, _ = np.histogram(downDurs, histBinsUDStateDurs)
 
         self.ups = ups * self.dtHistFR
         self.downs = downs * self.dtHistFR
@@ -245,151 +163,6 @@ class Results(object):
         self.histCentersUDStateDurs = histCentersUDStateDurs
         self.upDurHist = upDurHist
         self.downDurHist = downDurHist
-
-    def reshape_upstates(self):
-
-        voltageNumpyExc = self.stateMonExcV[0, :]
-        voltageNumpyInh = self.stateMonInhV[0, :]
-
-        # ups is in units of seconds. to convert to the index in the original voltage recording,
-        # we can divide by the DT
-        upInds = (self.ups / float(self.p['dt'])).astype(int)
-
-        nUpstates = len(self.ups)
-
-        if nUpstates == 0:
-            print('there were no detectable up states')
-            return
-
-        # trial limits
-        # if len(self.downDurs) > 0:
-        #     preTrial = -self.downDurs.min()
-        # else:
-        #     preTrial = -0.1
-        preTrial = -0.1
-        postTrial = self.upDurs.max()
-
-        tTrial = np.linspace(preTrial, postTrial, int((postTrial - preTrial) / float(self.p['dt']) + 1))
-        tTrial = tTrial[:-1]
-        nSampsPerTrial = tTrial.shape[0]
-        preTrialSamps = (tTrial < 0).sum()
-
-        # could be zeros or nan, affects how it looks...
-        vUpstatesExc = np.full((nUpstates, nSampsPerTrial), np.nan)
-        vUpstatesInh = np.full((nUpstates, nSampsPerTrial), np.nan)
-
-        for upstateInd in range(nUpstates):
-            startIndRight = int(upInds[upstateInd] - preTrialSamps)
-            endIndRight = int(upInds[upstateInd] + nSampsPerTrial - preTrialSamps)
-
-            # check if the indices make sense
-            if startIndRight < 0:
-                adjustedStartIndRight = 0
-                startIndLeft = -startIndRight
-            else:
-                adjustedStartIndRight = startIndRight
-                startIndLeft = 0
-
-            if endIndRight > voltageNumpyExc.shape[0]:
-                adjustedEndIndRight = voltageNumpyExc.shape[0]
-                endIndLeft = nSampsPerTrial - endIndRight + voltageNumpyExc.shape[0]
-            else:
-                adjustedEndIndRight = endIndRight
-                endIndLeft = nSampsPerTrial
-
-            vUpstatesExc[upstateInd, startIndLeft:endIndLeft] = voltageNumpyExc[
-                                                                adjustedStartIndRight:adjustedEndIndRight]
-            vUpstatesInh[upstateInd, startIndLeft:endIndLeft] = voltageNumpyInh[
-                                                                adjustedStartIndRight:adjustedEndIndRight]
-
-        self.tTrial = tTrial
-        self.vUpstatesExc = vUpstatesExc
-        self.vUpstatesInh = vUpstatesInh
-
-    def calculate_FR_in_upstates(self):
-
-        ups = self.ups
-        downs = self.downs
-
-        nUpstates = len(self.ups)
-
-        if nUpstates == 0:
-            print('there were no detectable up states')
-            return
-
-        upOnsetRelativeSpikeTimesExc = []
-        upOnsetRelativeSpikeTimesInh = []
-        upOnsetRelativeSpikeIndicesExc = []
-        upOnsetRelativeSpikeIndicesInh = []
-
-        for upstateInd in range(nUpstates):
-            inRangeBoolExc = (self.spikeMonExcT > ups[upstateInd]) & (self.spikeMonExcT < downs[upstateInd])
-            spikeTimesExc = self.spikeMonExcT[inRangeBoolExc]
-            onsetRelativeTimesExc = spikeTimesExc - ups[upstateInd]
-            upOnsetRelativeSpikeTimesExc.append(onsetRelativeTimesExc)
-            upOnsetRelativeSpikeIndicesExc.append(self.spikeMonExcI[inRangeBoolExc])
-
-            inRangeBoolInh = (self.spikeMonInhT > ups[upstateInd]) & (self.spikeMonInhT < downs[upstateInd])
-            spikeTimesInh = self.spikeMonInhT[inRangeBoolInh]
-            onsetRelativeTimesInh = spikeTimesInh - ups[upstateInd]
-            upOnsetRelativeSpikeTimesInh.append(onsetRelativeTimesInh)
-            upOnsetRelativeSpikeIndicesInh.append(self.spikeMonInhI[inRangeBoolInh])
-
-        upOnsetRelativeSpikeTimesExcArray = np.concatenate(upOnsetRelativeSpikeTimesExc)
-        upOnsetRelativeSpikeTimesInhArray = np.concatenate(upOnsetRelativeSpikeTimesInh)
-        upOnsetRelativeSpikeIndicesExcArray = np.concatenate(upOnsetRelativeSpikeIndicesExc)
-        upOnsetRelativeSpikeIndicesInhArray = np.concatenate(upOnsetRelativeSpikeIndicesInh)
-
-        dtHist = float(5 * ms)
-        histBins = arange(0, self.upDurs.max(), dtHist)
-        histCenters = bins_to_centers(histBins)
-
-        upstateFRExc, _ = histogram(upOnsetRelativeSpikeTimesExcArray, histBins)
-        upstateFRInh, _ = histogram(upOnsetRelativeSpikeTimesInhArray, histBins)
-
-        upstateCountsAtBin = zeros(histCenters.shape)
-        for binInd, binEdge in enumerate(histCenters):
-            upstateCountsAtBin[binInd] = (self.upDurs >= histBins[binInd]).sum()
-
-        upstateFRExc = upstateFRExc / upstateCountsAtBin / self.p['nExc'] / dtHist
-        upstateFRInh = upstateFRInh / upstateCountsAtBin / self.p['nInh'] / dtHist
-
-        self.upOnsetRelativeSpikeTimesExcArray = upOnsetRelativeSpikeTimesExcArray
-        self.upOnsetRelativeSpikeTimesInhArray = upOnsetRelativeSpikeTimesInhArray
-        self.upOnsetRelativeSpikeIndicesExcArray = upOnsetRelativeSpikeIndicesExcArray
-        self.upOnsetRelativeSpikeIndicesInhArray = upOnsetRelativeSpikeIndicesInhArray
-        self.histCentersUpstateFR = histCenters
-        self.upstateFRExcHist = upstateFRExc
-        self.upstateFRInhHist = upstateFRInh
-
-    def calculate_FR_in_upstates_simply(self):
-
-        # here we calculate by simply counting the spikes in the Up state
-        # and dividing by the duration
-
-        ups = self.ups
-        downs = self.downs
-
-        nUpstates = len(self.ups)
-
-        if nUpstates == 0:
-            print('there were no detectable up states')
-            return
-
-        upstateFRExc = []
-        upstateFRInh = []
-
-        for upstateInd in range(nUpstates):
-            inRangeBoolExc = (self.spikeMonExcT > ups[upstateInd]) & (
-                        self.spikeMonExcT < downs[upstateInd])
-            upstateFRExc.append(inRangeBoolExc.sum() / self.p['nExc'] / self.upDurs[upstateInd])
-
-            inRangeBoolInh = (self.spikeMonInhT > ups[upstateInd]) & (
-                        self.spikeMonInhT < downs[upstateInd])
-            upstateFRInh.append(inRangeBoolInh.sum() / self.p['nInh'] / self.upDurs[upstateInd])
-
-        self.upstateFRExc = np.array(upstateFRExc)
-        self.upstateFRInh = np.array(upstateFRInh)
 
     def calculate_upFR_units(self):
 
@@ -469,59 +242,6 @@ class Results(object):
 
         self.rhoUpExc = rhoUpExc
         self.rhoUpInh = rhoUpInh
-
-    def plot_consecutive_state_correlation(self, ax):
-        # ax should have 2 elements
-
-        upDurs = self.upDurs
-        downDurs = self.downDurs
-
-        OUTLIER_STD_DISTANCE = 2.5
-
-        upDurOutlierBool = np.logical_or(upDurs < upDurs.mean() - OUTLIER_STD_DISTANCE * upDurs.std(),
-                                         upDurs > upDurs.mean() + OUTLIER_STD_DISTANCE * upDurs.std())
-        downDurOutlierBool = np.logical_or(downDurs < downDurs.mean() - OUTLIER_STD_DISTANCE * downDurs.std(),
-                                           downDurs > downDurs.mean() + OUTLIER_STD_DISTANCE * downDurs.std())
-
-        upDursGood = upDurs.copy()
-        upDursGood[upDurOutlierBool] = np.nan
-
-        downDursGood = downDurs.copy()
-        downDursGood[downDurOutlierBool] = np.nan
-
-        precedingUpDurOutlierBool = upDurOutlierBool[1:]
-        subsequentUpDurOutlierBool = upDurOutlierBool[:-1]
-
-        precedingUpDurs = upDurs[1:]
-        subsequentUpDurs = upDurs[:-1]
-        precedingUpDursGood = upDursGood[1:]
-        subsequentUpDursGood = upDursGood[:-1]
-
-        # x = preceding down, y = up
-        eitherNan = np.logical_or(np.isnan(downDursGood), np.isnan(precedingUpDursGood))
-        print('removing', eitherNan.sum(), 'nan vals')
-        pred_x, pred_y, b, r2, p = regress_linear(downDursGood[~eitherNan],
-                                                  precedingUpDursGood[~eitherNan])
-
-        combinedOutlierBool = np.logical_or(downDurOutlierBool, precedingUpDurOutlierBool)
-        ax[0].scatter(downDurs[~combinedOutlierBool], precedingUpDurs[~combinedOutlierBool])
-        ax[0].scatter(downDurs[combinedOutlierBool], precedingUpDurs[combinedOutlierBool], marker='x')
-        ax[0].plot(pred_x, pred_y)
-        ax[0].set(xlabel='Preceding DownDur', ylabel='UpDur',
-                  title='k = 0, r = {:.2f}, p = {:.3f}'.format(np.sign(b) * np.sqrt(r2), p))
-
-        # x = subsequent down, y = up
-        eitherNan = np.logical_or(np.isnan(downDursGood), np.isnan(subsequentUpDursGood))
-        print('removing', eitherNan.sum(), 'nan vals')
-        pred_x, pred_y, b, r2, p = regress_linear(downDursGood[~eitherNan],
-                                                  subsequentUpDursGood[~eitherNan])
-
-        combinedOutlierBool = np.logical_or(downDurOutlierBool, subsequentUpDurOutlierBool)
-        ax[1].scatter(downDurs[~combinedOutlierBool], subsequentUpDurs[~combinedOutlierBool])
-        ax[1].scatter(downDurs[combinedOutlierBool], subsequentUpDurs[combinedOutlierBool], marker='x')
-        ax[1].plot(pred_x, pred_y)
-        ax[1].set(xlabel='Subsequent DownDur', ylabel='UpDur',
-                  title='k = 1, r = {:.2f}, p = {:.3f}'.format(np.sign(b) * np.sqrt(r2), p))
 
     def plot_spike_raster(self, ax, downSampleUnits=True, rng=None):
 
@@ -658,7 +378,7 @@ class Results(object):
         ax.plot(stateMonT, voltageSeries + yOffset, color=useColor, lw=useLineWidth, **kwargs)
 
         if plotKicks and 'kickTimes' in self.p:
-            kickTimes = array(self.p['kickTimes'])
+            kickTimes = np.array(self.p['kickTimes'])
             ax.scatter(kickTimes, np.ones_like(kickTimes) * self.p['eLeakExc'] / mV - 10)
 
         if hasattr(self, 'spikeMonInpCorrI'):
@@ -683,57 +403,6 @@ class Results(object):
         yVal = self.p['eLeakExc'] / mV - 10
         for upTime, downTime in zip(self.ups, self.downs):
             ax.plot([upTime, downTime], [yVal, yVal], c='k')
-
-    def plot_state_duration_histogram(self, ax):
-        ax.plot(self.histCentersUDStateDurs[:self.upDurHist.size], self.upDurHist,
-                label='Up', color='orange', alpha=0.5)
-        ax.plot(self.histCentersUDStateDurs[:self.downDurHist.size], self.downDurHist,
-                label='Down', color='purple', alpha=0.5)
-        ax.legend()
-        ax.set(xlabel='Time (s)', ylabel='# of occurences')
-
-    def plot_upstate_voltages(self, ax):
-
-        yLims = (self.p['eLeakExc'] / mV - 5, self.p['eLeakExc'] / mV + 20)
-
-        # ax.plot(self.tTrial, self.vUpstatesExc.T)
-        ax.plot(self.tTrial, np.nanmean(self.vUpstatesExc, 0), color='green')
-        ax.plot(self.tTrial, np.nanmean(self.vUpstatesInh, 0), color='red')
-        ax.set(xlim=(self.tTrial[0], self.tTrial[-1]), ylim=yLims,
-               xlabel='Time (s)', ylabel='Voltage (mV)')
-
-    def plot_upstate_voltage_image(self, ax, sortByDuration=True):
-
-        # sort?
-        if sortByDuration:
-            durationSortOrder = np.argsort(self.upDurs)
-            vUpstatesDurSort = self.vUpstatesExc[durationSortOrder, :]
-        else:
-            vUpstatesDurSort = self.vUpstatesExc
-
-        i = ax.imshow(vUpstatesDurSort,
-                      extent=[self.tTrial[0], self.tTrial[-1], 0, len(self.ups)],
-                      aspect='auto',
-                      interpolation='none', )
-        ax.set(xlabel='Time (s)', ylabel='Upstate Index')
-        cb = plt.colorbar(i, ax=ax)
-        cb.ax.set_ylabel('Voltage (mV)', rotation=270)
-
-    def plot_upstate_raster(self, ax):
-        ax.scatter(self.upOnsetRelativeSpikeTimesExcArray, self.upOnsetRelativeSpikeIndicesExcArray,
-                   c='g', s=1, marker='.', linewidths=0)
-        ax.scatter(self.upOnsetRelativeSpikeTimesInhArray,
-                   self.p['nExcSpikemon'] + self.upOnsetRelativeSpikeIndicesInhArray,
-                   c='r', s=1, marker='.', linewidths=0)
-        ax.set(xlim=(self.tTrial[0], self.tTrial[-1]), ylim=(0, self.p['nUnits']), ylabel='neuron index')
-
-    def plot_upstate_FR(self, ax):
-        ax.plot(self.histCentersUpstateFR[:self.upstateFRExc.size],
-                self.upstateFRExc, label='Exc', color='green', alpha=0.5)
-        ax.plot(self.histCentersUpstateFR[:self.upstateFRInh.size],
-                self.upstateFRInh, label='Inh', color='red', alpha=0.5)
-        ax.legend()
-        ax.set(xlabel='Time (s)', ylabel='Firing Rate (Hz)')
 
 
 class ResultsEphys(object):
@@ -841,12 +510,12 @@ class ResultsEphys(object):
         ax[1, 0].set_ylabel('Firing Rate (Hz)')
         # ax[1, 0].legend()
 
-        # ISIExc = diff(self.spikeTrainsExc[()][I_index_for_ISI])
-        # ISIInh = diff(self.spikeTrainsInh[()][I_index_for_ISI])
-        ISIExc = diff(self.spikeTrainsExc[I_index_for_ISI])
-        ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
-        ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc')
-        ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh')
+        # ISIExc = np.diff(self.spikeTrainsExc[()][I_index_for_ISI])
+        # ISIInh = np.diff(self.spikeTrainsInh[()][I_index_for_ISI])
+        ISIExc = np.diff(self.spikeTrainsExc[I_index_for_ISI])
+        ISIInh = np.diff(self.spikeTrainsInh[I_index_for_ISI])
+        ax[1, 1].plot(np.arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc')
+        ax[1, 1].plot(np.arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh')
         ax[1, 1].set_xlabel('ISI number')
         ax[1, 1].set_ylabel('ISI (ms)')
         ax[1, 1].legend()
@@ -910,12 +579,12 @@ class ResultsEphys(object):
         ax[1, 0].set_ylabel('Firing Rate (Hz)')
         # ax[1, 0].legend()
 
-        # ISIExc = diff(self.spikeTrainsExc[()][I_index_for_ISI])
-        # ISIInh = diff(self.spikeTrainsInh[()][I_index_for_ISI])
-        ISIExc = diff(self.spikeTrainsExc[I_index_for_ISI])
-        ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
-        ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc', color=excColor)
-        ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh', color=inhColor)
+        # ISIExc = np.diff(self.spikeTrainsExc[()][I_index_for_ISI])
+        # ISIInh = np.diff(self.spikeTrainsInh[()][I_index_for_ISI])
+        ISIExc = np.diff(self.spikeTrainsExc[I_index_for_ISI])
+        ISIInh = np.diff(self.spikeTrainsInh[I_index_for_ISI])
+        ax[1, 1].plot(np.arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc', color=excColor)
+        ax[1, 1].plot(np.arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh', color=inhColor)
         ax[1, 1].set_xlabel('ISI number')
         ax[1, 1].set_ylabel('ISI (ms)')
         ax[1, 1].legend()
@@ -1006,14 +675,14 @@ class ResultsEphys(object):
         ax[1, 0].set_ylabel('Firing Rate (Hz)')
         # ax[1, 0].legend()
 
-        # ISIExc = diff(self.spikeTrainsExc[()][I_index_for_ISI])
-        # ISIInh = diff(self.spikeTrainsInh[()][I_index_for_ISI])
-        ISIExc = diff(self.spikeTrainsExc[I_index_for_ISI])
-        ISIExc2 = diff(self.spikeTrainsExc2[I_index_for_ISI])
-        ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
-        ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc', color=excColor)
-        ax[1, 1].plot(arange(1, len(ISIExc2) + 1), ISIExc2 * 1000, label='Exc2', color=exc2Color)
-        ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh', color=inhColor)
+        # ISIExc = np.diff(self.spikeTrainsExc[()][I_index_for_ISI])
+        # ISIInh = np.diff(self.spikeTrainsInh[()][I_index_for_ISI])
+        ISIExc = np.diff(self.spikeTrainsExc[I_index_for_ISI])
+        ISIExc2 = np.diff(self.spikeTrainsExc2[I_index_for_ISI])
+        ISIInh = np.diff(self.spikeTrainsInh[I_index_for_ISI])
+        ax[1, 1].plot(np.arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc', color=excColor)
+        ax[1, 1].plot(np.arange(1, len(ISIExc2) + 1), ISIExc2 * 1000, label='Exc2', color=exc2Color)
+        ax[1, 1].plot(np.arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh', color=inhColor)
         ax[1, 1].set_xlabel('ISI number')
         ax[1, 1].set_ylabel('ISI (ms)')
         ax[1, 1].legend()
