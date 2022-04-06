@@ -1,6 +1,7 @@
 # results files
 *.csv
 *.npz
+*.pkl
 
 # created figures / movies
 *.mp4
