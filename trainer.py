@@ -124,7 +124,7 @@ class JercogTrainer(object):
 
         self.JN = JN
 
-    def set_up_network_Poisson(self, priorResults=None):
+    def set_up_network_Poisson(self, priorResults=None, recordAllVoltage=False):
         # set up network, experiment, and start recording
         JN = JercogNetwork(self.p)
         JN.initialize_network()
@@ -137,7 +137,11 @@ class JercogTrainer(object):
             JN.initialize_recurrent_synapses_4bundles_results(priorResults)
         else:
             JN.initialize_recurrent_synapses_4bundles_modifiable()
-        JN.create_monitors()
+
+        if recordAllVoltage:
+            JN.create_monitors_allVoltage()
+        else:
+            JN.create_monitors()
 
         self.JN = JN
 

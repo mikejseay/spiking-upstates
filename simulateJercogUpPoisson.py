@@ -9,20 +9,26 @@ from generate import convert_kicks_to_current_series, weight_matrix_from_flat_in
 from trainer import JercogTrainer
 from results import Results
 import matplotlib.pyplot as plt
+import plot
+import pandas as pd
 
 p['useNewEphysParams'] = True
 ephysParams = paramsJercogEphysBuono7.copy()
-rngSeed = 43
+rngSeed = 42
 defaultclock.dt = p['dt']
 
 p['useSecondPopExc'] = False
+
 p['manipulateConnectivity'] = True
-p['removePropConn'] = 0.25
+propEx2Units = 0.1
+p['removePropConn'] = 0.1
+p['compensateInhibition'] = False
+weightMult = 0.85  # 0.85
+overrideBetaAdaptExc = 12 * nA * ms  # 13
+
 p['addBackRemovedConns'] = False
 p['addBackRemovedConnsE2E2'] = False
-p['compensateInhibition'] = False
 p['randomizeConnectivity'] = False
-weightMult = 0.85
 
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
@@ -30,9 +36,10 @@ if p['useNewEphysParams']:
     for pK in protectedKeys:
         del ephysParams[pK]
     p.update(ephysParams)
+yOffset = -72.6
 
 p['useRule'] = 'upPoisson'
-p['nameSuffix'] = 'doubleEx2Rem25'
+p['nameSuffix'] = 'actualPoisson'
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
 p['useOldWeightMagnitude'] = True
@@ -41,8 +48,9 @@ p['applyLogToFR'] = False
 p['setMinimumBasedOnBalance'] = False
 p['recordMovieVariables'] = False
 p['downSampleVoltageTo'] = 1 * ms
+p['stateVariableDT'] = 1 * ms
 p['dtHistPSTH'] = 10 * ms
-p['recordAllVoltage'] = False
+p['recordAllVoltage'] = True
 
 # good ones
 # buonoEphys_2000_0p25_upPoisson_guessLowWeights2e3p025LogNormal2_test_2021-08-13-15-58_results
@@ -59,14 +67,16 @@ p['allowAutapses'] = False
 # p['initWeightMethod'] = 'guessLowWeights2e3p025LogNormal2'
 p['initWeightMethod'] = 'resumePrior'
 p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_guessBuono7Weights2e3p025SlightLow__2021-09-04-08-20_results'
+# p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_goodCrossHomeoExamp__2022-02-16-14-52-13_results'
+
 p['kickType'] = 'spike'  # kick or spike
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
-p['nUnitsSecondPopExc'] = int(np.round(0.1 * p['nUnits']))
+p['nUnitsSecondPopExc'] = int(np.round(propEx2Units * p['nUnits']))
 p['startIndSecondPopExc'] = p['nUnitsToSpike']
 
 # Poisson
-p['poissonLambda'] = 0.2 * Hz
-p['duration'] = 60 * second
+p['poissonLambda'] = 0.2 * Hz  # 0.2
+p['duration'] = 60 * second  # 60
 
 # E subpop
 
@@ -91,24 +101,19 @@ indUnkickedExc = int(p['nUnits'] - (p['propInh'] * p['nUnits']) - 1)
 indSecondPopExc = p['nUnitsToSpike']
 p['indsRecordStateExc'].append(indUnkickedExc)
 p['indsRecordStateExc'].append(indSecondPopExc)
-p['indsRecordStateExc'].append(1422)
+p['indsRecordStateExc'].append(1422)  # some random units
 p['indsRecordStateExc'].append(87)
 p['indsRecordStateExc'].append(1357)
 p['indsRecordStateInh'].append(238)
 
-# p['indsRecordStateExc'].append(1152)
-# p['indsRecordStateExc'].append(239)
-# p['indsRecordStateExc'].append(892)
-# p['indsRecordStateInh'].append(59)
-
-# p['indsRecordStateExc'].append(940)
-# p['indsRecordStateExc'].append(1052)
-# p['indsRecordStateExc'].append(1434)
-# p['indsRecordStateInh'].append(27)
-
-p['stateVariableDT'] = p['dt'].copy()
 p['nExc'] = int(p['nUnits'] * (1 - p['propInh']))
 p['nInh'] = int(p['nUnits'] * p['propInh'])
+if p['recordAllVoltage']:
+    p['indsRecordStateExc'] = list(range(p['nExc']))
+    p['indsRecordStateInh'] = list(range(p['nInh']))
+
+if 'stateVariableDT' not in p:
+    p['stateVariableDT'] = p['dt'].copy()
 
 # END OF PARAMS
 
@@ -163,6 +168,30 @@ if p['manipulateConnectivity']:
     PR.preEE = np.delete(PR.preEE, removeInds, None)
     PR.posEE = np.delete(PR.posEE, removeInds, None)
     PR.wEE_final = np.delete(PR.wEE_final, removeInds, None)
+    wEEFinal = weight_matrix_from_flat_inds_weights(PR.p['nExc'], PR.p['nExc'], PR.preEE, PR.posEE, PR.wEE_final)
+
+    if p['compensateInhibition']:
+        # idea here is that by deleting excitatory connections only, we are upsetting the E/I balance
+        # we can calculate the initial E/I balance (basically, summing the rows of wEE and also summing the rows of wEI)
+        # then we can compare it to the E/I balance afterward
+        wEIInit = weight_matrix_from_flat_inds_weights(PR.p['nInh'], PR.p['nExc'], PR.preEI, PR.posEI, PR.wEI_final)
+
+        # turn the final into a matrix also...
+        sumExcOntoExcInit = np.nansum(wEEInit, 0)
+        sumInhOntoExcInit = np.nansum(wEIInit, 0)
+
+        sumExcOntoExcFinal = np.nansum(wEEFinal, 0)
+
+        # calculate a ratio of the change
+        changeInExcAmount = sumExcOntoExcFinal / sumExcOntoExcInit
+        changeInEx2 = changeInExcAmount[startIndExc2:endIndExc2].mean()
+        changeInEx1 = changeInExcAmount[endIndExc2:].mean()
+
+        # decrease inhibition appropriately
+        wEICompensate = wEIInit.copy()
+        wEICompensate[:, startIndExc2:endIndExc2] = wEICompensate[:, startIndExc2:endIndExc2] * changeInEx2
+        wEICompensate[:, endIndExc2:] = wEICompensate[:, endIndExc2:] * changeInEx1
+        PR.wEI_final = wEICompensate[PR.preEI, PR.posEI]
 
     if p['addBackRemovedConns']:
         # construct a probability array that is the shape of E2E2, fill it with the value of 1 / (nExc2*nExc2 - nExistingConns - nExc2)
@@ -234,18 +263,9 @@ if p['manipulateConnectivity']:
             wEICompensate[:, startIndExc2:endIndExc2] = wEICompensate[:, startIndExc2:endIndExc2] * decreaseInhOntoE2Factor
             PR.wEI_final = wEICompensate[PR.preEI, PR.posEI]
 
-JT.set_up_network_Poisson(priorResults=PR)
+PR.p['betaAdaptExc'] = overrideBetaAdaptExc  # override...
+JT.set_up_network_Poisson(priorResults=PR, recordAllVoltage=p['recordAllVoltage'])
 JT.initialize_weight_matrices()
-
-# calculate the "most balanced" E unit
-# JT.JN.calculate_connectivity_stats()
-# wEEMat = weight_matrix_from_flat_inds_weights(p['nExc'], p['nExc'], JT.JN.preEE, JT.JN.posEE, JT.wEE_init / pA)
-
-
-# add that unit to the monitors
-
-# create monitors
-JT.JN.create_monitors()
 
 # manipulate the weights to make things less stable
 # here i will do so by multiplying by normal noise
@@ -270,16 +290,38 @@ R.init_from_file(JT.saveName, JT.p['saveFolder'])
 R.calculate_PSTH()
 R.calculate_voltage_histogram(removeMode=True, removeReset=True, useAllRecordedUnits=True)
 R.calculate_upstates()
+R.calculate_upFR_units()
+R.calculate_upCorr_units()
+
 if len(R.ups) > 0:
-    R.reshape_upstates()
+    # R.reshape_upstates()
     R.calculate_FR_in_upstates()
     infoStr = 'average FR in upstate for Exc: {:.2f}, Inh: {:.2f}, average upDur: {:.2f}, upFreq: {:.2f}'.format(
         R.upstateFRExcHist.mean(), R.upstateFRInhHist.mean(), R.upDurs.mean(), R.ups.size / R.p['duration'] / Hz)
     print(infoStr)
 
+# calculate the best 2 E and single I units based on smallest STD during Up state
+if R.ups.size > 0:
+    checkDT = R.p['duration'] / R.stateMonExcV.shape[1]
+    useInwardBy = 50 * ms
+    takeTimeInds = []
+    for upstateInd in range(len(R.ups)):
+        startInd = int((R.ups[upstateInd] * second + useInwardBy) / checkDT)
+        endInd = int((R.downs[upstateInd] * second - useInwardBy) / checkDT)
+        takeTimeInds.extend(list(range(startInd, endInd)))
 
-R.calculate_voltage_histogram(useExcUnits=(3, 4, 5), useInhUnits=(1,), removeMode=True, removeReset=True)
-R.reshape_upstates()
+    # now cut out
+    voltArrayExc = R.stateMonExcV[:, takeTimeInds]
+    voltArrayInh = R.stateMonInhV[:, takeTimeInds]
+    voltArrayExcStd = voltArrayExc.std(1)
+    voltArrayInhStd = voltArrayInh.std(1)
+    smoothExcList = np.argsort(voltArrayExcStd)
+    smoothInhList = np.argsort(voltArrayInhStd)
+    if p['manipulateConnectivity']:
+        smoothEx2List = smoothExcList[np.where(np.logical_and(smoothExcList >= startIndExc2, smoothExcList < endIndExc2))]
+else:
+    smoothExcList = [0, 1, 2]
+    smoothInhList = [0, 1, 2]
 
 fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(16, 9),
                          gridspec_kw={'height_ratios': [3, 1, 1, 1, 1]},
@@ -287,9 +329,13 @@ fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(16, 9),
 R.plot_spike_raster(ax1[0])  # uses RNG but with a separate random seed
 R.plot_firing_rate(ax1[1])
 ax1[1].set_ylim(0, 30)
-R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=3)
-R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=0)
-R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=2)
+R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=smoothExcList[0], yOffset=yOffset)
+R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=smoothInhList[0], yOffset=yOffset)
+if p['manipulateConnectivity']:
+    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=smoothEx2List[0], yOffset=yOffset,
+                          overrideColor='royalblue')
+else:
+    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=smoothExcList[1], yOffset=yOffset)
 R.plot_updur_lines(ax1[2])
 R.plot_updur_lines(ax1[3])
 R.plot_updur_lines(ax1[4])
@@ -299,19 +345,47 @@ R.plot_voltage_histogram_sideways(ax1[3], 'Inh')
 R.plot_voltage_histogram_sideways(ax1[4], 'Exc')
 fig1.suptitle(R.p['simName'])
 
-fig2, ax2 = plt.subplots(8, 1, num=2, figsize=(16, 11), sharex=True)
-R.plot_voltage_detail(ax2[0], unitType='Exc', useStateInd=0)
-R.plot_voltage_detail(ax2[1], unitType='Exc', useStateInd=1)
-R.plot_voltage_detail(ax2[2], unitType='Exc', useStateInd=2)
-R.plot_voltage_detail(ax2[3], unitType='Exc', useStateInd=3)
-R.plot_voltage_detail(ax2[4], unitType='Exc', useStateInd=4)
-R.plot_voltage_detail(ax2[5], unitType='Exc', useStateInd=5)
-R.plot_voltage_detail(ax2[6], unitType='Inh', useStateInd=0)
-R.plot_voltage_detail(ax2[7], unitType='Inh', useStateInd=1)
-ax2[6].set(xlabel='Time (s)')
-R.plot_voltage_histogram_sideways(ax2[0], 'Exc')
-R.plot_voltage_histogram_sideways(ax2[7], 'Inh')
-fig1.suptitle(R.p['simName'])
+if p['manipulateConnectivity']:
+    # plot the average voltage for Ex1 and Ex2
+    f, ax = plt.subplots(2, 1, sharex=True, sharey=True)
+    timeVoltage = np.arange(0, R.p['duration'], R.p['stateVariableDT'])
+    Ex1Avg = R.stateMonExcV[endIndExc2:, :].mean(0)
+    Ex2Avg = R.stateMonExcV[startIndExc2:endIndExc2, :].mean(0)
+    ax[0].plot(timeVoltage, Ex1Avg, label='Ex1', color='cyan')
+    ax[1].plot(timeVoltage, Ex2Avg, label='Ex2', color='royalblue')
+    ax[1].legend()
+
+    # plot the correlation matrix, fuck it
+    rhoUpExc = R.rhoUpExc.copy()
+    rhoUpExc[np.diag_indices_from(rhoUpExc)] = np.nan
+    f, ax = plt.subplots()
+    plot.weight_matrix(ax, rhoUpExc)
+
+if hasattr(R, 'upstateFRExcUnits'):
+    frInp = R.upstateFRExcUnits[:, :R.p['nUnitsToSpike']].mean(0)  # input pop
+    frEx2 = R.upstateFRExcUnits[:, R.p['nUnitsToSpike']:(R.p['nUnitsToSpike'] + R.p['nUnitsSecondPopExc'])].mean(0)  # secondary pop
+    frEx1 = R.upstateFRExcUnits[:, (R.p['nUnitsToSpike'] + R.p['nUnitsSecondPopExc']):].mean(0)  # normal pop
+    frInh = R.upstateFRInhUnits.mean(0)
+
+    frInpHat = frInp.mean()
+    frEx2Hat = frEx2.mean()
+    frEx1Hat = frEx1.mean()
+    frInhHat = frInh.mean()
+
+    print(frInpHat, frEx2Hat, frEx1Hat, frInhHat, )
+# fig2, ax2 = plt.subplots(8, 1, num=2, figsize=(16, 11), sharex=True)
+# R.plot_voltage_detail(ax2[0], unitType='Exc', useStateInd=0, yOffset=yOffset)
+# R.plot_voltage_detail(ax2[1], unitType='Exc', useStateInd=1, yOffset=yOffset)
+# R.plot_voltage_detail(ax2[2], unitType='Exc', useStateInd=2, yOffset=yOffset)
+# R.plot_voltage_detail(ax2[3], unitType='Exc', useStateInd=3, yOffset=yOffset)
+# R.plot_voltage_detail(ax2[4], unitType='Exc', useStateInd=4, yOffset=yOffset)
+# R.plot_voltage_detail(ax2[5], unitType='Exc', useStateInd=5, yOffset=yOffset)
+# R.plot_voltage_detail(ax2[6], unitType='Inh', useStateInd=0, yOffset=yOffset)
+# R.plot_voltage_detail(ax2[7], unitType='Inh', useStateInd=1, yOffset=yOffset)
+# ax2[6].set(xlabel='Time (s)')
+# R.plot_voltage_histogram_sideways(ax2[0], 'Exc')
+# R.plot_voltage_histogram_sideways(ax2[7], 'Inh')
+# fig1.suptitle(R.p['simName'])
 
 '''
 plt.close('all')

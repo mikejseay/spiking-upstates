@@ -12,7 +12,7 @@ from brian2 import nA, ms
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
 
-USE_NEW_EPHYS_PARAMS = True
+USE_NEW_EPHYS_PARAMS = False
 
 useParams = paramsJercog.copy()
 
@@ -39,7 +39,7 @@ useParams['baselineDur'] = 100 * ms
 useParams['iDur'] = 250 * ms
 useParams['afterDur'] = 100 * ms
 useParams['iExtRange'] = np.linspace(-.1, .3, 301) * nA
-useParams['useSecondPopExc'] = True
+useParams['useSecondPopExc'] = False
 
 JEN = JercogEphysNetwork(useParams)
 JEN.build_classic()
@@ -66,9 +66,11 @@ if R.p['useSecondPopExc']:
     print('excGain2:', R.gainExc2)
     print('excTau2:', R.p['membraneCapacitanceExc2'] / R.p['gLeakExc2'])
 else:
-    fig1, ax1 = plt.subplots(2, 2, num=1)
-    R.calculate_and_plot(fig1, ax1)
+    # fig1, ax1 = plt.subplots(2, 2, num=1)
+    # R.calculate_and_plot(fig1, ax1)
+    fig1, ax1 = plt.subplots(2, 3, figsize=(8, 6), num=1)
+    R.calculate_and_plot_multiVolt(fig1, ax1)
 
 SAVE_PLOT = True
 if SAVE_PLOT:
-    fig1.savefig('benEphys1.pdf', transparent=True)
+    fig1.savefig(useParams['paramSet'] + 'Ephys.pdf', transparent=True)

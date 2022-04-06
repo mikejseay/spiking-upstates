@@ -402,7 +402,7 @@ class Results(object):
         nUpstates = len(self.ups)
 
         if nUpstates == 0:
-            print('there were no detectable up states')
+            print('there were no detectable up states, no up FR to calculate')
             return
 
         upstateFRExc = []
@@ -429,6 +429,46 @@ class Results(object):
         self.upstateFRInh = np.array(upstateFRInh)
         self.upstateFRExcUnits = upstateFRExcUnits
         self.upstateFRInhUnits = upstateFRInhUnits
+
+    def calculate_upCorr_units(self):
+
+        # strategy is to get all voltage segments all from Up states and correlate once
+        # the results will be an array nUnits x nTotalUpTimePoints
+        # this can be subjects to np.corrcoef without tranpose
+
+        ups = self.ups
+        downs = self.downs
+
+        nUpstates = len(self.ups)
+
+        if nUpstates == 0:
+            print('there were no detectable up states, no correlation to be done')
+            return
+
+        takeTimeInds = []
+
+        # this is fool-proof way of making sure you use the correct DT...
+        checkDT = self.p['duration'] / self.stateMonExcV.shape[1]
+
+        # just appending the ranges of indices that will be cut out of the time dimension
+        # we have to convert to the DT, which will be self.p['stateVariableDT']
+        # based on methodological convo with Ben, will go inward by 50 ms
+        useInwardBy = 50 * ms
+        for upstateInd in range(nUpstates):
+            startInd = int((ups[upstateInd] * second + useInwardBy) / checkDT)
+            endInd = int((downs[upstateInd] * second - useInwardBy) / checkDT)
+            takeTimeInds.extend(list(range(startInd, endInd)))
+
+        # now cut out
+        vForUpCorrExc = self.stateMonExcV[:, takeTimeInds]
+        vForUpCorrInh = self.stateMonInhV[:, takeTimeInds]
+
+        # now simply do the correlation
+        rhoUpExc = np.corrcoef(vForUpCorrExc)
+        rhoUpInh = np.corrcoef(vForUpCorrInh)
+
+        self.rhoUpExc = rhoUpExc
+        self.rhoUpInh = rhoUpInh
 
     def plot_consecutive_state_correlation(self, ax):
         # ax should have 2 elements
@@ -565,20 +605,21 @@ class Results(object):
         ax.plot(yValsRescaled, xVals, color=useColor, alpha=0.5)
         # ax.hlines(useELeak, 0, yVals.max() / 2, color=useColor, ls='--', alpha=0.5)
 
-    def plot_voltage_detail(self, ax, unitType='Exc', useStateInd=0, plotKicks=False, overrideColor='', **kwargs):
+    def plot_voltage_detail(self, ax, unitType='Exc', useStateInd=0, yOffset=0,
+                            plotKicks=False, overrideColor='', **kwargs):
 
         useLineWidth = 0.5
-        useSpikeAmp = 0
-        downSampleBy = 10
+        downSampleBy = 1
 
-        if 'stateVariableDT' in self.p and self.p['recordAllVoltage']:
+        if 'stateVariableDT' in self.p and 'recordAllVoltage' in self.p and self.p['recordAllVoltage']:
             useDT = self.p['stateVariableDT']
         else:
             useDT = self.p['dt']
 
         # reconstruct the time vector
-        stateMonT = np.arange(0, float(self.p['duration']), float(useDT * downSampleBy))
-        yLims = (self.p['eLeakExc'] / mV - 15, self.p['eLeakExc'] / mV + 70)
+        stateMonT = np.arange(0, float(self.p['duration']), float(useDT))
+        # stateMonT = np.arange(0, float(self.p['duration']), float(useDT * downSampleBy))
+
 
         if unitType == 'Exc':
             voltageSeries = self.stateMonExcV[useStateInd, ::downSampleBy]
@@ -608,10 +649,13 @@ class Results(object):
         if len(stateMonT) > len(voltageSeries):
             stateMonT = stateMonT[1:]
 
+        useResting = self.p['eLeakExc'] / mV
         useThresh = self.p['vThresh' + unitType] / mV
+        useSpikeAmp = useThresh + 65
+        yLims = (useResting - 15 + yOffset, useResting + 80 + yOffset)
         # ax.axhline(useThresh, color=useColor, linestyle=':')  # Threshold
         # ax.axhline(self.p['eLeak' + unitType] / mV, color=useColor, linestyle='--')  # Resting
-        ax.plot(stateMonT, voltageSeries, color=useColor, lw=useLineWidth, **kwargs)
+        ax.plot(stateMonT, voltageSeries + yOffset, color=useColor, lw=useLineWidth, **kwargs)
 
         if plotKicks and 'kickTimes' in self.p:
             kickTimes = array(self.p['kickTimes'])
@@ -631,7 +675,7 @@ class Results(object):
                        )
             yLims = (self.p['eLeakExc'] / mV - 15 + yDist, self.p['eLeakExc'] / mV + 70)
 
-        ax.vlines(spikeMonT[spikeMonI == translatedStateInd], useThresh, useSpikeAmp, color=useColor, lw=useLineWidth,
+        ax.vlines(spikeMonT[spikeMonI == translatedStateInd], useThresh + yOffset, useSpikeAmp + yOffset, color=useColor, lw=useLineWidth,
                   **kwargs)
         ax.set(xlim=(0., self.p['duration'] / second), ylim=yLims, ylabel='mV')
 
@@ -803,6 +847,75 @@ class ResultsEphys(object):
         ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
         ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc')
         ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh')
+        ax[1, 1].set_xlabel('ISI number')
+        ax[1, 1].set_ylabel('ISI (ms)')
+        ax[1, 1].legend()
+
+        f.tight_layout()
+        f.subplots_adjust(top=.9)
+
+    def calculate_and_plot_multiVolt(self, f, ax):
+        I_ext_range = self.p['iExtRange']
+
+        ExcData = self.spikeMonExcC / self.p['duration']
+        InhData = self.spikeMonInhC / self.p['duration']
+
+        I_index_for_ISI = int(len(I_ext_range) * .9) - 1
+        plotVoltageForCurrentValues = (-.1, 0.11, 0.16, 0.21)
+        iIndicesToPlot = []
+        for pVFCV in plotVoltageForCurrentValues:
+            iIndicesToPlot.append(np.argmin(np.fabs(I_ext_range - pVFCV * nA)))
+
+        # reconstruct time
+        stateMonT = np.arange(0, float(self.p['duration']), float(self.p['dt']))
+
+        # might be useful...
+        # ax.axhline(useThresh, color=useColor, linestyle=':')  # Threshold
+        # ax.axhline(self.p['eLeak' + unitType] / mV, color=useColor, linestyle='--')  # Resting
+
+        useYMin = -5
+        useYMax = 65
+        useSpikeAmp = 55
+        useLineWidth = 1
+
+        excColor = 'cyan'
+        inhColor = 'red'
+
+        useThreshExc = self.p['vThreshExc'] / mV
+        useThreshInh = self.p['vThreshInh'] / mV
+
+        for iDummy, iIndexToPlot in enumerate(iIndicesToPlot):
+            # excSubColor = excColors[iDummy]
+            # exc2SubColor = exc2Colors[iDummy]
+            # inhSubColor = inhColors[iDummy]
+
+            excSubColor = excColor
+            inhSubColor = inhColor
+
+            ax[0, 0].plot(stateMonT, self.stateMonExcV[iIndexToPlot, :], color=excSubColor, lw=useLineWidth)
+            ax[0, 0].vlines(self.spikeTrainsExc[iIndexToPlot] / second, useThreshExc, useSpikeAmp, color=excSubColor,
+                            lw=useLineWidth)
+            ax[0, 0].set(xlim=(0., self.p['duration'] / second), ylim=(useYMin, useYMax), ylabel='mV', xlabel='Time (s)')
+
+            ax[0, 2].plot(stateMonT, self.stateMonInhV[iIndexToPlot, :], color=inhSubColor, lw=useLineWidth)
+            ax[0, 2].vlines(self.spikeTrainsInh[iIndexToPlot] / second, useThreshInh, useSpikeAmp, color=inhSubColor,
+                            lw=useLineWidth)
+            ax[0, 2].set(xlim=(0., self.p['duration'] / second), ylim=(useYMin, useYMax), ylabel='mV', xlabel='Time (s)')
+
+        ax[1, 0].plot(I_ext_range * 1e9, ExcData, label='Exc', color=excColor)
+        ax[1, 0].plot(I_ext_range * 1e9, InhData, label='Inh', color=inhColor)
+        # ax[1, 0].axvline(float(I_ext_range[I_index_for_ISI]) * 1e9,
+        #                  label='displayed value', color='grey', ls='--')
+        ax[1, 0].set_xlabel('Current (nA)')
+        ax[1, 0].set_ylabel('Firing Rate (Hz)')
+        # ax[1, 0].legend()
+
+        # ISIExc = diff(self.spikeTrainsExc[()][I_index_for_ISI])
+        # ISIInh = diff(self.spikeTrainsInh[()][I_index_for_ISI])
+        ISIExc = diff(self.spikeTrainsExc[I_index_for_ISI])
+        ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
+        ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc', color=excColor)
+        ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh', color=inhColor)
         ax[1, 1].set_xlabel('ISI number')
         ax[1, 1].set_ylabel('ISI (ms)')
         ax[1, 1].legend()

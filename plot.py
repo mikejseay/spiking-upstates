@@ -125,7 +125,7 @@ def weight_matrix(ax, values,
     cb = plt.colorbar(i, ax=ax)
     cb.ax.set_ylabel(clabel, rotation=270, fontproperties=fontproperties, labelpad=20)
     for ytl in cb.ax.get_yticklabels():
-        ytl.set_fontproperties(fontProp)
+        ytl.set_fontproperties(fontproperties)
     cb.outline.set_visible((not removeFrame))
 
 

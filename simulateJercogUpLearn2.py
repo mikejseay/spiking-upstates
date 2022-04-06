@@ -45,7 +45,7 @@ p['setUpFRExc'] = 5 * Hz
 p['setUpFRInh'] = 14 * Hz
 p['tauUpFRTrials'] = 2
 p['useRule'] = 'cross-homeo-pre-scalar'  # cross-homeo vs cross-homeo-scalar
-rngSeed = 0
+rngSeed = 3
 p['allowAutapses'] = False
 p['nameSuffix'] = ''
 # cross-homeo-scalar and cross-homeo-scalar-homeo are the new ones
@@ -77,7 +77,7 @@ p['initWeightMethod'] = 'seed' + str(rngSeed)
 # p['initWeightMethod'] = 'guessUpperLeftWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessLowerRightWeights2e3p025LogNormal'
 # p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025'
-# # p['initWeightMethod'] = 'guessLowActivityWeights2e3p025'
+# p['initWeightMethod'] = 'guessLowActivityWeights2e3p025'
 # p['initWeightMethod'] = 'randomUniformSarayHigh5e3p02Converge'
 # p['initWeightMethod'] = 'randomUniformSarayHigh'
 # p['initWeightMethod'] = 'randomUniformMidUnequal'
@@ -105,7 +105,7 @@ p['jIIScaleRatio'] = None
 p['maxAllowedFRExc'] = 2 * p['setUpFRExc'] / Hz
 p['maxAllowedFRInh'] = 2 * p['setUpFRInh'] / Hz
 
-p['nTrials'] = 2500  # 6765
+p['nTrials'] = 10000  # 6765
 # p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597]  # 1-indexed
 # p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181]  # 1-indexed
 p['saveTrials'] = np.arange(0, p['nTrials'], 100)

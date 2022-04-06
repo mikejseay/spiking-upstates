@@ -1785,8 +1785,7 @@ class JercogNetwork(object):
     def prepare_upPoisson_experiment(self, poissonLambda=0.025 * Hz, duration=30 * second, spikeUnits=100, rng=None):
 
         kickTimes = poisson_single(poissonLambda, self.p['dt'], duration, rng)
-
-        test = 0
+        # kickTimes = np.arange(1, float(duration), 3)  # just to check
 
         indices = []
         times = []

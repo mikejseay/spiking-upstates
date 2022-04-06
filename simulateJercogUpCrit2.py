@@ -13,15 +13,18 @@ rngSeed = None
 defaultclock.dt = p['dt']
 
 p['useNewEphysParams'] = True
-# ephysParams = paramsJercogEphysBuono7.copy()
-ephysParams = paramsJercogEphysBuono7InfUp.copy()
+ephysParams = paramsJercogEphysBuono7.copy()
+# ephysParams = paramsJercogEphysBuono7InfUp.copy()
 p['useSecondPopExc'] = False
+
 p['randomizeConnectivity'] = False
-p['manipulateConnectivity'] = True
-p['removePropConn'] = 0.2
+
+p['manipulateConnectivity'] = False
+propEx2Units = 0.1
+p['removePropConn'] = 0.1
 p['addBackRemovedConns'] = False
 p['paradoxicalKickInh'] = False
-weightMult = 0.8
+weightMult = 0.9
 
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
@@ -31,7 +34,7 @@ if p['useNewEphysParams']:
     p.update(ephysParams)
 
 p['useRule'] = 'upCrit'
-p['nameSuffix'] = 'paradox1'
+p['nameSuffix'] = 'benMarch'
 p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/'
 p['saveWithDate'] = True
 p['useOldWeightMagnitude'] = True
@@ -42,7 +45,7 @@ p['recordMovieVariables'] = False
 p['downSampleVoltageTo'] = 1 * ms
 p['stateVariableDT'] = 1 * ms
 p['dtHistPSTH'] = 10 * ms
-p['recordAllVoltage'] = False
+p['recordAllVoltage'] = True
 
 # simulation params
 p['nUnits'] = 2e3
@@ -54,15 +57,15 @@ p['allowAutapses'] = False
 # p['initWeightMethod'] = 'normalAsynchronousIrregular'
 # p['initWeightMethod'] = 'identicalAsynchronousIrregular'
 p['initWeightMethod'] = 'resumePrior'
-# p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_guessBuono7Weights2e3p025SlightLow__2021-09-04-08-20_results'
-p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_guessBuono7Weights2e3p025SlightLow_2021-12-09-09-41-18_results'
+p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_guessBuono7Weights2e3p025SlightLow__2021-09-04-08-20_results'
+# p['initWeightPrior'] = 'classicJercog_5000_0p1_cross-homeo-pre-scalar_goodCrossHomeoExamp_testRefract_2022-01-31-09-16-15_results'
 p['kickType'] = 'spike'  # kick or spike or barrage
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
 p['timeToSpike'] = 100 * ms
 p['timeAfterSpiked'] = 2000 * ms
 p['spikeInputAmplitude'] = 0.96  # in nA
 
-p['nUnitsSecondPopExc'] = int(np.round(0.1 * p['nUnits']))
+p['nUnitsSecondPopExc'] = int(np.round(propEx2Units * p['nUnits']))
 p['startIndSecondPopExc'] = p['nUnitsToSpike']
 
 # boring params
@@ -261,7 +264,7 @@ else:
     smoothExcList = [0, 1, 2]
     smoothInhList = [0, 1, 2]
 
-fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(6, 9),
+fig1, ax1 = plt.subplots(5, 1, figsize=(6, 9),
                          gridspec_kw={'height_ratios': [3, 2, 1, 1, 1]},
                          sharex=True)
 R.plot_spike_raster(ax1[0], downSampleUnits=False)  # uses RNG but with a separate random seed
@@ -271,12 +274,17 @@ R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=smoothExcList[0])
 R.plot_updur_lines(ax1[2])
 R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=smoothInhList[0])
 R.plot_updur_lines(ax1[3])
-R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=smoothExcList[1])
+if p['manipulateConnectivity']:
+    smoothEx2List = smoothExcList[np.where(np.logical_and(smoothExcList >= startIndExc2, smoothExcList < endIndExc2))]
+    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=smoothEx2List[0], overrideColor='royalblue')
+else:
+    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=smoothExcList[1])
 R.plot_updur_lines(ax1[4])
 ax1[3].set(xlabel='Time (s)')
 R.plot_voltage_histogram_sideways(ax1[2], 'Exc')
 R.plot_voltage_histogram_sideways(ax1[3], 'Inh')
 fig1.suptitle(R.p['simName'])
+
 uniqueSpikers = np.unique(R.spikeMonExcI).size
 totalSpikes = R.spikeMonExcI.size
 if uniqueSpikers > 0:
@@ -284,7 +292,7 @@ if uniqueSpikers > 0:
 
 
 if p['useSecondPopExc']:
-    fig2, ax2 = plt.subplots(6, 1, num=2, figsize=(6, 9),
+    fig2, ax2 = plt.subplots(6, 1, figsize=(6, 9),
                              gridspec_kw={'height_ratios': [3, 2, 1, 1, 1, 1]},
                              sharex=True)
     R.plot_spike_raster(ax2[0], downSampleUnits=False)  # uses RNG but with a separate random seed
@@ -302,7 +310,34 @@ if p['useSecondPopExc']:
     ax2[5].set(xlabel='Time (s)')
     R.plot_voltage_histogram_sideways(ax2[2], 'Exc')
     R.plot_voltage_histogram_sideways(ax2[5], 'Inh')
-    fig1.suptitle(R.p['simName'])
+    fig2.suptitle(R.p['simName'])
     uniqueSpikers = np.unique(R.spikeMonExcI).size
     totalSpikes = R.spikeMonExcI.size
     print(uniqueSpikers, 'neurons fired an average of', totalSpikes / uniqueSpikers, 'spikes')
+
+R.reshape_upstates()
+R.calculate_upFR_units()
+R.calculate_upCorr_units()
+
+if p['manipulateConnectivity']:
+    # plot the average voltage for Ex1 and Ex2
+    f, ax = plt.subplots(2, 1, sharex=True, sharey=True)
+    timeVoltage = np.arange(0, R.p['duration'], R.p['stateVariableDT'])
+    Ex1Avg = R.stateMonExcV[endIndExc2:, :].mean(0)
+    Ex2Avg = R.stateMonExcV[startIndExc2:endIndExc2, :].mean(0)
+    ax[0].plot(timeVoltage, Ex1Avg, label='Ex1', color='cyan')
+    ax[1].plot(timeVoltage, Ex2Avg, label='Ex2', color='royalblue')
+    ax[1].legend()
+
+if hasattr(R, 'upstateFRExcUnits'):
+    frInp = R.upstateFRExcUnits[:, :R.p['nUnitsToSpike']].mean(0)  # input pop
+    frEx2 = R.upstateFRExcUnits[:, R.p['nUnitsToSpike']:(R.p['nUnitsToSpike'] + R.p['nUnitsSecondPopExc'])].mean(0)  # secondary pop
+    frEx1 = R.upstateFRExcUnits[:, (R.p['nUnitsToSpike'] + R.p['nUnitsSecondPopExc']):].mean(0)  # normal pop
+    frInh = R.upstateFRInhUnits.mean(0)
+
+    frInpHat = frInp.mean()
+    frEx2Hat = frEx2.mean()
+    frEx1Hat = frEx1.mean()
+    frInhHat = frInh.mean()
+
+    print(frInpHat, frEx2Hat, frEx1Hat, frInhHat, )

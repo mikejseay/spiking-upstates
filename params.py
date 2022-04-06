@@ -806,8 +806,8 @@ paramsJercogEphysBuono7 = {
     'vThreshExc': -52 * mV,
     'vThreshExc2': -46 * mV,
     'adaptTau': 500 * ms,
-    'betaAdaptExc': 13 * nA * ms,  # 14.5 * nA * ms,
-    'betaAdaptExc2': 13 * nA * ms,  # 14.5 * nA * ms,
+    'betaAdaptExc': 12 * nA * ms,  # 14.5 * nA * ms,
+    'betaAdaptExc2': 12 * nA * ms,  # 14.5 * nA * ms,
     'refractoryPeriodExc': 2.5 * ms,
     'refractoryPeriodExc2': 2.5 * ms,
     'refractoryPeriod': 1 * ms,  # overridden by the above but necessary
