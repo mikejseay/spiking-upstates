@@ -3,15 +3,14 @@ import numpy as np
 from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV
 
 from params import paramsJercog as p
-from params import (paramsJercogEphysBuono22, paramsJercogEphysBuono4, paramsJercogEphysBuono5, paramsJercogEphysBuono6,
-                    paramsJercogEphysBuono7, paramsJercogEphysBuono7InfUp)
+from params import paramsJercogEphysBuono
 from generate import convert_kicks_to_current_series
 from trainer import JercogTrainer
 from results import Results
 
 p['useNewEphysParams'] = False
 p['useSecondPopExc'] = False
-ephysParams = paramsJercogEphysBuono7.copy()
+ephysParams = paramsJercogEphysBuono.copy()
 
 if p['useNewEphysParams']:
     # remove protected keys from the dict whose params are being imported
@@ -58,44 +57,7 @@ p['saveTermsSeparately'] = False
 # p['betaAdaptExc2'] = 0 * nA * ms
 # p['betaAdaptInh'] = 0 * nA * ms
 
-p['initWeightMethod'] = 'seed' + str(rngSeed)
-# p['initWeightMethod'] = 'uniformSlightLow'
-# p['initWeightMethod'] = 'goodCrossHomeoExamp'
-# p['initWeightMethod'] = 'goodCrossHomeoExampBuono'
-# p['initWeightMethod'] = 'guessLowWeights2e3p025LogNormal2'
-# p['initWeightMethod'] = 'guessBuono2Weights2e3p025LogNormal2'
-# p['initWeightMethod'] = 'guessGoodWeights2e3p1LogNormal'
-# p['initWeightMethod'] = 'guessGoodWeights2e3p025'
-# p['initWeightMethod'] = 'guessGoodWeights2e3p025Normal'
-# p['initWeightMethod'] = 'guessGoodWeights2e3p025LogNormal'
-# p['initWeightMethod'] = 'guessBuono6Weights2e3p025Beta10'
-# p['initWeightMethod'] = 'guessBuono7Weights2e3p025SlightLow'
-# p['initWeightMethod'] = 'guessBuono4Weights2e3p025LogNormal'
-# p['initWeightMethod'] = 'randomUniformSarayHigher'
-# p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025LogNormal'
-# p['initWeightMethod'] = 'guessHighActivityWeights2e3p025LogNormal'
-# p['initWeightMethod'] = 'guessUpperLeftWeights2e3p025LogNormal'
-# p['initWeightMethod'] = 'guessLowerRightWeights2e3p025LogNormal'
-# p['initWeightMethod'] = 'guessZeroActivityWeights2e3p025'
-# p['initWeightMethod'] = 'guessLowActivityWeights2e3p025'
-# p['initWeightMethod'] = 'randomUniformSarayHigh5e3p02Converge'
-# p['initWeightMethod'] = 'randomUniformSarayHigh'
-# p['initWeightMethod'] = 'randomUniformMidUnequal'
-
-# p['initWeightMethod'] = 'resumePrior'  # note this completely overwrites ALL values of the p parameter
-# p['saveFolder'] += 'cross-homeo-pre-outer-homeo-explodeDealTest/'
-# p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed2explodeDealTestLowAlpha_2022-02-03-08-02-51_results'
-
-# p['saveFolder'] += 'cross-homeo-pre-scalar-homeo-explodeDealTest/'
-# p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed2_explodeDealTestLowAlpha_2022-02-10-07-30-29_results'
-
-# p['saveFolder'] += 'cross-homeo-pre-outer-homeo/'
-# p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_resumePrior_seed2_2021-09-03-10-23_results'
-
-# p['initWeightMethod'] = 'resumePrior'
-# p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo_seed2__2022-02-17-11-51-50_results'
-# p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_guessBuono7Weights2e3p025SlightLow__2021-09-04-08-20_results'
-
+p['initWeightMethod'] = 'defaultNormal'
 p['kickType'] = 'spike'  # kick or spike
 p['jEEScaleRatio'] = None
 p['jIEScaleRatio'] = None
@@ -145,11 +107,6 @@ elif p['useRule'][:7] == 'balance':
     p['minAllowedWEI'] = 0.1 * pA / p['propConnect']
     p['minAllowedWIE'] = 0.1 * pA / p['propConnect']
     p['minAllowedWII'] = 0.1 * pA / p['propConnect']
-
-    # p['minAllowedWEE'] = 0.6 * pA / p['propConnect']  # * 800 this is empirical!!!
-    # p['minAllowedWIE'] = 1.5 * pA / p['propConnect']  # * 800 this is empirical!!!
-    # p['minAllowedWEI'] = 0.15 * pA / p['propConnect']  # * 200
-    # p['minAllowedWII'] = 0.15 * pA / p['propConnect']  # * 200
 
 if p['useRule'] == 'cross-homeo-pre-scalar-homeo-norm':
     p['alpha1'] *= 100

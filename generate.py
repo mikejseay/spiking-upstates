@@ -4,34 +4,10 @@ or convert something related to that
 """
 
 
-import numpy as np
-from tqdm import tqdm
 from brian2 import *
 
 
-def poisson_kicks_jercog(lambda_value, duration, minimum_iki, maximum_iki, rng=None):
-    """ generate the times and sizes of the kicks, as used in Jercog et al. (2017) """
-
-    if not rng:
-        rng = np.random.default_rng(None)  # random seed
-
-    kickTimes = []
-    kickSizes = []
-    kickInd = -1
-    nextTime = 0
-    while nextTime < duration:
-        nextISI = -lambda_value / np.log(1 - rng.random())
-        if nextISI < minimum_iki or nextISI > maximum_iki:
-            continue
-        kickInd += 1
-        nextTime += nextISI
-        if nextTime < duration:
-            kickTimes.append(nextTime)
-            kickSizes.append((2 - kickInd % 2) / 2)
-    return kickTimes, kickSizes
-
-
-def poisson_single(rate, dt, duration, rng=None):
+def poisson_single(use_rate, dt, duration, rng=None):
     """ given a fixed rate as well as the dt and duration of a simulation,
     generates 1 Poisson process """
 
@@ -40,7 +16,7 @@ def poisson_single(rate, dt, duration, rng=None):
 
     timeArray = np.arange(0, float(duration), float(dt))
     randArray = rng.random(*timeArray.shape)
-    spikeBool = randArray < (rate * dt)
+    spikeBool = randArray < (use_rate * dt)
 
     times_lst = []
     indices_lst = []
@@ -50,7 +26,7 @@ def poisson_single(rate, dt, duration, rng=None):
     return times
 
 
-def poisson(rate, dt, duration, nUnits, rng=None):
+def poisson(use_rate, dt, duration, nUnits, rng=None):
     """ given a fixed rate as well as the dt and duration of a simulation,
     generates nUnits independent Poisson processes and returns them in the way
     that SpikeGeneratorGroup is expecting them """
@@ -60,7 +36,7 @@ def poisson(rate, dt, duration, nUnits, rng=None):
 
     timeArray = np.arange(0, float(duration), float(dt))
     randArray = rng.random(*timeArray.shape, nUnits)
-    spikeBool = randArray < (rate * dt)
+    spikeBool = randArray < (use_rate * dt)
 
     times_lst = []
     indices_lst = []
@@ -104,6 +80,7 @@ def square_bumps(kickTimes, kickDurs, kickSizes, duration, dt):
     iKickRecorded = TimedArray(iKickNumpy, dt=dt)
     return iKickRecorded
 
+
 def convert_kicks_to_current_series(kickDur, kickTau, kickTimes, kickSizes, duration, dt):
     """ given the times and sizes of kicks, generate a time series of injected current values """
 
@@ -125,33 +102,6 @@ def fixed_current_series(amplitude, duration, dt):
     iKickNumpy = amplitude * np.ones_like(tRecorded)
     iKickRecorded = TimedArray(iKickNumpy, dt=dt)
     return iKickRecorded
-
-
-def set_spikes_from_time_varying_rate(time_array, rate_array, nPoissonInputUnits, rng=None):
-    """
-    This function was inherited from some Destexhe code because I was trying to replicate their results.
-    # time_array in ms
-    # rate_array in Hz
-    # nPoissonInputUnits dictates how many distinct external input units should be simulated
-    """
-
-    if not rng:
-        rng = np.random.default_rng(None)  # random seed
-
-    outIndices, outTimes = [], []
-    DT = (time_array[1] - time_array[0])
-
-    print('generating Poisson process')
-    # for each time step (could have a different rate per time step i.e. inhomogeneous Poisson process)
-    for it in tqdm(range(len(time_array))):
-        # generate one random U(0, 1) for each unit
-        rdm_num = rng.random(nPoissonInputUnits)
-        # for each unit decide whether it spikes on that time step
-        for ii in np.arange(nPoissonInputUnits)[rdm_num < DT * rate_array[it] * 1e-3]:  # this samples numbers
-            outIndices.append(ii)  # all the indicces
-            outTimes.append(time_array[it])  # all the same time !
-
-    return np.array(outIndices), np.array(outTimes) * ms
 
 
 def adjacency_indices_within(nUnits, pConn, allowAutapses=False, rng=None):

@@ -1,19 +1,16 @@
 from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV, second
 from params import paramsJercog as p
-from params import (paramsJercogEphysBuono2, paramsJercogEphysBuonoBen1, paramsJercogEphysBuonoBen2,
-                    paramsJercogEphysBuono22, paramsJercogEphysBuono4, paramsJercogEphysBuono5, paramsJercogEphysBuono6,
-                    paramsJercogEphysBuono7,
-                    paramsJercogBen)
+from params import paramsJercogEphysBuono
 import numpy as np
 from generate import convert_kicks_to_current_series, weight_matrix_from_flat_inds_weights, norm_weights
 from trainer import JercogTrainer
 from results import Results
 import matplotlib.pyplot as plt
-import plot
+import plotting
 import pandas as pd
 
 p['useNewEphysParams'] = True
-ephysParams = paramsJercogEphysBuono7.copy()
+ephysParams = paramsJercogEphysBuono.copy()
 rngSeed = 42
 defaultclock.dt = p['dt']
 
@@ -359,7 +356,7 @@ if p['manipulateConnectivity']:
     rhoUpExc = R.rhoUpExc.copy()
     rhoUpExc[np.diag_indices_from(rhoUpExc)] = np.nan
     f, ax = plt.subplots()
-    plot.weight_matrix(ax, rhoUpExc)
+    plotting.weight_matrix(ax, rhoUpExc)
 
 if hasattr(R, 'upstateFRExcUnits'):
     frInp = R.upstateFRExcUnits[:, :R.p['nUnitsToSpike']].mean(0)  # input pop

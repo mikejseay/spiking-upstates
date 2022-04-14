@@ -3,66 +3,14 @@ classes for representing the results of simulations.
 i.e. spikes and unit state variables (membrane voltage, synaptic variables, etc)
 """
 
-from brian2 import *
+from brian2 import mV, second, ms, nA
 import dill
 import numpy as np
 import os
-from functions import find_upstates
+from functions import find_upstates, bins_to_centers
 from stats import regress_linear
 from scipy.stats import mode
-from generate import convert_indices_times_to_dict
-
-
-def bins_to_centers(bins):
-    return (bins[:-1] + bins[1:]) / 2
-
-
-def convert_sNMDA_to_current_exc_Jercog_CellNotSyn(JN, ind):
-    v = JN.stateMonExc.v[ind, :]
-    sE_NMDA = JN.stateMonExc.sE_NMDA[ind, :]
-    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
-    NMDACurrent = JN.unitsExc.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * sE_NMDA
-    return hardGatePart * NMDACurrent
-
-
-def convert_sNMDA_to_current_inh_Jercog_CellNotSyn(JN, ind):
-    v = JN.stateMonInh.v[ind, :]
-    sE_NMDA = JN.stateMonInh.sE_NMDA[ind, :]
-    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
-    NMDACurrent = JN.unitsInh.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * sE_NMDA
-    return hardGatePart * NMDACurrent
-
-
-def convert_sNMDA_to_current_exc_Jercog(JN, ind):
-    v = JN.stateMonExc.v[ind, :]
-    s_NMDA_tot = JN.stateMonExc.s_NMDA_tot[ind, :]
-    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
-    NMDACurrent = JN.unitsExc.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
-    return hardGatePart * NMDACurrent
-
-
-def convert_sNMDA_to_current_inh_Jercog(JN, ind):
-    v = JN.stateMonInh.v[ind, :]
-    s_NMDA_tot = JN.stateMonInh.s_NMDA_tot[ind, :]
-    hardGatePart = np.round(v > JN.p['vStepSigmoid'])
-    NMDACurrent = JN.unitsInh.jE_NMDA[0] / (1 + exp(-JN.p['kSigmoid'] * (v - JN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
-    return hardGatePart * NMDACurrent
-
-
-def convert_sNMDA_to_current_exc_Destexhe(DN, ind):
-    v = DN.stateMonExc.v[ind, :]
-    s_NMDA_tot = DN.stateMonExc.s_NMDA_tot[ind, :]
-    hardGatePart = np.round(v > DN.p['vStepSigmoid'])
-    NMDACurrent = DN.unitsExc.ge_NMDA[0] / (1 + exp(-DN.p['kSigmoid'] * (v - DN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
-    return hardGatePart * NMDACurrent
-
-
-def convert_sNMDA_to_current_inh_Destexhe(DN, ind):
-    v = DN.stateMonInh.v[ind, :]
-    s_NMDA_tot = DN.stateMonInh.s_NMDA_tot[ind, :]
-    hardGatePart = np.round(v > DN.p['vStepSigmoid'])
-    NMDACurrent = DN.unitsInh.ge_NMDA[0] / (1 + exp(-DN.p['kSigmoid'] * (v - DN.p['vMidSigmoid']) / mV)) * s_NMDA_tot
-    return hardGatePart * NMDACurrent
+import matplotlib.pyplot as plt
 
 
 class Results(object):
@@ -145,11 +93,11 @@ class Results(object):
 
     def calculate_PSTH(self):
         dtHist = float(self.p['dtHistPSTH'])
-        histBins = arange(0, float(self.p['duration']), dtHist)
-        histCenters = arange(0 + dtHist / 2, float(self.p['duration']) - dtHist / 2, dtHist)
+        histBins = np.arange(0, float(self.p['duration']), dtHist)
+        histCenters = np.arange(0 + dtHist / 2, float(self.p['duration']) - dtHist / 2, dtHist)
 
-        FRExc, _ = histogram(self.spikeMonExcT, histBins)
-        FRInh, _ = histogram(self.spikeMonInhT, histBins)
+        FRExc, _ = np.histogram(self.spikeMonExcT, histBins)
+        FRInh, _ = np.histogram(self.spikeMonInhT, histBins)
 
         FRExc = FRExc / dtHist / self.p['nExc']
         FRInh = FRInh / dtHist / self.p['nInh']
@@ -168,7 +116,8 @@ class Results(object):
         self.avgFRExcUnits = spikesPerUnitExc / self.p['duration'] / second
         self.avgFRInhUnits = spikesPerUnitInh / self.p['duration'] / second
 
-    def calculate_voltage_histogram(self, removeMode=False, removeReset=False, useAllRecordedUnits=False, useExcUnits=0, useInhUnits=0):
+    def calculate_voltage_histogram(self, removeMode=False, removeReset=False, useAllRecordedUnits=False,
+                                    useExcUnits=0, useInhUnits=0):
         if useAllRecordedUnits:
             voltageNumpyExc = self.stateMonExcV[:].ravel()
             voltageNumpyInh = self.stateMonInhV[:].ravel()
@@ -179,8 +128,6 @@ class Results(object):
         if removeMode:
             voltageNumpyExcMode, _ = mode(voltageNumpyExc)
             voltageNumpyInhMode, _ = mode(voltageNumpyInh)
-            # keepBoolExc = voltageNumpyExc != voltageNumpyExcMode[0]
-            # keepBoolInh = voltageNumpyInh != voltageNumpyInhMode[0]
             keepBoolExc = ~np.isclose(voltageNumpyExc, voltageNumpyExcMode[0])
             keepBoolInh = ~np.isclose(voltageNumpyInh, voltageNumpyInhMode[0])
             voltageNumpyExc = voltageNumpyExc[keepBoolExc]
@@ -203,8 +150,8 @@ class Results(object):
         voltageHistBins = np.arange(allVoltageNumpy.min(), useMax, .1)
         voltageHistCenters = bins_to_centers(voltageHistBins)
 
-        voltageHistExc, _ = histogram(voltageNumpyExc, voltageHistBins)
-        voltageHistInh, _ = histogram(voltageNumpyInh, voltageHistBins)
+        voltageHistExc, _ = np.histogram(voltageNumpyExc, voltageHistBins)
+        voltageHistInh, _ = np.histogram(voltageNumpyInh, voltageHistBins)
 
         self.voltageHistBins = voltageHistBins
         self.voltageHistCenters = voltageHistCenters
@@ -232,11 +179,11 @@ class Results(object):
             histMaxUDStateDurs = allDurs.max() + dtHistUDStateDurs
         else:
             histMaxUDStateDurs = 5
-        histBinsUDStateDurs = arange(0, histMaxUDStateDurs, dtHistUDStateDurs)
+        histBinsUDStateDurs = np.arange(0, histMaxUDStateDurs, dtHistUDStateDurs)
         histCentersUDStateDurs = bins_to_centers(histBinsUDStateDurs)
 
-        upDurHist, _ = histogram(upDurs, histBinsUDStateDurs)
-        downDurHist, _ = histogram(downDurs, histBinsUDStateDurs)
+        upDurHist, _ = np.histogram(upDurs, histBinsUDStateDurs)
+        downDurHist, _ = np.histogram(downDurs, histBinsUDStateDurs)
 
         self.ups = ups * self.dtHistFR
         self.downs = downs * self.dtHistFR
@@ -261,11 +208,6 @@ class Results(object):
             print('there were no detectable up states')
             return
 
-        # trial limits
-        # if len(self.downDurs) > 0:
-        #     preTrial = -self.downDurs.min()
-        # else:
-        #     preTrial = -0.1
         preTrial = -0.1
         postTrial = self.upDurs.max()
 
@@ -341,13 +283,13 @@ class Results(object):
         upOnsetRelativeSpikeIndicesInhArray = np.concatenate(upOnsetRelativeSpikeIndicesInh)
 
         dtHist = float(5 * ms)
-        histBins = arange(0, self.upDurs.max(), dtHist)
+        histBins = np.arange(0, self.upDurs.max(), dtHist)
         histCenters = bins_to_centers(histBins)
 
-        upstateFRExc, _ = histogram(upOnsetRelativeSpikeTimesExcArray, histBins)
-        upstateFRInh, _ = histogram(upOnsetRelativeSpikeTimesInhArray, histBins)
+        upstateFRExc, _ = np.histogram(upOnsetRelativeSpikeTimesExcArray, histBins)
+        upstateFRInh, _ = np.histogram(upOnsetRelativeSpikeTimesInhArray, histBins)
 
-        upstateCountsAtBin = zeros(histCenters.shape)
+        upstateCountsAtBin = np.zeros(histCenters.shape)
         for binInd, binEdge in enumerate(histCenters):
             upstateCountsAtBin[binInd] = (self.upDurs >= histBins[binInd]).sum()
 
@@ -606,10 +548,9 @@ class Results(object):
         # ax.hlines(useELeak, 0, yVals.max() / 2, color=useColor, ls='--', alpha=0.5)
 
     def plot_voltage_detail(self, ax, unitType='Exc', useStateInd=0, yOffset=0,
-                            plotKicks=False, overrideColor='', **kwargs):
+                            plotKicks=False, overrideColor='', downSampleBy=1, **kwargs):
 
         useLineWidth = 0.5
-        downSampleBy = 1
 
         if 'stateVariableDT' in self.p and 'recordAllVoltage' in self.p and self.p['recordAllVoltage']:
             useDT = self.p['stateVariableDT']
@@ -618,8 +559,6 @@ class Results(object):
 
         # reconstruct the time vector
         stateMonT = np.arange(0, float(self.p['duration']), float(useDT))
-        # stateMonT = np.arange(0, float(self.p['duration']), float(useDT * downSampleBy))
-
 
         if unitType == 'Exc':
             voltageSeries = self.stateMonExcV[useStateInd, ::downSampleBy]
@@ -658,17 +597,17 @@ class Results(object):
         ax.plot(stateMonT, voltageSeries + yOffset, color=useColor, lw=useLineWidth, **kwargs)
 
         if plotKicks and 'kickTimes' in self.p:
-            kickTimes = array(self.p['kickTimes'])
+            kickTimes = np.array(self.p['kickTimes'])
             ax.scatter(kickTimes, np.ones_like(kickTimes) * self.p['eLeakExc'] / mV - 10)
 
         if hasattr(self, 'spikeMonInpCorrI'):
             # spikeDict = convert_indices_times_to_dict(self.poissonCorrInputIndices, self.poissonCorrInputTimes)
-            yOffset = self.p['eLeakExc'] / mV - 10
+            yOffsetLocal = self.p['eLeakExc'] / mV - 10
             yDist = -20
             maxInd = self.spikeMonInpCorrI.max()
             # for unitInd, spikeTimeArray in spikeDict.items():
             ax.scatter(x=self.spikeMonInpCorrT,
-                       y=yOffset + yDist * self.spikeMonInpCorrI / maxInd,
+                       y=yOffsetLocal + yDist * self.spikeMonInpCorrI / maxInd,
                        c=self.spikeMonInpCorrI,
                        cmap='viridis',
                        s=10, marker='.',  # this makes them quite small!
@@ -798,12 +737,12 @@ class ResultsEphys(object):
         self.stateMonInhV = np.array(N.stateMonInh.v / mV, dtype=useDType)
         self.spikeTrainsInh = np.array(N.spikeMonInh.spike_trains(), dtype=object)
 
-        # if self.p['useSecondPopExc']:
-        #     self.spikeMonExc2T = np.array(N.spikeMonExc2.t, dtype=useDType)
-        #     self.spikeMonExc2I = np.array(N.spikeMonExc2.i, dtype=useDType)
-        #     self.spikeMonExc2C = np.array(N.spikeMonExc2.count, dtype=useDType)
-        #     self.stateMonExc2V = np.array(N.stateMonExc2.v / mV, dtype=useDType)
-        #     self.spikeTrainsExc2 = np.array(N.spikeMonExc2.spike_trains(), dtype=object)
+        if 'useSecondPopExc' in self.p and self.p['useSecondPopExc']:
+            self.spikeMonExc2T = np.array(N.spikeMonExc2.t, dtype=useDType)
+            self.spikeMonExc2I = np.array(N.spikeMonExc2.i, dtype=useDType)
+            self.spikeMonExc2C = np.array(N.spikeMonExc2.count, dtype=useDType)
+            self.stateMonExc2V = np.array(N.stateMonExc2.v / mV, dtype=useDType)
+            self.spikeTrainsExc2 = np.array(N.spikeMonExc2.spike_trains(), dtype=object)
 
     def calculate_and_plot(self, f, ax):
         I_ext_range = self.p['iExtRange']
@@ -843,10 +782,10 @@ class ResultsEphys(object):
 
         # ISIExc = diff(self.spikeTrainsExc[()][I_index_for_ISI])
         # ISIInh = diff(self.spikeTrainsInh[()][I_index_for_ISI])
-        ISIExc = diff(self.spikeTrainsExc[I_index_for_ISI])
-        ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
-        ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc')
-        ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh')
+        ISIExc = np.diff(self.spikeTrainsExc[I_index_for_ISI])
+        ISIInh = np.diff(self.spikeTrainsInh[I_index_for_ISI])
+        ax[1, 1].plot(np.arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc')
+        ax[1, 1].plot(np.arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh')
         ax[1, 1].set_xlabel('ISI number')
         ax[1, 1].set_ylabel('ISI (ms)')
         ax[1, 1].legend()
@@ -869,10 +808,6 @@ class ResultsEphys(object):
         # reconstruct time
         stateMonT = np.arange(0, float(self.p['duration']), float(self.p['dt']))
 
-        # might be useful...
-        # ax.axhline(useThresh, color=useColor, linestyle=':')  # Threshold
-        # ax.axhline(self.p['eLeak' + unitType] / mV, color=useColor, linestyle='--')  # Resting
-
         useYMin = -5
         useYMax = 65
         useSpikeAmp = 55
@@ -885,10 +820,6 @@ class ResultsEphys(object):
         useThreshInh = self.p['vThreshInh'] / mV
 
         for iDummy, iIndexToPlot in enumerate(iIndicesToPlot):
-            # excSubColor = excColors[iDummy]
-            # exc2SubColor = exc2Colors[iDummy]
-            # inhSubColor = inhColors[iDummy]
-
             excSubColor = excColor
             inhSubColor = inhColor
 
@@ -904,18 +835,13 @@ class ResultsEphys(object):
 
         ax[1, 0].plot(I_ext_range * 1e9, ExcData, label='Exc', color=excColor)
         ax[1, 0].plot(I_ext_range * 1e9, InhData, label='Inh', color=inhColor)
-        # ax[1, 0].axvline(float(I_ext_range[I_index_for_ISI]) * 1e9,
-        #                  label='displayed value', color='grey', ls='--')
         ax[1, 0].set_xlabel('Current (nA)')
         ax[1, 0].set_ylabel('Firing Rate (Hz)')
-        # ax[1, 0].legend()
 
-        # ISIExc = diff(self.spikeTrainsExc[()][I_index_for_ISI])
-        # ISIInh = diff(self.spikeTrainsInh[()][I_index_for_ISI])
-        ISIExc = diff(self.spikeTrainsExc[I_index_for_ISI])
-        ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
-        ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc', color=excColor)
-        ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh', color=inhColor)
+        ISIExc = np.diff(self.spikeTrainsExc[I_index_for_ISI])
+        ISIInh = np.diff(self.spikeTrainsInh[I_index_for_ISI])
+        ax[1, 1].plot(np.arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc', color=excColor)
+        ax[1, 1].plot(np.arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh', color=inhColor)
         ax[1, 1].set_xlabel('ISI number')
         ax[1, 1].set_ylabel('ISI (ms)')
         ax[1, 1].legend()
@@ -940,10 +866,6 @@ class ResultsEphys(object):
         # reconstruct time
         stateMonT = np.arange(0, float(self.p['duration']), float(self.p['dt']))
 
-        # might be useful...
-        # ax.axhline(useThresh, color=useColor, linestyle=':')  # Threshold
-        # ax.axhline(self.p['eLeak' + unitType] / mV, color=useColor, linestyle='--')  # Resting
-
         useYMin = -78
         useYMax = 2
         useSpikeAmp = -20
@@ -957,27 +879,7 @@ class ResultsEphys(object):
         useThreshExc2 = self.p['vThreshExc2'] / mV
         useThreshInh = self.p['vThreshInh'] / mV
 
-        # excColors = ('lightgreen', 'green', 'darkgreen')
-        # exc2Colors = ('paleturquoise', 'turquoise', 'darkturquoise')
-        # inhColors = ('tomato', 'red', 'darkred')
-
-        # excColors = ('cyan', 'darkorange', 'darkgoldenrod', 'mediumaquamarine')
-        # exc2Colors = ('blue', 'olive', 'lightseagreen', 'royalblue')
-        # inhColors = ('red', 'mediumslateblue', 'purple', 'crimson')
-
-        # excColors = ('#00FFFF', '#FF4000', '#FFBF00', '#8000FF')
-        # exc2Colors = ('#0000FF', '#FF8000', '#FFFF00', '#FF00FF')
-        # inhColors = ('#FF0000', '#00FF00', '#0000FF', '#FF8000')
-
-        # excColors = ('#00FFFF', '#0000FF', '#00FF00')
-        # exc2Colors = ('#0000FF', '#8000FF', '#00FFFF')
-        # inhColors = ('#FF0000', '#FF4000', '#FF0080')
-
         for iDummy, iIndexToPlot in enumerate(iIndicesToPlot):
-            # excSubColor = excColors[iDummy]
-            # exc2SubColor = exc2Colors[iDummy]
-            # inhSubColor = inhColors[iDummy]
-
             excSubColor = excColor
             exc2SubColor = exc2Color
             inhSubColor = inhColor
@@ -1000,20 +902,15 @@ class ResultsEphys(object):
         ax[1, 0].plot(I_ext_range * 1e9, ExcData, label='Exc', color=excColor)
         ax[1, 0].plot(I_ext_range * 1e9, Exc2Data, label='Exc22', color=exc2Color)
         ax[1, 0].plot(I_ext_range * 1e9, InhData, label='Inh', color=inhColor)
-        # ax[1, 0].axvline(float(I_ext_range[I_index_for_ISI]) * 1e9,
-        #                  label='displayed value', color='grey', ls='--')
         ax[1, 0].set_xlabel('Current (nA)')
         ax[1, 0].set_ylabel('Firing Rate (Hz)')
-        # ax[1, 0].legend()
 
-        # ISIExc = diff(self.spikeTrainsExc[()][I_index_for_ISI])
-        # ISIInh = diff(self.spikeTrainsInh[()][I_index_for_ISI])
-        ISIExc = diff(self.spikeTrainsExc[I_index_for_ISI])
-        ISIExc2 = diff(self.spikeTrainsExc2[I_index_for_ISI])
-        ISIInh = diff(self.spikeTrainsInh[I_index_for_ISI])
-        ax[1, 1].plot(arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc', color=excColor)
-        ax[1, 1].plot(arange(1, len(ISIExc2) + 1), ISIExc2 * 1000, label='Exc2', color=exc2Color)
-        ax[1, 1].plot(arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh', color=inhColor)
+        ISIExc = np.diff(self.spikeTrainsExc[I_index_for_ISI])
+        ISIExc2 = np.diff(self.spikeTrainsExc2[I_index_for_ISI])
+        ISIInh = np.diff(self.spikeTrainsInh[I_index_for_ISI])
+        ax[1, 1].plot(np.arange(1, len(ISIExc) + 1), ISIExc * 1000, label='Exc', color=excColor)
+        ax[1, 1].plot(np.arange(1, len(ISIExc2) + 1), ISIExc2 * 1000, label='Exc2', color=exc2Color)
+        ax[1, 1].plot(np.arange(1, len(ISIInh) + 1), ISIInh * 1000, label='Inh', color=inhColor)
         ax[1, 1].set_xlabel('ISI number')
         ax[1, 1].set_ylabel('ISI (ms)')
         ax[1, 1].legend()

@@ -1,8 +1,4 @@
-from params import (paramsJercog, paramsJercogEphysOrig, paramsJercogEphysBuono, paramsJercogEphysBuono2,
-                    paramsJercogEphysBuono3, paramsJercogEphysBuono4, paramsJercogEphysBuono5, paramsJercogEphysBuono6,
-                    paramsJercogEphysBuono7, paramsJercogEphysBuono8,
-                    paramsJercogEphysBuonoBen11, paramsJercogEphysBuonoBen21,
-                    paramsJercogEphysBuono22, paramsJercogBen)
+from params import paramsJercog, paramsJercogEphysBuono
 from network import JercogEphysNetwork
 from results import ResultsEphys
 import matplotlib.pyplot as plt
@@ -14,34 +10,25 @@ matplotlib.rcParams['ps.fonttype'] = 42
 
 USE_NEW_EPHYS_PARAMS = False
 
-useParams = paramsJercog.copy()
+p = paramsJercog.copy()
 
 # remove protected keys from the dict whose params are being imported
-# ephysParams = paramsJercogEphysOrig.copy()
-# ephysParams = paramsJercogBen.copy()
-# ephysParams = paramsJercogEphysBuono.copy()
-# ephysParams = paramsJercogEphysBuono2.copy()
-# ephysParams = paramsJercogEphysBuono3.copy()
-# ephysParams = paramsJercogEphysBuono6.copy()
-ephysParams = paramsJercogEphysBuono8.copy()
-# ephysParams = paramsJercogEphysBuonoBen11.copy()
-# ephysParams = paramsJercogEphysBuonoBen21.copy()
-# ephysParams = paramsJercogEphysBuono22.copy()
+ephysParams = paramsJercogEphysBuono.copy()
 protectedKeys = ('nUnits', 'propInh', 'duration')
 for pK in protectedKeys:
     del ephysParams[pK]
 
 if USE_NEW_EPHYS_PARAMS:
-    useParams.update(ephysParams)
+    p.update(ephysParams)
 
-useParams['propInh'] = 0.5
-useParams['baselineDur'] = 100 * ms
-useParams['iDur'] = 250 * ms
-useParams['afterDur'] = 100 * ms
-useParams['iExtRange'] = np.linspace(-.1, .3, 301) * nA
-useParams['useSecondPopExc'] = False
+p['propInh'] = 0.5
+p['baselineDur'] = 100 * ms
+p['iDur'] = 250 * ms
+p['afterDur'] = 100 * ms
+p['iExtRange'] = np.linspace(-.1, .3, 301) * nA
+p['useSecondPopExc'] = False
 
-JEN = JercogEphysNetwork(useParams)
+JEN = JercogEphysNetwork(p)
 JEN.build_classic()
 JEN.run()
 JEN.save_results()
@@ -73,4 +60,4 @@ else:
 
 SAVE_PLOT = True
 if SAVE_PLOT:
-    fig1.savefig(useParams['paramSet'] + 'Ephys.pdf', transparent=True)
+    fig1.savefig(p['paramSet'] + 'Ephys.pdf', transparent=True)

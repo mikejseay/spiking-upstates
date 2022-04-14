@@ -1,9 +1,8 @@
-from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV, second
+from brian2 import defaultclock, ms, seed, mV, second
 from params import paramsJercog as p
-from params import (paramsJercogEphysBuono22, paramsJercogEphysBuono4, paramsJercogEphysBuono5, paramsJercogEphysBuono6,
-                    paramsJercogEphysBuono7, paramsJercogEphysBuono7InfUp)
+from params import paramsJercogEphysBuono
 import numpy as np
-from generate import convert_kicks_to_current_series, norm_weights, weight_matrix_from_flat_inds_weights, square_bumps
+from generate import convert_kicks_to_current_series,  weight_matrix_from_flat_inds_weights
 from trainer import JercogTrainer
 from results import Results
 import matplotlib.pyplot as plt
@@ -13,7 +12,7 @@ rngSeed = None
 defaultclock.dt = p['dt']
 
 p['useNewEphysParams'] = True
-ephysParams = paramsJercogEphysBuono7.copy()
+ephysParams = paramsJercogEphysBuono.copy()
 # ephysParams = paramsJercogEphysBuono7InfUp.copy()
 p['useSecondPopExc'] = False
 

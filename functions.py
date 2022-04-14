@@ -5,6 +5,10 @@ general functions that can't be categorized easily
 import numpy as np
 
 
+def bins_to_centers(bins):
+    return (bins[:-1] + bins[1:]) / 2
+
+
 def find_upstates(v, dt, v_thresh, dur_thresh=None, extension_thresh=None, last_up_must_end=True):
     # given 1d signal, returns indices of on-sets and off-sets of "upstates"
 
@@ -97,16 +101,3 @@ def find_upstates(v, dt, v_thresh, dur_thresh=None, extension_thresh=None, last_
 
     return ups, downs
 
-
-# inputFile = 'C:\\Users\\mikejseay\\Documents\\Code\\volo-2019-updown-FR.npy'
-#
-# with open(inputFile, 'rb') as f:
-#     FRExc = np.load(f)
-#     FRInh = np.load(f)
-#
-# dtHist = 0.005  # seconds
-# V_THRESH = 0.2  # Hz
-# MIN_UPSTATE_DUR = 0.3  # seconds
-# MIN_DOWNSTATE_DUR = 0.3  # seconds
-#
-# myUps, myDowns = find_upstates(FRInh, dtHist, V_THRESH, MIN_UPSTATE_DUR, MIN_DOWNSTATE_DUR)

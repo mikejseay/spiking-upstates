@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from stats import moving_average, regress_linear, remove_outliers
 from generate import weight_matrix_from_flat_inds_weights
-from plot import weight_matrix
+from plotting import weight_matrix
 from results import Results
 
 

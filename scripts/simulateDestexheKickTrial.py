@@ -1,6 +1,5 @@
 from brian2 import defaultclock, ms, pA, nA, Hz, seed, mV, second, uS
 from params import paramsDestexhe as p
-from params import paramsDestexheEphysBuono, paramsDestexheEphysOrig
 import numpy as np
 from generate import convert_kicks_to_current_series, norm_weights, weight_matrix_from_flat_inds_weights, square_bumps
 from trainer import DestexheTrainer
