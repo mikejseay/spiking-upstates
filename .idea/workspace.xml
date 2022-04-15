@@ -3,76 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="c50fe96e-73b6-429f-aab6-173e82858304" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateDestexheNMDAFanIn.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateDestexheNMDATest.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateDestexheNMDAUpCrit.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateDestexheNMDAUpCrit2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateDestexheNMDAUpstates.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCrit.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCrit2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/NMDA_stash/simulateJercogNMDAUpCritCellNotSyn.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/analysis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/analysis_scratch.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analyze.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analyzeJercogUpPoisson.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analyze_old.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/analyze_simple.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/compare_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/compare_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ephys_stash/analyze_ephys.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ephys_stash/benEphys1.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ephys_stash/simulateDestexheEphys.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateDestexheEphys.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ephys_stash/simulateJercogEphys.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateJercogEphys.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/generate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/network.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/actual-balance.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/ben_ephys_expt.jasp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/ben_ephys_expt2.jasp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/modify-connectivity.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/paradoxPSTHResults.jasp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/parameters.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/plots_complete/benEphys1Raster.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/plots_complete/benEphys1Voltage.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/plots_complete/benEphys2Violin.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/plots_complete/benEphys2Voltage.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/plots_complete/benEphys3Violin.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/plots_complete/benEphys3Voltage.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/plots_complete/benEphys3Weights.pdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/seedResults.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/seedResultsLims.jasp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/seedResultsLims.jasp.tmp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/seedResultsLimsNoCHLocal.jasp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/seedResultsLimsNoCHLocal.jasp.tmp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021-bk.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021-movie-CH-local-fail.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021-movie.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021-movie.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/spiking-upstates-dev-2021-plotBK.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/statsmodels-demos.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/notebooks/tex-format.ipynb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/old_stash/simulateDestexheOld.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/old_stash/simulateJercogOld.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/params.py" beforeDir="false" afterPath="$PROJECT_DIR$/params.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/plotting.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/results.py" beforeDir="false" afterPath="$PROJECT_DIR$/results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/seed_files.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateDestexhe.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateDestexheFanIn.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateDestexheUpCrit.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateDestexheUpCrit2.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateDestexheKickTrial.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateDestexheUpCritMultiMeta.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateDestexheUpLearn.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercog.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogFanIn.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogParadox.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateJercogParadox.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpCrit.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpCrit2.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateJercogKickTrial.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpCritMulti.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpCritMultiMeta.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpLearn.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpLearn2.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateJercogUpLearn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/simulateJercogUpPoisson.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateJercogUpPoisson.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stats.py" beforeDir="false" afterPath="$PROJECT_DIR$/stats.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/simulateDestexheKickTrial.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateDestexheKickTrial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/simulateJercogEphys.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateJercogEphys.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/simulateJercogKickTrial.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateJercogKickTrial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/simulateJercogParadox.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateJercogParadox.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/simulateJercogUpPoisson.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/simulateJercogUpPoisson.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,7 +62,7 @@
       <recent name="C:\Users\mikejseay\PycharmProjects\spiking-upstates" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.simulateJercogUpPoisson (1)">
+  <component name="RunManager" selected="Python.simulateJercogKickTrial (1)">
     <configuration name="analysis_scratch" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="spiking-upstates" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -190,24 +126,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="simulateDestexheEphys" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="spiking-upstates" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/simulateDestexheEphys.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="simulateDestexheKickTrial" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="spiking-upstates" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -254,9 +172,6 @@
       <module name="spiking-upstates" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -264,7 +179,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/simulateJercogEphys.py" />
       <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
       <option name="REDIRECT_INPUT" value="false" />
@@ -284,6 +199,24 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="C:\Users\mikejseay\PycharmProjects\spiking-upstates\scripts\simulateJercogEphys.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="simulateJercogKickTrial (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="spiking-upstates" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/simulateJercogKickTrial.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -394,6 +327,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="simulateJercogUpLearn (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="spiking-upstates" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/simulateJercogUpLearn.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="simulateJercogUpLearn" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="spiking-upstates" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -481,21 +435,22 @@
       <item itemvalue="Python.simulateJercogUpCritMultiMeta" />
       <item itemvalue="Python.simulateJercogUpLearn2" />
       <item itemvalue="Python.simulateJercogUpPoisson" />
-      <item itemvalue="Python.simulateDestexheEphys" />
       <item itemvalue="Python.simulateJercogEphys (1)" />
       <item itemvalue="Python.simulateJercogParadox" />
       <item itemvalue="Python.simulateJercogUpLearn2 (1)" />
       <item itemvalue="Python.simulateJercogUpPoisson (1)" />
       <item itemvalue="Python.simulateDestexheKickTrial" />
       <item itemvalue="Python.simulateJercogKickTrial" />
+      <item itemvalue="Python.simulateJercogUpLearn (1)" />
+      <item itemvalue="Python.simulateJercogKickTrial (1)" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.simulateJercogKickTrial" />
+        <item itemvalue="Python.simulateJercogKickTrial (1)" />
         <item itemvalue="Python.simulateJercogEphys (1)" />
-        <item itemvalue="Python.simulateDestexheKickTrial" />
-        <item itemvalue="Python.simulateDestexheEphys" />
+        <item itemvalue="Python.simulateJercogUpLearn (1)" />
         <item itemvalue="Python.simulateJercogKickTrial" />
+        <item itemvalue="Python.simulateDestexheKickTrial" />
       </list>
     </recent_temporary>
   </component>
@@ -529,14 +484,22 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="679" y="150" key="#simulateJercogEphys/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1644948507522" />
+    <state x="679" y="146" key="#simulateJercogEphys_(1)" timestamp="1649978722456">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="679" y="146" key="#simulateJercogEphys_(1)/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649978722456" />
     <state x="679" y="146" key="#simulateJercogFanIn" timestamp="1643818871354">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="679" y="146" key="#simulateJercogFanIn/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1643818871354" />
-    <state x="679" y="146" key="#simulateJercogParadox" timestamp="1649971660647">
+    <state x="679" y="146" key="#simulateJercogKickTrial_(1)" timestamp="1649978781100">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="679" y="146" key="#simulateJercogParadox/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649971660647" />
+    <state x="679" y="146" key="#simulateJercogKickTrial_(1)/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649978781100" />
+    <state x="679" y="146" key="#simulateJercogParadox" timestamp="1649978792713">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="679" y="146" key="#simulateJercogParadox/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649978792713" />
     <state x="679" y="146" key="#simulateJercogUpCrit2" timestamp="1644948989140">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -557,22 +520,22 @@
       <screen x="1920" y="0" width="1920" height="1040" />
     </state>
     <state x="2141" y="236" width="960" height="442" key="#xdebugger.evaluate/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1647540591643" />
-    <state width="1921" height="300" key="GridCell.Tab.0.bottom" timestamp="1649971839334">
+    <state width="1921" height="328" key="GridCell.Tab.0.bottom" timestamp="1649978782969">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="300" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649971839334" />
-    <state width="1921" height="300" key="GridCell.Tab.0.center" timestamp="1649971839334">
+    <state width="1921" height="328" key="GridCell.Tab.0.bottom/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649978782969" />
+    <state width="1921" height="328" key="GridCell.Tab.0.center" timestamp="1649978782969">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="300" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649971839334" />
-    <state width="1921" height="300" key="GridCell.Tab.0.left" timestamp="1649971839334">
+    <state width="1921" height="328" key="GridCell.Tab.0.center/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649978782969" />
+    <state width="1921" height="328" key="GridCell.Tab.0.left" timestamp="1649978782969">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="300" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649971839334" />
-    <state width="1921" height="300" key="GridCell.Tab.0.right" timestamp="1649971839334">
+    <state width="1921" height="328" key="GridCell.Tab.0.left/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649978782969" />
+    <state width="1921" height="328" key="GridCell.Tab.0.right" timestamp="1649978782969">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1921" height="300" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649971839334" />
+    <state width="1921" height="328" key="GridCell.Tab.0.right/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1649978782969" />
     <state x="2007" y="168" key="SettingsEditor" timestamp="1644907465965">
       <screen x="1920" y="0" width="1920" height="1040" />
     </state>
@@ -687,11 +650,6 @@
           <url>file://$PROJECT_DIR$/trainer.py</url>
           <line>82</line>
           <option name="timeStamp" value="545" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/scripts/simulateDestexheKickTrial.py</url>
-          <line>138</line>
-          <option name="timeStamp" value="556" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/scripts/simulateJercogUpCritMultiMeta.py</url>

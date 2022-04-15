@@ -13,7 +13,7 @@ USE_NEW_EPHYS_PARAMS = False
 p = paramsJercog.copy()
 
 # remove protected keys from the dict whose params are being imported
-ephysParams = paramsJercogEphysBuono.copy()
+ephysParams = paramsJercog.copy()
 protectedKeys = ('nUnits', 'propInh', 'duration')
 for pK in protectedKeys:
     del ephysParams[pK]

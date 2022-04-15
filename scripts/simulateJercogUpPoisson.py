@@ -297,42 +297,19 @@ if len(R.ups) > 0:
         R.upstateFRExcHist.mean(), R.upstateFRInhHist.mean(), R.upDurs.mean(), R.ups.size / R.p['duration'] / Hz)
     print(infoStr)
 
-# calculate the best 2 E and single I units based on smallest STD during Up state
-if R.ups.size > 0:
-    checkDT = R.p['duration'] / R.stateMonExcV.shape[1]
-    useInwardBy = 50 * ms
-    takeTimeInds = []
-    for upstateInd in range(len(R.ups)):
-        startInd = int((R.ups[upstateInd] * second + useInwardBy) / checkDT)
-        endInd = int((R.downs[upstateInd] * second - useInwardBy) / checkDT)
-        takeTimeInds.extend(list(range(startInd, endInd)))
-
-    # now cut out
-    voltArrayExc = R.stateMonExcV[:, takeTimeInds]
-    voltArrayInh = R.stateMonInhV[:, takeTimeInds]
-    voltArrayExcStd = voltArrayExc.std(1)
-    voltArrayInhStd = voltArrayInh.std(1)
-    smoothExcList = np.argsort(voltArrayExcStd)
-    smoothInhList = np.argsort(voltArrayInhStd)
-    if p['manipulateConnectivity']:
-        smoothEx2List = smoothExcList[np.where(np.logical_and(smoothExcList >= startIndExc2, smoothExcList < endIndExc2))]
-else:
-    smoothExcList = [0, 1, 2]
-    smoothInhList = [0, 1, 2]
-
 fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(16, 9),
                          gridspec_kw={'height_ratios': [3, 1, 1, 1, 1]},
                          sharex=True)
 R.plot_spike_raster(ax1[0])  # uses RNG but with a separate random seed
 R.plot_firing_rate(ax1[1])
 ax1[1].set_ylim(0, 30)
-R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=smoothExcList[0], yOffset=yOffset)
-R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=smoothInhList[0], yOffset=yOffset)
+R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=0, yOffset=yOffset)
+R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=0, yOffset=yOffset)
 if p['manipulateConnectivity']:
-    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=smoothEx2List[0], yOffset=yOffset,
+    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=1, yOffset=yOffset,
                           overrideColor='royalblue')
 else:
-    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=smoothExcList[1], yOffset=yOffset)
+    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=1, yOffset=yOffset)
 R.plot_updur_lines(ax1[2])
 R.plot_updur_lines(ax1[3])
 R.plot_updur_lines(ax1[4])
@@ -341,22 +318,6 @@ R.plot_voltage_histogram_sideways(ax1[2], 'Exc')
 R.plot_voltage_histogram_sideways(ax1[3], 'Inh')
 R.plot_voltage_histogram_sideways(ax1[4], 'Exc')
 fig1.suptitle(R.p['simName'])
-
-if p['manipulateConnectivity']:
-    # plot the average voltage for Ex1 and Ex2
-    f, ax = plt.subplots(2, 1, sharex=True, sharey=True)
-    timeVoltage = np.arange(0, R.p['duration'], R.p['stateVariableDT'])
-    Ex1Avg = R.stateMonExcV[endIndExc2:, :].mean(0)
-    Ex2Avg = R.stateMonExcV[startIndExc2:endIndExc2, :].mean(0)
-    ax[0].plot(timeVoltage, Ex1Avg, label='Ex1', color='cyan')
-    ax[1].plot(timeVoltage, Ex2Avg, label='Ex2', color='royalblue')
-    ax[1].legend()
-
-    # plot the correlation matrix, fuck it
-    rhoUpExc = R.rhoUpExc.copy()
-    rhoUpExc[np.diag_indices_from(rhoUpExc)] = np.nan
-    f, ax = plt.subplots()
-    plotting.weight_matrix(ax, rhoUpExc)
 
 if hasattr(R, 'upstateFRExcUnits'):
     frInp = R.upstateFRExcUnits[:, :R.p['nUnitsToSpike']].mean(0)  # input pop
@@ -370,25 +331,3 @@ if hasattr(R, 'upstateFRExcUnits'):
     frInhHat = frInh.mean()
 
     print(frInpHat, frEx2Hat, frEx1Hat, frInhHat, )
-# fig2, ax2 = plt.subplots(8, 1, num=2, figsize=(16, 11), sharex=True)
-# R.plot_voltage_detail(ax2[0], unitType='Exc', useStateInd=0, yOffset=yOffset)
-# R.plot_voltage_detail(ax2[1], unitType='Exc', useStateInd=1, yOffset=yOffset)
-# R.plot_voltage_detail(ax2[2], unitType='Exc', useStateInd=2, yOffset=yOffset)
-# R.plot_voltage_detail(ax2[3], unitType='Exc', useStateInd=3, yOffset=yOffset)
-# R.plot_voltage_detail(ax2[4], unitType='Exc', useStateInd=4, yOffset=yOffset)
-# R.plot_voltage_detail(ax2[5], unitType='Exc', useStateInd=5, yOffset=yOffset)
-# R.plot_voltage_detail(ax2[6], unitType='Inh', useStateInd=0, yOffset=yOffset)
-# R.plot_voltage_detail(ax2[7], unitType='Inh', useStateInd=1, yOffset=yOffset)
-# ax2[6].set(xlabel='Time (s)')
-# R.plot_voltage_histogram_sideways(ax2[0], 'Exc')
-# R.plot_voltage_histogram_sideways(ax2[7], 'Inh')
-# fig1.suptitle(R.p['simName'])
-
-'''
-plt.close('all')
-# fig1, ax1 = plt.subplots(2, 1, num=1, figsize=(10, 9), gridspec_kw={'height_ratios': [3, 1]}, sharex=True)
-fig1, ax1 = plt.subplots(2, 1, num=1, figsize=(5, 5), sharex=True)
-R.plot_spike_raster(ax1[0], downSampleUnits=True)
-R.plot_firing_rate(ax1[1])
-fig1.savefig(targetPath + targetFile + '_spikes.tif')
-'''

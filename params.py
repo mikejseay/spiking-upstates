@@ -72,11 +72,6 @@ paramsJercog = {
     'betaAdaptInh': 0 * nA * ms,  # 'adaptStrengthInh': 0 * mV,
     # i think it's supposed to be 15 mV * 10 nS * 20 (membrane tau) = 3 nA...
 
-    # synaptic params
-    # 'jEE': 280 * mV,
-    # 'jEI': 70 * mV,
-    # 'jIE': 500 * mV,
-    # 'jII': 100 * mV,
     'jEE': 2.8 * nA,  # 280 mV * 10 nS
     'jEI': 0.7 * nA,  # 70 mV * 10 nS
     'jIE': 5 * nA,  # 500 mV * 10 nS
@@ -95,66 +90,6 @@ paramsJercog = {
 
 paramsJercog['nIncInh'] = int(paramsJercog['propInh'] * paramsJercog['nUnits'])
 paramsJercog['nIncExc'] = paramsJercog['nUnits'] - paramsJercog['nIncInh']
-
-paramsJercogEphysOrig = {
-    # save / figs
-    'saveFolder': 'C:/Users/mikejseay/Documents/BrianResults/ephys/',
-    'simName': 'classicJercogEphysOrig',
-    'paramSet': 'classicJercogEphys',
-    'saveWithDate': True,
-
-    # global sim params
-    'dt': 0.1 * ms,
-    'duration': 250 * ms,
-    # 'updateMethod': 'exact',
-    'reportType': 'stdout',
-    'reportPeriod': 10 * second,
-    'doProfile': False,
-
-    # recording parameters
-    'propSpikemon': 1,
-    'recordStateVariables': ['v', ],  # ['v', 'w', 'ge', 'gi'],
-    'indsRecordStateExc': [0, ],
-    'indsRecordStateInh': [0, ],
-
-    # network params
-    'nUnits': 2,  # ***
-    'propInh': 0.5,
-
-    # unit params
-    'eLeakExc': -58.9 * mV,  # 'eLeakExc': 7.6 * mV,
-    'eLeakInh': -60 * mV,  # 'eLeakInh': 6.5 * mV,
-    'vResetExc': -52.5 * mV,  # 'vResetExc': 14 * mV,
-    'vResetInh': -52.5 * mV,  # 'vResetInh': 14 * mV,
-    'vThreshExc': -46.5 * mV,  # 'vThreshExc': 20 * mV,
-    'vThreshInh': -46.5 * mV,  # 'vThreshInh': 20 * mV,
-    'adaptTau': 500 * ms,  # 'adaptTau': 500 * ms,
-    'betaAdaptExc': 3 * nA * ms,  # 'adaptStrengthExc': 15 * mV, ... no idea! 3 or 4?
-    'betaAdaptInh': 0 * nA * ms,  # 'adaptStrengthInh': 0 * mV,
-    'refractoryPeriod': 0 * ms,  # 'refractoryPeriod': 0 * ms,
-    'membraneCapacitanceExc': 200 * pF,
-    'membraneCapacitanceInh': 100 * pF,
-    'gLeakExc': 10 * nS,
-    'gLeakInh': 10 * nS,
-
-    # ephys params
-    'iExtRange': np.linspace(0, .3, 31) * nA,
-    'iDur': 250 * ms,
-
-    # synaptic params
-    # 'jEE': 280 * mV,
-    # 'jEI': 70 * mV,
-    # 'jIE': 500 * mV,
-    # 'jII': 100 * mV,
-    'tauRiseExc': 8 * ms,
-    'tauFallExc': 23 * ms,
-    'tauRiseInh': 1 * ms,
-    'tauFallInh': 1 * ms,
-    'delayExc': 1 * ms,
-    'delayInh': 0.5 * ms,
-    'scaleWeightsByPConn': True,
-
-}
 
 paramsJercogEphysBuono = {
     # save / figs
@@ -214,12 +149,6 @@ paramsJercogEphysBuono = {
     'gLeakInh': 8 * nS,  # so it's the same between the two
 
     # ephys params
-
-    # synaptic params
-    # 'jEE': 280 * mV,
-    # 'jEI': 70 * mV,
-    # 'jIE': 500 * mV,
-    # 'jII': 100 * mV,
 
     'jEE': 2.8 * nA,
     'jEI': 0.7 * nA,

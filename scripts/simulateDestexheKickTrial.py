@@ -152,31 +152,17 @@ if len(R.ups) > 0:
 R.calculate_voltage_histogram(removeMode=True)
 R.reshape_upstates()
 
-# calculate the best 2 E and single I units based on smallest STD during Up state
-if R.ups.size > 0:
-    upStartInd = int(R.ups[0] * second / p['stateVariableDT'])
-    upEndInd = int(R.downs[0] * second / p['stateVariableDT'])
-    voltArrayExc = (DT.JN.stateMonExc.v / mV)[:, upStartInd:upEndInd]
-    voltArrayInh = (DT.JN.stateMonInh.v / mV)[:, upStartInd:upEndInd]
-    voltArrayExcStd = voltArrayExc.std(1)
-    voltArrayInhStd = voltArrayInh.std(1)
-    smoothExcList = np.argsort(voltArrayExcStd)
-    smoothInhList = np.argsort(voltArrayInhStd)
-else:
-    smoothExcList = [0, 1, 2]
-    smoothInhList = [0, 1, 2]
-
 fig1, ax1 = plt.subplots(5, 1, num=1, figsize=(6, 9),
                          gridspec_kw={'height_ratios': [3, 2, 1, 1, 1]},
                          sharex=True)
 R.plot_spike_raster(ax1[0], downSampleUnits=False)  # uses RNG but with a separate random seed
 R.plot_firing_rate(ax1[1])
 ax1[1].set_ylim(0, 30)
-R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=smoothExcList[0])
+R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=0)
 R.plot_updur_lines(ax1[2])
-R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=smoothInhList[0])
+R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=0)
 R.plot_updur_lines(ax1[3])
-R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=smoothExcList[1])
+R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=1)
 R.plot_updur_lines(ax1[4])
 ax1[3].set(xlabel='Time (s)')
 R.plot_voltage_histogram_sideways(ax1[2], 'Exc')

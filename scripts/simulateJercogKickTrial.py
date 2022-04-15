@@ -249,35 +249,20 @@ if len(R.ups) > 0:
 
 R.calculate_voltage_histogram(removeMode=True)
 
-# calculate the best 2 E and single I units based on smallest STD during Up state
-if R.ups.size > 0:
-    upStartInd = int(R.ups[0] * second / p['stateVariableDT'])
-    upEndInd = int(R.downs[0] * second / p['stateVariableDT'])
-    voltArrayExc = (JT.JN.stateMonExc.v / mV)[:, upStartInd:upEndInd]
-    voltArrayInh = (JT.JN.stateMonInh.v / mV)[:, upStartInd:upEndInd]
-    voltArrayExcStd = voltArrayExc.std(1)
-    voltArrayInhStd = voltArrayInh.std(1)
-    smoothExcList = np.argsort(voltArrayExcStd)
-    smoothInhList = np.argsort(voltArrayInhStd)
-else:
-    smoothExcList = [0, 1, 2]
-    smoothInhList = [0, 1, 2]
-
 fig1, ax1 = plt.subplots(5, 1, figsize=(6, 9),
                          gridspec_kw={'height_ratios': [3, 2, 1, 1, 1]},
                          sharex=True)
 R.plot_spike_raster(ax1[0], downSampleUnits=False)  # uses RNG but with a separate random seed
 R.plot_firing_rate(ax1[1])
 ax1[1].set_ylim(0, 30)
-R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=smoothExcList[0])
+R.plot_voltage_detail(ax1[2], unitType='Exc', useStateInd=0)
 R.plot_updur_lines(ax1[2])
-R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=smoothInhList[0])
+R.plot_voltage_detail(ax1[3], unitType='Inh', useStateInd=0)
 R.plot_updur_lines(ax1[3])
 if p['manipulateConnectivity']:
-    smoothEx2List = smoothExcList[np.where(np.logical_and(smoothExcList >= startIndExc2, smoothExcList < endIndExc2))]
-    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=smoothEx2List[0], overrideColor='royalblue')
+    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=1, overrideColor='royalblue')
 else:
-    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=smoothExcList[1])
+    R.plot_voltage_detail(ax1[4], unitType='Exc', useStateInd=1)
 R.plot_updur_lines(ax1[4])
 ax1[3].set(xlabel='Time (s)')
 R.plot_voltage_histogram_sideways(ax1[2], 'Exc')
@@ -289,44 +274,9 @@ totalSpikes = R.spikeMonExcI.size
 if uniqueSpikers > 0:
     print(uniqueSpikers, 'neurons fired an average of', totalSpikes / uniqueSpikers, 'spikes')
 
-
-if p['useSecondPopExc']:
-    fig2, ax2 = plt.subplots(6, 1, figsize=(6, 9),
-                             gridspec_kw={'height_ratios': [3, 2, 1, 1, 1, 1]},
-                             sharex=True)
-    R.plot_spike_raster(ax2[0], downSampleUnits=False)  # uses RNG but with a separate random seed
-    R.plot_firing_rate(ax2[1])
-    ax2[1].set_ylim(0, 30)
-    R.plot_voltage_detail(ax2[2], unitType='Exc', useStateInd=smoothExcList[smoothExcList < p['nUnitsToSpike']][0])
-    R.plot_updur_lines(ax2[2])
-    R.plot_voltage_detail(ax2[3], unitType='Exc', useStateInd=smoothExcList[0])
-    R.plot_updur_lines(ax2[3])
-    # smoothExcList[np.logical_and(smoothExcList >= startIndExc2, smoothExcList < endIndExc2)][0]
-    R.plot_voltage_detail(ax2[4], unitType='Exc', useStateInd=p['nUnitsSecondPopExc'])
-    R.plot_updur_lines(ax2[4])
-    R.plot_voltage_detail(ax2[5], unitType='Inh', useStateInd=smoothInhList[0])
-    R.plot_updur_lines(ax2[5])
-    ax2[5].set(xlabel='Time (s)')
-    R.plot_voltage_histogram_sideways(ax2[2], 'Exc')
-    R.plot_voltage_histogram_sideways(ax2[5], 'Inh')
-    fig2.suptitle(R.p['simName'])
-    uniqueSpikers = np.unique(R.spikeMonExcI).size
-    totalSpikes = R.spikeMonExcI.size
-    print(uniqueSpikers, 'neurons fired an average of', totalSpikes / uniqueSpikers, 'spikes')
-
 R.reshape_upstates()
 R.calculate_upFR_units()
 R.calculate_upCorr_units()
-
-if p['manipulateConnectivity']:
-    # plot the average voltage for Ex1 and Ex2
-    f, ax = plt.subplots(2, 1, sharex=True, sharey=True)
-    timeVoltage = np.arange(0, R.p['duration'], R.p['stateVariableDT'])
-    Ex1Avg = R.stateMonExcV[endIndExc2:, :].mean(0)
-    Ex2Avg = R.stateMonExcV[startIndExc2:endIndExc2, :].mean(0)
-    ax[0].plot(timeVoltage, Ex1Avg, label='Ex1', color='cyan')
-    ax[1].plot(timeVoltage, Ex2Avg, label='Ex2', color='royalblue')
-    ax[1].legend()
 
 if hasattr(R, 'upstateFRExcUnits'):
     frInp = R.upstateFRExcUnits[:, :R.p['nUnitsToSpike']].mean(0)  # input pop
