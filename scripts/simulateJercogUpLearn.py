@@ -43,21 +43,24 @@ p['propConnect'] = 0.25
 p['setUpFRExc'] = 5 * Hz
 p['setUpFRInh'] = 14 * Hz
 p['tauUpFRTrials'] = 2
-p['useRule'] = 'cross-homeo-pre-scalar'  # cross-homeo vs cross-homeo-scalar
-rngSeed = 3
+p['useRule'] = 'homeo'  # cross-homeo vs cross-homeo-scalar
+rngSeed = None
 p['allowAutapses'] = False
 p['nameSuffix'] = ''
 # cross-homeo-scalar and cross-homeo-scalar-homeo are the new ones
 p['saveTermsSeparately'] = False
-# defaultEqual, defaultNormal, defaultNormalScaled, defaultUniform,
-# randomUniform, randomUniformMid, randomUniformLow, randomUniformSaray, randomUniformSarayMid, randomUniformSarayHigh
 
 # turn off adaptation?
 # p['betaAdaptExc'] = 0 * nA * ms
 # p['betaAdaptExc2'] = 0 * nA * ms
 # p['betaAdaptInh'] = 0 * nA * ms
 
-p['initWeightMethod'] = 'defaultNormal'
+p['initWeightMethod'] = 'resumePrior'
+p['initWeightPrior'] = 'classicJercog_2000_0p25_cross-homeo-pre-scalar-homeo_seed4_explodeDealTestLowAlpha_2022-02-10-07-30-51_results'
+p['saveFolder'] = 'C:/Users/mikejseay/Documents/BrianResults/cross-homeo-pre-scalar-homeo-explodeDealTest'
+
+# p['initWeightMethod'] = 'goodCrossHomeoExamp'
+
 p['kickType'] = 'spike'  # kick or spike
 p['jEEScaleRatio'] = None
 p['jIEScaleRatio'] = None
@@ -67,7 +70,7 @@ p['jIIScaleRatio'] = None
 p['maxAllowedFRExc'] = 2 * p['setUpFRExc'] / Hz
 p['maxAllowedFRInh'] = 2 * p['setUpFRInh'] / Hz
 
-p['nTrials'] = 10000  # 6765
+p['nTrials'] = 2000  # 6765
 # p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597]  # 1-indexed
 # p['saveTrials'] = [1, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181]  # 1-indexed
 p['saveTrials'] = np.arange(0, p['nTrials'], 100)
@@ -183,6 +186,7 @@ if p['useRule'] == 'balance' and p['setMinimumBasedOnBalance']:  # multiply by H
 
 JT.initalize_history_variables()
 JT.initialize_weight_matrices()
+JT.p['useRule'] = 'homeo'
 JT.run()
 JT.save_params()
 JT.save_results()

@@ -82,8 +82,6 @@ def FR_weights(R, startTrialInd=0, endTrialInd=-1, movAvgWidth=None):
     ax[1].set_xlabel('Trial #')
     ax[1].set_ylabel('Weight (pA)')
 
-    f.suptitle(R.importantInfoString)
-
     return f, ax
 
 
@@ -219,6 +217,21 @@ def FR_hist1d_compare(R, startTrialInd=0, endTrialInd=-1):
         anax.set(xlabel='Firing Rate (Hz)', ylabel='# of occurences')
 
     f.suptitle(R.importantInfoString)
+
+    return f, ax
+
+
+def FR_hist1d(R, trialIndex=-1, minFR=0, maxFR=30, nBins=40):
+
+    f, ax = plt.subplots(figsize=(7, 5.5))
+
+    frBins = np.linspace(minFR, maxFR, nBins)
+
+    ax.hist(R.trialUpFRExcUnits[trialIndex, :], frBins, color='cyan', density=True, histtype='step', label='E')
+    ax.hist(R.trialUpFRInhUnits[trialIndex, :], frBins, color='r', density=True, histtype='step', label='I')
+    ax.set_xlabel('FR (Hz)')
+    ax.set_ylabel('prop. of occurences')
+    ax.legend(frameon=False)
 
     return f, ax
 
@@ -404,6 +417,123 @@ def weights_matrix_compare(R):
                   clabel='Weight (pA)', limsMethod='custom', vlims=vlims)
 
     return f, ax
+
+
+def summed_weights_scatter(R):
+
+    wEEInit = weight_matrix_from_flat_inds_weights(R.p['nExc'], R.p['nExc'], R.preEE, R.posEE, R.wEE_init)
+    wIEInit = weight_matrix_from_flat_inds_weights(R.p['nExc'], R.p['nInh'], R.preIE, R.posIE, R.wIE_init)
+    wEIInit = weight_matrix_from_flat_inds_weights(R.p['nInh'], R.p['nExc'], R.preEI, R.posEI, R.wEI_init)
+    wIIInit = weight_matrix_from_flat_inds_weights(R.p['nInh'], R.p['nInh'], R.preII, R.posII, R.wII_init)
+
+    wEEFinal = weight_matrix_from_flat_inds_weights(R.p['nExc'], R.p['nExc'], R.preEE, R.posEE, R.wEE_final)
+    wIEFinal = weight_matrix_from_flat_inds_weights(R.p['nExc'], R.p['nInh'], R.preIE, R.posIE, R.wIE_final)
+    wEIFinal = weight_matrix_from_flat_inds_weights(R.p['nInh'], R.p['nExc'], R.preEI, R.posEI, R.wEI_final)
+    wIIFinal = weight_matrix_from_flat_inds_weights(R.p['nInh'], R.p['nInh'], R.preII, R.posII, R.wII_final)
+
+    wEEInitP = np.nansum(wEEInit, 0)
+    wIEInitP = np.nansum(wIEInit, 0)
+    wEIInitP = np.nansum(wEIInit, 0)
+    wIIInitP = np.nansum(wIIInit, 0)
+
+    wEEFinalP = np.nansum(wEEFinal, 0)
+    wIEFinalP = np.nansum(wIEFinal, 0)
+    wEIFinalP = np.nansum(wEIFinal, 0)
+    wIIFinalP = np.nansum(wIIFinal, 0)
+
+    f, axs = plt.subplots(2, 2)
+
+    xValSeq = (wEEInitP, wIEInitP, wEEFinalP, wIEFinalP,)
+    yValSeq = (wEIInitP, wIIInitP, wEIFinalP, wIIFinalP,)
+
+    xLblSeq = ('J EE Init (nA)', 'J IE Init (nA)', 'J EE Final (nA)', 'J IE Final (nA)', )
+    yLblSeq = ('J EI Init (nA)', 'J II Init (nA)', 'J EI Final (nA)', 'J II Final (nA)', )
+
+    for axInd, ax in enumerate(axs.ravel()):
+        xVals = xValSeq[axInd] / 1e3
+        yVals = yValSeq[axInd] / 1e3
+        ax.scatter(xVals, yVals, 1)
+        ax.set_xlabel(xLblSeq[axInd])
+        ax.set_ylabel(yLblSeq[axInd])
+
+    return f, axs
+
+
+def detail_trial_plot(R, useTrialInd=0):
+
+    actualTrialIndex = R.p['saveTrials'][useTrialInd] + 1
+    frameMult = int(R.p['downSampleVoltageTo'] / R.p['dt'])
+    useUnitInd = 0
+    decreaseVoltageBy = 70
+    FRDT = 0.01  # seconds
+    voltageYLims = (-90, 10)
+    targetDisplayedExcUnits = 160
+    targetDisplayedInhUnits = 40
+
+    commonXLims = (0, R.p['duration'] / second)
+    voltageT = R.selectTrialT[1:]
+
+    voltageE = R.selectTrialVExc[useTrialInd, :] - decreaseVoltageBy
+    vSpikeTimesE = R.selectTrialSpikeExcT[useTrialInd][R.selectTrialSpikeExcI[useTrialInd] == useUnitInd]
+    vSpikeTimesIndE = (vSpikeTimesE / R.p['dt'] * second / frameMult).astype(int)
+    voltageE[vSpikeTimesIndE] = 0
+
+    voltageI = R.selectTrialVInh[useTrialInd, :] - decreaseVoltageBy
+    vSpikeTimesI = R.selectTrialSpikeInhT[useTrialInd][R.selectTrialSpikeInhI[useTrialInd] == useUnitInd]
+    vSpikeTimesIndI = (vSpikeTimesI / R.p['dt'] * second / frameMult).astype(int)
+    voltageI[vSpikeTimesIndI] = 0
+
+    FRT = np.arange(FRDT / 2, R.p['duration'] / second - FRDT / 2, FRDT)
+    FRE = R.selectTrialFRExc[useTrialInd, :]
+    FRI = R.selectTrialFRInh[useTrialInd, :]
+
+    spikeMonExcT = R.selectTrialSpikeExcT[useTrialInd]
+    spikeMonExcI = R.selectTrialSpikeExcI[useTrialInd]
+    spikeMonInhT = R.selectTrialSpikeInhT[useTrialInd]
+    spikeMonInhI = R.selectTrialSpikeInhI[useTrialInd]
+
+    downSampleE = np.random.choice(R.p['nExc'], size=targetDisplayedExcUnits, replace=False)
+    downSampleI = np.random.choice(R.p['nInh'], size=targetDisplayedInhUnits, replace=False)
+    matchingEUnitsBool = np.isin(spikeMonExcI, downSampleE)
+    matchingIUnitsBool = np.isin(spikeMonInhI, downSampleI)
+    DownSampleERev = np.full((downSampleE.max() + 1,), np.nan)
+    DownSampleERev[downSampleE] = np.arange(downSampleE.size)
+    DownSampleIRev = np.full((downSampleI.max() + 1,), np.nan)
+    DownSampleIRev[downSampleI] = np.arange(downSampleI.size)
+    spikesExcT = spikeMonExcT[matchingEUnitsBool]
+    spikesExcI = DownSampleERev[spikeMonExcI[matchingEUnitsBool].astype(int)]
+    spikesInhT = spikeMonInhT[matchingIUnitsBool]
+    spikesInhI = targetDisplayedExcUnits + DownSampleIRev[spikeMonInhI[matchingIUnitsBool].astype(int)]
+
+    fig1, ax1 = plt.subplots(4, 1, num=2, figsize=(5, 9), gridspec_kw={'height_ratios': [2, 1, 1, 1]}, sharex=True)
+
+    srAx, frAx, veAx, viAx = ax1
+
+    srAx.set(xlim=commonXLims, ylim=(0, 200), ylabel='Unit Index')      # spike raster
+    frAx.set(xlim=commonXLims, ylim=(0, 30), ylabel='Firing Rate (Hz)')       # FR
+    veAx.set(xlim=commonXLims, ylim=voltageYLims, ylabel='mV')  # voltageE
+    viAx.set(xlim=commonXLims, ylim=voltageYLims, ylabel='mV', xlabel='Time (s)')  # voltageI
+
+    srHandleE, = srAx.plot([], [], c='cyan', ls='', marker='.', markersize=1)
+    srHandleI, = srAx.plot([], [], c='r', ls='', marker='.', markersize=1)
+
+    frHandleE, = frAx.plot([], [], c='cyan', label='Exc', alpha=0.5)
+    frHandleI, = frAx.plot([], [], c='r', label='Inh', alpha=0.5)
+
+    vHandleE, = veAx.plot([], [], c='cyan', lw=.3)
+    vHandleI, = viAx.plot([], [], c='r', lw=.3)
+
+    vHandleE.set_data(voltageT, voltageE)
+    vHandleI.set_data(voltageT, voltageI)
+
+    frHandleE.set_data(FRT, FRE)
+    frHandleI.set_data(FRT, FRI)
+    srHandleE.set_data(spikesExcT, spikesExcI)
+    srHandleI.set_data(spikesInhT, spikesInhI)
+
+    fig1.suptitle('Trial {}'.format(actualTrialIndex))
+
+    return fig1, ax1
 
 
 def calculate_net_current_units(R):

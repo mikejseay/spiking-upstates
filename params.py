@@ -101,7 +101,7 @@ paramsJercogEphysBuono = {
     # global sim params
     'dt': 0.1 * ms,
     'duration': 250 * ms,
-    # 'updateMethod': 'exact',
+    'updateMethod': 'euler',
     'reportType': 'stdout',
     'reportPeriod': 10 * second,
     'doProfile': False,
@@ -163,6 +163,9 @@ paramsJercogEphysBuono = {
     'scaleWeightsByPConn': True,
 
 }
+
+paramsJercogEphysBuono['nIncInh'] = int(paramsJercogEphysBuono['propInh'] * paramsJercogEphysBuono['nUnits'])
+paramsJercogEphysBuono['nIncExc'] = paramsJercogEphysBuono['nUnits'] - paramsJercogEphysBuono['nIncInh']
 
 paramsDestexhe = {
     # save / figs?

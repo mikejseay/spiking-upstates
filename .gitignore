@@ -1,12 +1,17 @@
+# Pycharm
+.idea
+
 # results files
 *.csv
 *.npz
+*.pkl
 
 # created figures / movies
 *.mp4
 *.gif
 *.png
 *.pdf
+*.eps
 
 # GeNN things
 /GeNNworkspace/
