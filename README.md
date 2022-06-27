@@ -1,4 +1,4 @@
-# "Paradoxical Self-Sustained Dynamics Emerge from Orchestrated Excitatory and Inhibitory Homeostatic Rules"
+# Paradoxical Self-Sustained Dynamics Emerge from Orchestrated Excitatory and Inhibitory Homeostatic Rules
 
 Saray Soldado-Magraner, Michael Seay, Rodrigo Laje, Dean V. Buonomano (2022)
 
