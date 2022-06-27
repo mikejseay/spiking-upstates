@@ -19,13 +19,13 @@ p['nameSuffix'] = 'actualPoisson'
 p['saveFolder'] = os.path.join(os.getcwd(), 'results')
 
 # params for modifying cell-intrinsic params (fig 5)
-p['propEx2Units'] = 0.1  # percentage of Ex units designated as "Ex+"
+p['propPop2Units'] = 0.1  # percentage of Ex units designated as "Ex+"
 p['useSecondPopExc'] = False  # designates a distinct Ex population with different cell-intrinsic parameters
 
 # params for modifying connectivity (fig 6)
-p['manipulateConnectivity'] = False  # designates a distinct Ex population and modifies connectivity with it
+p['manipEEConn'] = False  # designates a distinct Ex population and modifies connectivity with it
 p['removePropConn'] = 0.1  # proportion of connections between ex- and ex+ to remove
-p['compensateInhibition'] = False  # whether to compensate inhibition based on connections removed (not used in paper)
+p['compensateEEManipWithInhib'] = False  # whether to compensate inhibition based on connections removed (not used in paper)
 
 # net params
 p['nUnits'] = 2e3
@@ -57,7 +57,7 @@ overrideBetaAdaptExc = 12 * nA * ms  # override default adaptation strength (10 
 p['kickType'] = 'spike'
 p['spikeInputAmplitude'] = 0.98
 p['nUnitsToSpike'] = int(np.round(p['propKickedSpike'] * p['nUnits']))
-p['nUnitsSecondPopExc'] = int(np.round(p['propEx2Units'] * p['nUnits']))
+p['nUnitsSecondPopExc'] = int(np.round(p['propPop2Units'] * p['nUnits']))
 p['startIndSecondPopExc'] = p['nUnitsToSpike']
 p['nIncInh'] = int(p['propConnect'] * p['propInh'] * p['nUnits'])
 p['nIncExc'] = int(p['propConnect'] * (1 - p['propInh']) * p['nUnits'])
@@ -90,7 +90,7 @@ if p['initWeightMethod'] == 'resumePrior':
 else:
     PR = None
 
-if p['manipulateConnectivity']:
+if p['manipEEConn']:
 
     startIndExc2 = p['startIndSecondPopExc']
     endIndExc2 = p['startIndSecondPopExc'] + p['nUnitsSecondPopExc']
@@ -116,7 +116,7 @@ if p['manipulateConnectivity']:
     PR.wEE_final = np.delete(PR.wEE_final, removeInds, None)
     wEEFinal = weight_matrix_from_flat_inds_weights(PR.p['nExc'], PR.p['nExc'], PR.preEE, PR.posEE, PR.wEE_final)
 
-    if p['compensateInhibition']:
+    if p['compensateEEManipWithInhib']:
         # idea here is that by deleting excitatory connections only, we are upsetting the E/I balance
         # we can calculate the initial E/I balance (basically, summing the rows of wEE and also summing the rows of wEI)
         # then we can compare it to the E/I balance afterward
@@ -165,7 +165,7 @@ R.calculate_upFR_units()
 
 fig1, ax1 = plt.subplots(3, 1, num=1, figsize=(16, 9), sharex=True)
 
-if p['useSecondPopExc'] or p['manipulateConnectivity']:
+if p['useSecondPopExc'] or p['manipEEConn']:
     useColor = 'royalblue'
 else:
     useColor = 'cyan'

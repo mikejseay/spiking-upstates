@@ -21,13 +21,13 @@ p['nameSuffix'] = 'actualPoisson'
 p['saveFolder'] = os.path.join(os.getcwd(), 'results')
 
 # params for modifying cell-intrinsic params (fig 5)
-p['propEx2Units'] = 0.1  # percentage of Ex units designated as "Ex+"
+p['propPop2Units'] = 0.1  # percentage of Ex units designated as "Ex+"
 p['useSecondPopExc'] = True  # designates a distinct Ex population with different cell-intrinsic parameters
 
 # params for modifying connectivity (fig 6)
-p['manipulateConnectivity'] = False  # designates a distinct Ex population and modifies connectivity with it
+p['manipEEConn'] = False  # designates a distinct Ex population and modifies connectivity with it
 p['removePropConn'] = 0.1  # proportion of connections between ex- and ex+ to remove
-p['compensateInhibition'] = False  # whether to compensate inhibition based on connections removed (not used in paper)
+p['compensateEEManipWithInhib'] = False  # whether to compensate inhibition based on connections removed (not used in paper)
 
 # net params
 p['nUnits'] = 2e3
@@ -37,16 +37,17 @@ p['allowAutapses'] = False
 
 # params for importing the weight matrix (can also generate randomly but not used here)
 p['initWeightMethod'] = 'resumePrior'
-p['initWeightPrior'] = 'liuEtAlInitialWeights'
+# p['initWeightPrior'] = 'liuEtAlInitialWeights_results'
+p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_goodCrossHomeoExamp_buonoParams_2022-05-27-01-42-18_results'
 
 # kick params
 p['propKickedSpike'] = 0.05  # proportion of units to kick by causing a single spike in them
-p['poissonLambda'] = 0.5 * Hz  # 0.2
-p['duration'] = 10 * second  # 60
+p['poissonLambda'] = 0.25 * Hz  # 0.2
+p['duration'] = 60 * second  # 60
 
 # dt params
 p['dtHistPSTH'] = 10 * ms
-p['recordAllVoltage'] = False  # if you do this, it's recommended to make stateVariableDT = 1 * ms
+p['recordAllVoltage'] = True  # if you do this, it's recommended to make stateVariableDT = 1 * ms
 p['stateVariableDT'] = 1 * ms
 
 if not os.path.exists(p['saveFolder']):
@@ -54,12 +55,16 @@ if not os.path.exists(p['saveFolder']):
 
 
 # other params that generally should not be modified
-weightMult = 0.85  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
-overrideBetaAdaptExc = 12 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
+weightMult = 0.8  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
+overrideBetaAdaptExc = 18 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
+
+# weightMult = 0.85  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
+# overrideBetaAdaptExc = 12 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
+
 p['kickType'] = 'spike'
 p['spikeInputAmplitude'] = 0.98
 p['nUnitsToSpike'] = int(np.round(p['propKickedSpike'] * p['nUnits']))
-p['nUnitsSecondPopExc'] = int(np.round(p['propEx2Units'] * p['nUnits']))
+p['nUnitsSecondPopExc'] = int(np.round(p['propPop2Units'] * p['nUnits']))
 p['startIndSecondPopExc'] = p['nUnitsToSpike']
 p['nIncInh'] = int(p['propConnect'] * p['propInh'] * p['nUnits'])
 p['nIncExc'] = int(p['propConnect'] * (1 - p['propInh']) * p['nUnits'])
@@ -95,7 +100,7 @@ if p['initWeightMethod'] == 'resumePrior':
 else:
     PR = None
 
-if p['manipulateConnectivity']:
+if p['manipEEConn']:
 
     startIndExc2 = p['startIndSecondPopExc']
     endIndExc2 = p['startIndSecondPopExc'] + p['nUnitsSecondPopExc']
@@ -121,7 +126,7 @@ if p['manipulateConnectivity']:
     PR.wEE_final = np.delete(PR.wEE_final, removeInds, None)
     wEEFinal = weight_matrix_from_flat_inds_weights(PR.p['nExc'], PR.p['nExc'], PR.preEE, PR.posEE, PR.wEE_final)
 
-    if p['compensateInhibition']:
+    if p['compensateEEManipWithInhib']:
         # idea here is that by deleting excitatory connections only, we are upsetting the E/I balance
         # we can calculate the initial E/I balance (basically, summing the rows of wEE and also summing the rows of wEI)
         # then we can compare it to the E/I balance afterward
@@ -144,8 +149,8 @@ if p['manipulateConnectivity']:
         wEICompensate[:, endIndExc2:] = wEICompensate[:, endIndExc2:] * changeInEx1
         PR.wEI_final = wEICompensate[PR.preEI, PR.posEI]
 
-PR.p['betaAdaptExc'] = overrideBetaAdaptExc  # override...
-PR.p['betaAdaptExc2'] = overrideBetaAdaptExc  # override...
+JT.p['betaAdaptExc'] = overrideBetaAdaptExc  # override...
+JT.p['betaAdaptExc2'] = overrideBetaAdaptExc  # override...
 JT.set_up_network(priorResults=PR, recordAllVoltage=p['recordAllVoltage'])
 JT.initialize_weight_matrices()
 
@@ -167,10 +172,11 @@ R.calculate_PSTH()
 R.calculate_voltage_histogram(useAllRecordedUnits=True)
 R.calculate_upstates()
 R.calculate_upFR_units()
+R.calculate_upCorr_units()
 
 fig1, ax1 = plt.subplots(3, 1, num=1, figsize=(16, 9), sharex=True)
 
-if p['useSecondPopExc'] or p['manipulateConnectivity']:
+if p['useSecondPopExc'] or p['manipEEConn']:
     useColor = 'royalblue'
 else:
     useColor = 'cyan'

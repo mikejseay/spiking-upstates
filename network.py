@@ -503,6 +503,7 @@ class JercogNetwork(object):
                                      currentAmp=0.98):
 
         kickTimes = poisson_single(poissonLambda, self.p['dt'], duration, rng)
+        # kickTimes = np.arange(1, duration / second, 4)
 
         indices = []
         times = []
