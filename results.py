@@ -75,6 +75,52 @@ class Results(object):
         for savedObjectName in npzObject.files:
             setattr(self, savedObjectName, npzObject[savedObjectName])
 
+    def save_results_slim(self):
+        savePath = os.path.join(self.p['saveFolder'], self.rID + '_slim_results.npz')
+
+        saveDict = {
+            'trialUpFRExc': self.trialUpFRExc,
+            'trialUpFRInh': self.trialUpFRInh,
+            'trialwEE': self.trialwEE,
+            'trialwEI': self.trialwEI,
+            'trialwIE': self.trialwIE,
+            'trialwII': self.trialwII,
+            'trialUpFRExcUnits': self.trialUpFRExcUnits,
+            'trialUpFRInhUnits': self.trialUpFRInhUnits,
+            'wEE_init': self.wEE_init,
+            'wIE_init': self.wIE_init,
+            'wEI_init': self.wEI_init,
+            'wII_init': self.wII_init,
+            'wEE_final': self.wEE_final,
+            'wIE_final': self.wIE_final,
+            'wEI_final': self.wEI_final,
+            'wII_final': self.wII_final,
+            'preEE': self.preEE,
+            'preIE': self.preIE,
+            'preEI': self.preEI,
+            'preII': self.preII,
+            'posEE': self.posEE,
+            'posIE': self.posIE,
+            'posEI': self.posEI,
+            'posII': self.posII,
+        }
+
+        if self.p['recordMovieVariables']:
+            saveDictMovie = {
+                'selectTrialT': self.selectTrialT,
+                'selectTrialVExc': self.selectTrialVExc,
+                'selectTrialVInh': self.selectTrialVInh,
+                'selectTrialFRExc': self.selectTrialFRExc,
+                'selectTrialFRInh': self.selectTrialFRInh,
+                'selectTrialSpikeExcI': self.selectTrialSpikeExcI,
+                'selectTrialSpikeExcT': self.selectTrialSpikeExcT,
+                'selectTrialSpikeInhI': self.selectTrialSpikeInhI,
+                'selectTrialSpikeInhT': self.selectTrialSpikeInhT,
+            }
+            saveDict.update(saveDictMovie)
+
+        np.savez(savePath, **saveDict)
+
     def init_from_network_object(self, network_object):
         self.rID = network_object.saveName
         self.p = network_object.p

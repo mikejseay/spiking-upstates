@@ -7,7 +7,7 @@ SAVE_PLOTS = True
 DETAIL_PLOT_TRIALS = [0, 200, 400, 1500]
 
 resultsPath = os.path.join(os.getcwd(), 'results')
-trainingFile = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_goodCrossHomeoExamp_buonoParams_2022-05-27-01-42-18_results'
+trainingFile = 'classicJercog_2000_0p25_cross-homeo-pre-outer-homeo_goodCrossHomeoExamp__2022-01-27-07-30-31_results'
 
 R = Results()
 R.init_from_file(trainingFile, resultsPath)

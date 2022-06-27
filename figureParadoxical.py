@@ -16,9 +16,6 @@ for savedObjectName in npzObject.files:
 
 timeVector = np.arange(0, 5.1, 0.01)[:-1]
 histCenters = timeVector + (timeVector[1] - timeVector[0]) / 2
-movAvgWidth = 3
-movAvgAdj = int(movAvgWidth / 2)
-# useLevels = [0, 2, 4]
 
 f, ax = plt.subplots(1, 2, sharex=True, figsize=(10.5, 4.5))
 
