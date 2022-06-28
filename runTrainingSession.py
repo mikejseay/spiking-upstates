@@ -2,8 +2,7 @@ import os
 import numpy as np
 from brian2 import defaultclock, ms, pA, Hz, seed
 
-# from params import paramsJercog as p
-from params import paramsJercogEphysBuono as p
+from params import paramsJercog as p
 from trainer import JercogTrainer
 
 defaultclock.dt = p['dt']
@@ -26,13 +25,13 @@ p['tauUpFRTrials'] = 2
 p['useRule'] = 'cross-homeo-pre-outer-homeo'
 rngSeed = None
 p['allowAutapses'] = False
-p['nameSuffix'] = 'buonoParams'
+p['nameSuffix'] = 'userRun'
 p['saveTermsSeparately'] = False
 p['initWeightMethod'] = 'goodCrossHomeoExamp'
 
 p['kickType'] = 'spike'  # kick or spike
 
-p['nTrials'] = 8000
+p['nTrials'] = 3000
 p['saveTrials'] = np.arange(0, p['nTrials'], 100)
 
 p['nUnitsToSpike'] = int(np.round(0.05 * p['nUnits']))
