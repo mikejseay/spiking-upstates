@@ -29,14 +29,14 @@ p['useSecondPopExc'] = False  # designates a distinct Ex population with differe
 # params for modifying connectivity (fig 6)
 p['manipEEConn'] = True  # designates a distinct Ex population and modifies connectivity with it
 p['compensateEEManipWithInhib'] = False  # whether to compensate inhibition based on conns removed (not used in paper)
-p['manipEIConn'] = True
+p['manipEIConn'] = False
 p['manipEIMethod'] = 'presynaptic'
 
 p['manipIEConn'] = False
 p['manipIIConn'] = False
 p['compensateIIManipWithExc'] = False
 
-p['removePropConn'] = 0.5  # proportion of connections between ex- and ex+ to remove
+p['removePropConn'] = 0.1  # proportion of connections between ex- and ex+ to remove
 
 # net params
 p['nUnits'] = 2e3
@@ -46,17 +46,16 @@ p['allowAutapses'] = False
 
 # params for importing the weight matrix (can also generate randomly but not used here)
 p['initWeightMethod'] = 'resumePrior'
-# p['initWeightPrior'] = 'liuEtAlInitialWeights'
-p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_goodCrossHomeoExamp_buonoParams_2022-05-27-01-42-18_results'
+p['initWeightPrior'] = 'liuEtAlInitialWeights'
 
 # kick params
 p['propKickedSpike'] = 0.05  # proportion of units to kick by causing a single spike in them
-p['poissonLambda'] = 0.2 * Hz  # 0.2
-p['duration'] = 60 * second  # 60
+p['poissonLambda'] = 0.5 * Hz  # 0.2
+p['duration'] = 10 * second  # 60
 
 # dt params
 p['dtHistPSTH'] = 10 * ms
-p['recordAllVoltage'] = True  # if you do this, it's recommended to make stateVariableDT = 1 * ms
+p['recordAllVoltage'] = False  # if you do this, it's recommended to make stateVariableDT = 1 * ms
 p['stateVariableDT'] = 1 * ms
 
 if not os.path.exists(p['saveFolder']):
@@ -64,12 +63,8 @@ if not os.path.exists(p['saveFolder']):
 
 
 # other params that generally should not be modified
-# weightMult = 0.85  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
-# overrideBetaAdaptExc = 12 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
-
-weightMult = 0.8  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
-overrideBetaAdaptExc = 18 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
-
+weightMult = 0.85  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
+overrideBetaAdaptExc = 12 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
 p['kickType'] = 'spike'
 p['spikeInputAmplitude'] = 0.98
 p['nUnitsToSpike'] = int(np.round(p['propKickedSpike'] * p['nUnits']))
@@ -216,11 +211,6 @@ if p['manipEIConn']:
         E2IInds = np.where(np.logical_and(PR.posEI >= startIndExc2, PR.posEI < endIndExc2))[0]
         E1IInds = np.where(PR.posEI >= endIndExc2)[0]
 
-        # removeE2IInds = p['rng'].choice(E2IInds, int(removeE2E1Inds.size * p['propInh'] / (1 - p['propInh'])),
-        #                                 replace=False)
-        # removeE1IInds = p['rng'].choice(E1IInds, int(removeE1E2Inds.size * p['propInh'] / (1 - p['propInh'])),
-        #                                 replace=False)
-
         removeE2IInds = p['rng'].choice(E2IInds, int(np.round(
             p['nInh'] * (1 - p['propPop2Units']) * p['nUnitsSecondPopExc'] * p['propConnect'] * p['removePropConn'])),
                                         replace=False)
@@ -311,7 +301,6 @@ R.calculate_PSTH()
 R.calculate_voltage_histogram(useAllRecordedUnits=True)
 R.calculate_upstates()
 R.calculate_upFR_units()
-R.calculate_upCorr_units()
 
 fig1, ax1 = plt.subplots(3, 1, num=1, figsize=(16, 9), sharex=True)
 

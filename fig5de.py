@@ -37,17 +37,16 @@ p['allowAutapses'] = False
 
 # params for importing the weight matrix (can also generate randomly but not used here)
 p['initWeightMethod'] = 'resumePrior'
-# p['initWeightPrior'] = 'liuEtAlInitialWeights_results'
-p['initWeightPrior'] = 'buonoEphysBen1_2000_0p25_cross-homeo-pre-outer-homeo_goodCrossHomeoExamp_buonoParams_2022-05-27-01-42-18_results'
+p['initWeightPrior'] = 'liuEtAlInitialWeights'
 
 # kick params
 p['propKickedSpike'] = 0.05  # proportion of units to kick by causing a single spike in them
-p['poissonLambda'] = 0.25 * Hz  # 0.2
-p['duration'] = 60 * second  # 60
+p['poissonLambda'] = 0.5 * Hz  # 0.2
+p['duration'] = 10 * second  # 60
 
 # dt params
 p['dtHistPSTH'] = 10 * ms
-p['recordAllVoltage'] = True  # if you do this, it's recommended to make stateVariableDT = 1 * ms
+p['recordAllVoltage'] = False  # if you do this, it's recommended to make stateVariableDT = 1 * ms
 p['stateVariableDT'] = 1 * ms
 
 if not os.path.exists(p['saveFolder']):
@@ -55,12 +54,8 @@ if not os.path.exists(p['saveFolder']):
 
 
 # other params that generally should not be modified
-weightMult = 0.8  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
-overrideBetaAdaptExc = 18 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
-
-# weightMult = 0.85  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
-# overrideBetaAdaptExc = 12 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
-
+weightMult = 0.85  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
+overrideBetaAdaptExc = 12 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
 p['kickType'] = 'spike'
 p['spikeInputAmplitude'] = 0.98
 p['nUnitsToSpike'] = int(np.round(p['propKickedSpike'] * p['nUnits']))
@@ -172,7 +167,6 @@ R.calculate_PSTH()
 R.calculate_voltage_histogram(useAllRecordedUnits=True)
 R.calculate_upstates()
 R.calculate_upFR_units()
-R.calculate_upCorr_units()
 
 fig1, ax1 = plt.subplots(3, 1, num=1, figsize=(16, 9), sharex=True)
 

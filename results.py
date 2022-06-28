@@ -600,7 +600,6 @@ class ResultsEphys(object):
         InhData = self.spikeMonInhC / self.p['duration']
 
         I_index_for_ISI = int(len(I_ext_range) * .9) - 1
-        # plotVoltageForCurrentValues = (0.11, 0.16, 0.21)
         plotVoltageForCurrentValues = (-.1, 0.11, 0.16, 0.21)
         iIndicesToPlot = []
         for pVFCV in plotVoltageForCurrentValues:
@@ -609,13 +608,9 @@ class ResultsEphys(object):
         # reconstruct time
         stateMonT = np.arange(0, float(self.p['duration']), float(self.p['dt']))
 
-        # might be useful...
-        # ax.axhline(useThresh, color=useColor, linestyle=':')  # Threshold
-        # ax.axhline(self.p['eLeak' + unitType] / mV, color=useColor, linestyle='--')  # Resting
-
         useYMin = -78
         useYMax = 2
-        useSpikeAmp = -20
+        useSpikeAmp = 0
         useLineWidth = 1
 
         excColor = 'cyan'
@@ -626,26 +621,7 @@ class ResultsEphys(object):
         useThreshExc2 = self.p['vThreshExc2'] / mV
         useThreshInh = self.p['vThreshInh'] / mV
 
-        # excColors = ('lightgreen', 'green', 'darkgreen')
-        # exc2Colors = ('paleturquoise', 'turquoise', 'darkturquoise')
-        # inhColors = ('tomato', 'red', 'darkred')
-
-        # excColors = ('cyan', 'darkorange', 'darkgoldenrod', 'mediumaquamarine')
-        # exc2Colors = ('blue', 'olive', 'lightseagreen', 'royalblue')
-        # inhColors = ('red', 'mediumslateblue', 'purple', 'crimson')
-
-        # excColors = ('#00FFFF', '#FF4000', '#FFBF00', '#8000FF')
-        # exc2Colors = ('#0000FF', '#FF8000', '#FFFF00', '#FF00FF')
-        # inhColors = ('#FF0000', '#00FF00', '#0000FF', '#FF8000')
-
-        # excColors = ('#00FFFF', '#0000FF', '#00FF00')
-        # exc2Colors = ('#0000FF', '#8000FF', '#00FFFF')
-        # inhColors = ('#FF0000', '#FF4000', '#FF0080')
-
         for iDummy, iIndexToPlot in enumerate(iIndicesToPlot):
-            # excSubColor = excColors[iDummy]
-            # exc2SubColor = exc2Colors[iDummy]
-            # inhSubColor = inhColors[iDummy]
 
             excSubColor = excColor
             exc2SubColor = exc2Color
@@ -669,14 +645,9 @@ class ResultsEphys(object):
         ax[1, 0].plot(I_ext_range * 1e9, ExcData, label='Exc', color=excColor)
         ax[1, 0].plot(I_ext_range * 1e9, Exc2Data, label='Exc22', color=exc2Color)
         ax[1, 0].plot(I_ext_range * 1e9, InhData, label='Inh', color=inhColor)
-        # ax[1, 0].axvline(float(I_ext_range[I_index_for_ISI]) * 1e9,
-        #                  label='displayed value', color='grey', ls='--')
         ax[1, 0].set_xlabel('Current (nA)')
         ax[1, 0].set_ylabel('Firing Rate (Hz)')
-        # ax[1, 0].legend()
 
-        # ISIExc = np.diff(self.spikeTrainsExc[()][I_index_for_ISI])
-        # ISIInh = np.diff(self.spikeTrainsInh[()][I_index_for_ISI])
         ISIExc = np.diff(self.spikeTrainsExc[I_index_for_ISI])
         ISIExc2 = np.diff(self.spikeTrainsExc2[I_index_for_ISI])
         ISIInh = np.diff(self.spikeTrainsInh[I_index_for_ISI])
