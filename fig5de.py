@@ -13,7 +13,7 @@ import os
 # START OF PARAMS
 
 p = paramsJercogEphysBuono.copy()
-rngSeed = 42
+rngSeed = 43
 defaultclock.dt = p['dt']
 
 # naming / save params
@@ -42,20 +42,19 @@ p['initWeightPrior'] = 'liuEtAlInitialWeights'
 # kick params
 p['propKickedSpike'] = 0.05  # proportion of units to kick by causing a single spike in them
 p['poissonLambda'] = 0.5 * Hz  # 0.2
-p['duration'] = 10 * second  # 60
+p['duration'] = 20 * second  # 60
 
 # dt params
 p['dtHistPSTH'] = 10 * ms
-p['recordAllVoltage'] = False  # if you do this, it's recommended to make stateVariableDT = 1 * ms
+p['recordAllVoltage'] = True
 p['stateVariableDT'] = 1 * ms
 
 if not os.path.exists(p['saveFolder']):
     os.mkdir(p['saveFolder'])
 
-
 # other params that generally should not be modified
-weightMult = 0.85  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
-overrideBetaAdaptExc = 12 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
+weightMult = 0.82  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
+overrideBetaAdaptExc = 18 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
 p['kickType'] = 'spike'
 p['spikeInputAmplitude'] = 0.98
 p['nUnitsToSpike'] = int(np.round(p['propKickedSpike'] * p['nUnits']))
@@ -167,6 +166,7 @@ R.calculate_PSTH()
 R.calculate_voltage_histogram(useAllRecordedUnits=True)
 R.calculate_upstates()
 R.calculate_upFR_units()
+R.calculate_upCorr_units()
 
 fig1, ax1 = plt.subplots(3, 1, num=1, figsize=(16, 9), sharex=True)
 
@@ -199,7 +199,57 @@ customPalette = sns.set_palette(sns.color_palette(colors))
 
 sns.violinplot(x='unitType', y='FR', data=frDF, width=.6, palette=customPalette, order=('Ex1', 'Ex2'), ax=ax2)
 
+# up state correlation
+
+# calculating 3 submatrix averages with start and stop indices
+# pop order is input, Ex2, Ex1
+
+rhoUpExc = R.rhoUpExc.copy()
+rhoUpExc[np.diag_indices_from(rhoUpExc)] = np.nan
+
+popLabels = ['Inp', 'Ex2', 'Ex1']
+
+sI = [0,
+      R.p['nUnitsToSpike'],
+      (R.p['nUnitsToSpike'] + R.p['nUnitsSecondPopExc'])]
+eI = [R.p['nUnitsToSpike'],
+      (R.p['nUnitsToSpike'] + R.p['nUnitsSecondPopExc']),
+      -1]
+
+assert(len(sI) == len(eI))
+
+nPops = len(sI)
+
+sectionCorrMean = np.full((nPops, nPops), np.nan)
+sectionCorrStd = np.full((nPops, nPops), np.nan)
+
+meanCompareLabels = []
+seqLst = []
+for p1I in range(nPops):
+    for p2I in range(nPops):
+        if p2I > p1I:
+            continue
+        rhoSub = rhoUpExc[sI[p1I]:eI[p1I], sI[p2I]:eI[p2I]]
+        rhoSubNN = rhoSub[~np.isnan(rhoSub)]
+        sectionCorrMean[p1I, p2I] = np.nanmean(rhoSubNN)
+        sectionCorrStd[p1I, p2I] = np.nanstd(rhoSubNN)
+        meanCompareLabels.append(popLabels[p1I] + '-' + popLabels[p2I])
+        dfTmp = pd.DataFrame(rhoSubNN, columns=('Correlation',))
+        dfTmp['Comparison'] = popLabels[p1I] + '-' + popLabels[p2I]
+        seqLst.append(dfTmp)
+
+corrCompareDF = pd.concat(seqLst)
+
+colors = ["#00FFFF", "#6A0DAD", "#4E69B2"]
+customPalette = sns.set_palette(sns.color_palette(colors))
+
+fig3, ax = plt.subplots()
+sns.boxplot(x='Comparison', y='Correlation', data=corrCompareDF, order=('Ex1-Ex1', 'Ex1-Ex2', 'Ex2-Ex2'), palette=customPalette,)
+ax.set_xticklabels(('(Ex-/Ex-)', '(Ex-/Ex+)', '(Ex+/Ex+)'))
+ax.set_xlabel('')
+
 SAVE_PLOT = True
 if SAVE_PLOT:
     fig1.savefig('fig5d.pdf', transparent=True)
     fig2.savefig('fig5e.pdf', transparent=True)
+    fig3.savefig('fig5f.pdf', transparent=True)

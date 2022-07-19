@@ -1,4 +1,4 @@
-from brian2 import defaultclock, ms, nA, Hz, seed, second
+from brian2 import defaultclock, ms, nA, Hz, seed, second, amp, pA
 from params import paramsJercogEphysBuono
 from generate import weight_matrix_from_flat_inds_weights
 from runner import JercogRunner
@@ -17,6 +17,12 @@ defaultclock.dt = p['dt']
 # naming / save params
 p['nameSuffix'] = 'actualPoisson'
 p['saveFolder'] = os.path.join(os.getcwd(), 'results')
+
+# review stuff
+p['transformWeightsToLogNormal'] = False
+p['overrideDelays'] = True
+overrideDelayExc = 2.8 * ms  # mean delay is half of this
+overrideDelayInh = 2 * ms
 
 # params for modifying cell-intrinsic params (fig 5)
 p['propPop2Units'] = 0.1  # percentage of Ex units designated as "Ex+"
@@ -40,7 +46,7 @@ p['initWeightPrior'] = 'liuEtAlInitialWeights'
 # kick params
 p['propKickedSpike'] = 0.05  # proportion of units to kick by causing a single spike in them
 p['poissonLambda'] = 0.5 * Hz  # 0.2
-p['duration'] = 10 * second  # 60
+p['duration'] = 20 * second  # 60
 
 # dt params
 p['dtHistPSTH'] = 10 * ms
@@ -52,8 +58,8 @@ if not os.path.exists(p['saveFolder']):
 
 
 # other params that generally should not be modified
-weightMult = 0.85  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
-overrideBetaAdaptExc = 12 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
+weightMult = 0.82  # multiply init weights by this (makes basin of attraction around upper fixed point more shallow)
+overrideBetaAdaptExc = 18 * nA * ms  # override default adaptation strength (10 in params file but makes little diff)
 p['kickType'] = 'spike'
 p['spikeInputAmplitude'] = 0.98
 p['nUnitsToSpike'] = int(np.round(p['propKickedSpike'] * p['nUnits']))
@@ -139,17 +145,55 @@ if p['manipEEConn']:
         wEICompensate[:, endIndExc2:] = wEICompensate[:, endIndExc2:] * changeInEx1
         PR.wEI_final = wEICompensate[PR.preEI, PR.posEI]
 
-PR.p['betaAdaptExc'] = overrideBetaAdaptExc  # override...
-PR.p['betaAdaptExc2'] = overrideBetaAdaptExc  # override...
+if p['overrideDelays']:
+    PR.p['delayExc'] = overrideDelayExc
+    PR.p['delayInh'] = overrideDelayInh
+
+JT.p['betaAdaptExc'] = overrideBetaAdaptExc  # override...
+JT.p['betaAdaptExc2'] = overrideBetaAdaptExc  # override...
 JT.set_up_network(priorResults=PR, recordAllVoltage=p['recordAllVoltage'])
 JT.initialize_weight_matrices()
 
-# manipulate the weights to make things less stable
-# here i will do so by decreasing all the weights by a constant multiplier
-JT.wEE_init = JT.wEE_init * weightMult
-JT.wEI_init = JT.wEI_init * weightMult
-JT.wIE_init = JT.wIE_init * weightMult
-JT.wII_init = JT.wII_init * weightMult
+if p['transformWeightsToLogNormal']:
+
+    # i use 750 pA here to calculate a nice base for creating a lognormal distribution
+    # this is the maximum weight allowed, so it ensures that the upward skew doesn't majorly exceed this max weight
+    idealBase = np.exp(np.log(750) / 750)
+
+    wEE_hat = JT.wEE_init.mean() / pA
+    wEI_hat = JT.wEI_init.mean() / pA
+    wIE_hat = JT.wIE_init.mean() / pA
+    wII_hat = JT.wII_init.mean() / pA
+
+    # transform weights to lognorm by doing a^wts, where a is ~1.005 and wts are normally-distributed
+    wEE_lognorm = np.power(idealBase, JT.wEE_init / pA)
+    wEI_lognorm = np.power(idealBase, JT.wEI_init / pA)
+    wIE_lognorm = np.power(idealBase, JT.wIE_init / pA)
+    wII_lognorm = np.power(idealBase, JT.wII_init / pA)
+
+    # ensure the mean is about the same
+    wEE_lognorm = wEE_lognorm * (wEE_hat / wEE_lognorm.mean()) * pA
+    wEI_lognorm = wEI_lognorm * (wEI_hat / wEI_lognorm.mean()) * pA
+    wIE_lognorm = wIE_lognorm * (wIE_hat / wIE_lognorm.mean()) * pA
+    wII_lognorm = wII_lognorm * (wII_hat / wII_lognorm.mean()) * pA
+
+    # f, ax = plt.subplots(2, 1, sharex=True)
+    # ax[0].hist(JT.wEE_init / pA, 40)
+    # ax[1].hist(wEE_lognorm / pA, 40)
+
+    JT.wEE_init = wEE_lognorm * weightMult
+    JT.wEI_init = wEI_lognorm * weightMult
+    JT.wIE_init = wIE_lognorm * weightMult
+    JT.wII_init = wII_lognorm * weightMult
+
+else:
+
+    # manipulate the weights to make things less stable
+    # here i will do so by decreasing all the weights by a constant multiplier
+    JT.wEE_init = JT.wEE_init * weightMult
+    JT.wEI_init = JT.wEI_init * weightMult
+    JT.wIE_init = JT.wIE_init * weightMult
+    JT.wII_init = JT.wII_init * weightMult
 
 JT.run()
 JT.save_params()
@@ -162,6 +206,9 @@ R.calculate_PSTH()
 R.calculate_voltage_histogram(useAllRecordedUnits=True)
 R.calculate_upstates()
 R.calculate_upFR_units()
+R.calculate_upVoltage_units()
+
+print(R.vHatDownExc, R.vHatDownInh, R.vHatUpExc, R.vHatUpInh,)
 
 fig1, ax1 = plt.subplots(3, 1, num=1, figsize=(16, 9), sharex=True)
 

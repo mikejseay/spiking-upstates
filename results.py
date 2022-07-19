@@ -9,6 +9,7 @@ import dill
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from scipy.ndimage import median_filter
 
 
 class Results(object):
@@ -72,6 +73,31 @@ class Results(object):
         # simply assign each object name to an attribute of the results object
         for savedObjectName in npzObject.files:
             setattr(self, savedObjectName, npzObject[savedObjectName])
+
+    def save_weights(self):
+
+        if not hasattr(self, 'wEE_final'):
+            print('weights not available')
+            return
+
+        savePath = os.path.join(self.p['saveFolder'], self.rID + '_weights.npz')
+
+        saveDict = {
+            'wEE_final': self.wEE_final,
+            'wIE_final': self.wIE_final,
+            'wEI_final': self.wEI_final,
+            'wII_final': self.wII_final,
+            'preEE': self.preEE,
+            'preIE': self.preIE,
+            'preEI': self.preEI,
+            'preII': self.preII,
+            'posEE': self.posEE,
+            'posIE': self.posIE,
+            'posEI': self.posEI,
+            'posII': self.posII,
+        }
+
+        np.savez(savePath, **saveDict)
 
     def init_from_network_object(self, network_object):
         self.rID = network_object.saveName
@@ -232,9 +258,17 @@ class Results(object):
             endInd = int((downs[upstateInd] * second - useInwardBy) / checkDT)
             takeTimeInds.extend(list(range(startInd, endInd)))
 
+        # apply a median filter (array is units x time)
+        nMedFiltSamps = int(25 * ms / checkDT)
+        if (nMedFiltSamps % 2) == 0:
+            nMedFiltSamps += 1
+
+        vMedFiltExc = median_filter(self.stateMonExcV, size=(1, nMedFiltSamps), mode='nearest')
+        vMedFiltInh = median_filter(self.stateMonInhV, size=(1, nMedFiltSamps), mode='nearest')
+
         # now cut out
-        vForUpCorrExc = self.stateMonExcV[:, takeTimeInds]
-        vForUpCorrInh = self.stateMonInhV[:, takeTimeInds]
+        vForUpCorrExc = vMedFiltExc[:, takeTimeInds]
+        vForUpCorrInh = vMedFiltInh[:, takeTimeInds]
 
         # now simply do the correlation
         rhoUpExc = np.corrcoef(vForUpCorrExc)
@@ -242,6 +276,63 @@ class Results(object):
 
         self.rhoUpExc = rhoUpExc
         self.rhoUpInh = rhoUpInh
+
+    def calculate_upVoltage_units(self):
+
+        ups = self.ups
+        downs = self.downs
+
+        nUpstates = len(self.ups)
+
+        if nUpstates == 0:
+            print('there were no detectable up states, no correlation to be done')
+            return
+
+        upTimeInds = []
+        downTimeInds = []
+
+        # this is fool-proof way of making sure you use the correct DT...
+        checkDT = self.p['duration'] / self.stateMonExcV.shape[1]
+
+        # just appending the ranges of indices that will be cut out of the time dimension
+        # we have to convert to the DT, which will be self.p['stateVariableDT']
+        # based on methodological convo with Ben, will go inward by 50 ms
+
+        useInwardBy = 50 * ms
+
+        for upStateInd in range(nUpstates + 1):
+            if upStateInd == 0:
+                startInd = 0
+            else:
+                startInd = int((downs[upStateInd - 1] * second + useInwardBy) / checkDT)
+
+            if upStateInd == nUpstates:
+                endInd = int(self.p['duration'] / checkDT)
+            else:
+                endInd = int((ups[upStateInd] * second - useInwardBy) / checkDT)
+            downTimeInds.extend(list(range(startInd, endInd)))
+
+        for upstateInd in range(nUpstates):
+            startInd = int((ups[upstateInd] * second + useInwardBy) / checkDT)
+            endInd = int((downs[upstateInd] * second - useInwardBy) / checkDT)
+            upTimeInds.extend(list(range(startInd, endInd)))
+
+        # now cut out
+        vForDownExc = self.stateMonExcV[:, downTimeInds]
+        vForDownInh = self.stateMonInhV[:, downTimeInds]
+        vForUpExc = self.stateMonExcV[:, upTimeInds]
+        vForUpInh = self.stateMonInhV[:, upTimeInds]
+
+        # now simply do the mean
+        vHatDownExc = np.mean(vForDownExc)
+        vHatDownInh = np.mean(vForDownInh)
+        vHatUpExc = np.mean(vForUpExc)
+        vHatUpInh = np.mean(vForUpInh)
+
+        self.vHatDownExc = vHatDownExc
+        self.vHatDownInh = vHatDownInh
+        self.vHatUpExc = vHatUpExc
+        self.vHatUpInh = vHatUpInh
 
     def plot_spike_raster(self, ax, downSampleUnits=True, rng=None):
 

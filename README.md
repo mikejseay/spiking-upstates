@@ -6,15 +6,15 @@ This github repository is designed to reproduce the figures containing the spiki
 
 ## Installation
 
-- Start from a Python 3 Anaconda environment.
-- Install Brian2 according to the installation instructions (https://brian2.readthedocs.io/en/stable/introduction/install.html).
-- Install dill by running 'conda install dill' at an Anaconda-enable command line.
+- Start from a Python 3 Anaconda environment (the crucial libraries are `numpy`, `matplotlib`,`scipy`, `seaborn`, and `pandas`).
+- Install `brian2` according to the installation instructions (https://brian2.readthedocs.io/en/stable/introduction/install.html).
+- Install `dill` by running `conda install dill` at an Anaconda-enable command line.
 - Clone this repository.
 
 ## Usage
 
 - At an Anaconda-enabled command line, make this repository your current directory.
-- Run 'python fig5a.py', 'python fig5bc.py', 'python fig5de.py', and 'python fig6.py'. Generate figures will appear as PDF files in the root directory. 
+- Run `python fig5a.py`, `python fig5bc.py`, `python fig5de.py`, and `python fig6.py`. Generate figures will appear as PDF files in the root directory. 
 
 ## Authors
 
